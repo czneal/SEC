@@ -12,10 +12,10 @@ import pandas as pd
 import database_operations as do
 from pandas_datareader.nasdaq_trader import get_nasdaq_symbols
 
-def alpha_vantage():
+def alpha_vantage(symbol, compact=True):
     params = {"function":"TIME_SERIES_DAILY_ADJUSTED",
-              "symbol":"AA",
-              "outputsize":"compact",
+              "symbol":symbol,
+              "outputsize": "compact" if compact else "full",
               "datatype":"json",
               "apikey":"3TQY9OJPR04V5KUD"
               }
@@ -28,7 +28,8 @@ def alpha_vantage():
     
     data = json.loads(body)
     df = pd.read_json(json.dumps(data["Time Series (Daily)"]), orient="index")
-    print(df.head())
+    
+    return df
 
 def update_tickers():
     symbols = get_nasdaq_symbols()
@@ -124,21 +125,24 @@ def iex_tickers():
     
     return pd.read_json(body, orient="records")
 
-df = iex_tickers()
-df = df[df["type"] != 'et']
-words_dict = {}
-symbols_to_replce = {'.',',',':',';','/','-','(',')'}
-        
-for index, security_name in df["name"].iteritems():
-    for s in symbols_to_replce:
-        security_name = security_name.replace(s,' ')
-    for i in range(4,1,-1):
-        security_name = security_name.replace("".ljust(i," ")," ").strip()
-    sec_name_words = security_name.split(" ")
-    for w in sec_name_words:
-        if w in words_dict:
-            words_dict[w] += 1
-        else:
-            words_dict[w] = 1
-sorted_dict = sorted(words_dict.items(), key=lambda v: v[1], reverse=True )
-    
+def iex_ticker_lookup():
+    df = iex_tickers()
+    df = df[df["type"] != 'et']
+    words_dict = {}
+    symbols_to_replce = {'.',',',':',';','/','-','(',')'}
+            
+    for index, security_name in df["name"].iteritems():
+        for s in symbols_to_replce:
+            security_name = security_name.replace(s,' ')
+        for i in range(4,1,-1):
+            security_name = security_name.replace("".ljust(i," ")," ").strip()
+        sec_name_words = security_name.split(" ")
+        for w in sec_name_words:
+            if w in words_dict:
+                words_dict[w] += 1
+            else:
+                words_dict[w] = 1
+    sorted_dict = sorted(words_dict.items(), key=lambda v: v[1], reverse=True )
+
+df = alpha_vantage("WFC")
+df.to_csv("wfc_stock.csv", sep="\t")

@@ -110,5 +110,3 @@ def double_classification(fy):
         info = sys.exc_info()
         print(info[0],info[1])
         traceback.print_tb(info[2])
-        
-double_classification(2016)

@@ -13,6 +13,8 @@ import xbrl_file
 import database_operations as dbo
 import json
 import sys
+import download
+import traceback
 
 def SECdownload(year, month):
     sec_data = None
@@ -35,12 +37,6 @@ def SECdownload(year, month):
             tryout = tryout - 1
     return sec_data
 
-def update_parameteres_in_database():    
-    log = open("log.txt", "w")
-    for month in range(1,8):
-        scan_period(2017, month, log) 
-    log.close()
-    
 def write_mgnums(report, table, adsh, cur):
     header = {"adsh":0, "tag":1, "version":2, "fy":3, "value":4, "uom":5, "type":6, "ddate":7}
     
@@ -49,10 +45,7 @@ def write_mgnums(report, table, adsh, cur):
         if t in report.facts:
             f = report.facts[t]
             values.append(f.tag)
-            if f.source != "us-gaap":
-                values.append(adsh)
-            else:
-                values.append(f.source)
+            values.append(f.source)
             values.append(report.fy)
             values.append(f.value)
             values.append(f.uom)
@@ -80,10 +73,7 @@ def write_mgnums(report, table, adsh, cur):
             if f is None:
                 continue
             values.append(node.tag)
-            if node.source != "us-gaap":
-                values.append(adsh)
-            else:
-                values.append(node.source)
+            values.append(node.source)
             values.append(report.fy)
             values.append(node.value)
             values.append(f.uom)
@@ -126,14 +116,15 @@ def scan_period(year, month, log, sec_dir="d:/sec/", cik_filter=0):
         companies = dbo.Table("companies", con, buffer_size=1)    
         reports = dbo.Table("reports", con, buffer_size=1)
         mgnums = dbo.Table("mgnums", con)
-            
+        form_types = {"10-k","10-k/a"}
+        
         for item in items:
             n_files_processed += 1
             
             if n_files_processed % step == 0:
                 print("\r" + "Processed with {0} of {1}".format(n_files_processed, n_total_files), end="")            
                 
-            if item.find("description").text != "10-K": 
+            if item.find("description").text.lower() not in  form_types: 
                 continue
             
             edgar = item.find("edgar:xbrlFiling", ns)
@@ -152,8 +143,7 @@ def scan_period(year, month, log, sec_dir="d:/sec/", cik_filter=0):
 #            if edgar.find("edgar:fiscalYearEnd", ns) is not None:
 #                period_end = edgar.find("edgar:fiscalYearEnd", ns).text
             form = edgar.find("edgar:formType", ns).text
-            if form.lower() != "10-k":
-                continue
+            
             
             file_date = edgar.find("edgar:acceptanceDatetime", ns).text[0:8]
             file_date = dt.date(int(file_date[:4]), int(file_date[4:6]), int(file_date[6:]))
@@ -198,8 +188,32 @@ def scan_period(year, month, log, sec_dir="d:/sec/", cik_filter=0):
     
     return True
 
-log = xbrl_file.LogFile("log-2018-04-10.txt")
-for y in [2018]:
-    for m in [3]:
-        scan_period(y,m, log)
-log.close()
+def update_current_month(y=None, m=None):
+    try:
+        if y is None or m is None:
+            y = dt.date.today().year
+            m = dt.date.today().month
+            if dt.date.today().day == 1:
+                m -= 1
+            if m == 0:
+                m = 12
+                y -= 1
+        
+        err_log = download.ScraperLogFile("d:/sec/xbrl_err_log.txt")
+        log = xbrl_file.LogFile("d:/sec/xbrl_log-{0}-{1}-{2}.{3}".format(y,m,dt.date.today(),"txt"))
+        scan_period(y, m, log)        
+    except:        
+        err_log.write(sys.exc_info()[0])
+        err_log.write(sys.exc_info()[1])
+        traceback.print_tb(sys.exc_info()[1], file=err_log.log_file)
+    finally:    
+        log.close()
+        err_log.close()
+        
+def update_parameteres_in_database():    
+    for year in range(2010, 2019):
+        for month in range(1,13):
+            update_current_month(year, month) 
+        
+#update_current_month(2018,7)
+#update_parameteres_in_database()

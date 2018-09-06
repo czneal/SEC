@@ -429,13 +429,13 @@ class Node(object):
                 calc_log.write("expected: {0}\n".format(expected))
     
     def json(self):
-        retval = {"name":self.name, "tag":self.tag, "source":self.source, "weigth": 0.0, "children": None}
+        retval = {"name":self.name, "tag":self.tag, "source":self.source, "weight": 0.0, "children": None}
         if len(self.children) == 0:
             return retval
         retval["children"] = {}
         for name, c in self.children.items():            
             retval["children"][name] = c[0].json()
-            retval["children"][name]["weigth"] = c[1]
+            retval["children"][name]["weight"] = c[1]
             
         return retval    
         
@@ -445,7 +445,7 @@ class Chapter(object):
     chap_id - id from xsd file
     chapter - chapter type, from whitch part of report it comes. "sta" - Statement, "doc" - document and so on
     label - as it represent in final report
-    nodes - {node_id:[Node, weigth]}, represent all tags using in calc scheme, node_id - is a "label" for node in "loc" tag in cal, pre or lab file 
+    nodes - {node_id:[Node, weight]}, represent all tags using in calc scheme, node_id - is a "label" for node in "loc" tag in cal, pre or lab file 
     nodes_pre - {node_id: Node} same as nodes
     """
     def __init__(self, role_uri, chap_id, chapter, label):

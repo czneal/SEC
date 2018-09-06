@@ -107,6 +107,7 @@ venv.bak/
 RawData
 Reports
 Test
+Outputs
 *.txt
 *.log
 *.csv
