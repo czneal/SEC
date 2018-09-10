@@ -116,7 +116,7 @@ def liabilities_weights(fy):
     try:
         con = do.OpenConnection(host="server")
         cur = con.cursor(dictionary=True)
-        cur.execute("select * from reports where fin_year=%(fy)s", {"fy":fy})
+        cur.execute("select * from reports where fin_year=%(fy)s and trusted=1", {"fy":fy})
         data = []
         for index, r in enumerate(cur):
             structure = json.loads(r["structure"])
@@ -125,11 +125,12 @@ def liabilities_weights(fy):
                     continue
                 for _, liab in to.enumerate_tags(structure, tag="us-gaap:Liabilities"):
                     for n, _, w in to.enumerate_tags_weight(liab):
-                        data.append([r["adsh"], n, w])
+                        data.append([r["cik"], r["adsh"], n, w])
             print("\rProcessed with {0}".format(index), end="")
         print()
-        df = pd.DataFrame(data, columns=["adsh","name","weight"])
-        df.to_csv("Outputs/liabilities_weights.csv",sep="\t")
+        df = pd.DataFrame(data, columns=["cik","adsh","name","weight"])
+        df = df[df["weight"] != 1]
+        df.to_csv("Outputs/liabilities_neg_weights.csv",sep="\t")
     except:
         raise
     finally:
