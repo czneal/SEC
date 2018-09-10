@@ -112,6 +112,7 @@ Outputs
 *.log
 *.csv
 *.npy
+.settings
 
 #archives
 *.7z
