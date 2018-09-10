@@ -10,7 +10,7 @@ import json
 class Settings(object):
     def __open():
         try:
-            f = open(".settings")
+            f = open("global.settings")
             settings = json.loads(f.read())
         except:
             print("create settings file")
