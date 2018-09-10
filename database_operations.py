@@ -9,7 +9,7 @@ import json
 import mysql.connector
 import sys
 import traceback
-import math
+import pandas as pd
 
 def OpenConnection(host = "server"):
     hosts = {"server":"server", "remote":"95.31.1.243","localhost":"localhost"}
@@ -72,13 +72,7 @@ class Table(object):
                 if values[header[f]] in {''}:
                     values_dict[f] = None
                 else:
-                    try:
-                        if math.isnan(values[header[f]]):
-                            values_dict[f] = None
-                        else:
-                            values_dict[f] = values[header[f]]
-                    except:
-                        values_dict[f] = values[header[f]]
+                    values_dict[f] = values[header[f]]
             else:
                 values_dict[f] = None
                 
@@ -96,10 +90,11 @@ class Table(object):
             self.data.clear()
             
     def write_df(self, df, cur):
-        header = list(df.index.names)
-        header.extend(df.columns)
+        df_with_none = df.where((pd.notnull(df)), None)
+        header = list(df_with_none.index.names)
+        header.extend(df_with_none.columns)
         header = {e.lower():i for i, e in enumerate(header)}
-        for row in df.itertuples():
+        for row in df_with_none.itertuples():
             if type(row[0]) == tuple:
                 values = list(row[0])
             else:

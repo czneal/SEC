@@ -10,7 +10,6 @@ import urllib.request
 import json
 import pandas as pd
 import database_operations as do
-from pandas_datareader.nasdaq_trader import get_nasdaq_symbols
 
 def alpha_vantage(symbol, compact=True):
     params = {"function":"TIME_SERIES_DAILY_ADJUSTED",
@@ -31,55 +30,6 @@ def alpha_vantage(symbol, compact=True):
     
     return df
 
-def update_tickers():
-    symbols = get_nasdaq_symbols()
-    symbols = symbols[symbols["Test Issue"]==False]
-    #symbols.fillna(value='', inplace=True)
-    
-    df2header = {'Nasdaq Traded':'traded',
-                 'Security Name':'security_name',
-                 'Listing Exchange':'listing_exchange',
-                 'Market Category':'market_category',
-                 'ETF':'etf',
-                 'Round Lot Size':'lot_size',
-                 'NASDAQ Symbol':'nasdaq_symbol',
-                 'Financial Status':'financial_status',
-                 'CQS Symbol':'cqs_symbol'}
-    
-    symbols.rename(inplace=True, columns=df2header)
-    symbols.index.name = 'symbol'
-    
-    try:
-        con = do.OpenConnection("localhost")
-        cur = con.cursor(dictionary=True)
-        table = do.Table("nasdaqtraded", con)
-        table.write_df(symbols, cur)
-        con.commit()
-    except:
-        con.close()
-        raise
-
-def tickers_managment():
-    try:
-        words_dict = {}
-        symbols_to_replce = {'.',',',':',';','/','-','(',')'}
-        con = do.OpenConnection("localhost")
-        cur = con.cursor(dictionary=True)
-        cur.execute("select * from nasdaqtraded where traded = 1")
-        for row in cur:
-            security_name = row["security_name"]
-            for s in symbols_to_replce:
-                security_name = security_name.replace(s,' ')
-            sec_name_words = security_name.split(" ")
-            for w in sec_name_words:
-                if w in words_dict:
-                    words_dict[w] += 1
-                else:
-                    words_dict[w] = 1
-        sorted_dict = sorted(words_dict.items(), key=lambda v: v[1], reverse=True )
-    except:
-        con.close()
-        raise
 
 def update_interdaily(tickers, date):
     symbols = ""
@@ -116,33 +66,5 @@ def update_interdaily(tickers, date):
         con.close()
         raise
 
-def iex_tickers():
-    url_text = "https://api.iextrading.com/1.0/ref-data/symbols"
-    req = urllib.request.Request(url_text)
-    url = urllib.request.urlopen(req)
-    body = url.read()
-    url.close()
-    
-    return pd.read_json(body, orient="records")
-
-def iex_ticker_lookup():
-    df = iex_tickers()
-    df = df[df["type"] != 'et']
-    words_dict = {}
-    symbols_to_replce = {'.',',',':',';','/','-','(',')'}
-            
-    for index, security_name in df["name"].iteritems():
-        for s in symbols_to_replce:
-            security_name = security_name.replace(s,' ')
-        for i in range(4,1,-1):
-            security_name = security_name.replace("".ljust(i," ")," ").strip()
-        sec_name_words = security_name.split(" ")
-        for w in sec_name_words:
-            if w in words_dict:
-                words_dict[w] += 1
-            else:
-                words_dict[w] = 1
-    sorted_dict = sorted(words_dict.items(), key=lambda v: v[1], reverse=True )
-
-df = alpha_vantage("WFC")
-df.to_csv("wfc_stock.csv", sep="\t")
+df = alpha_vantage("WFC", compact=False)
+df.to_csv("outputs/wfc_stock.csv", sep="\t")
