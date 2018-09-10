@@ -10,6 +10,6 @@ import xbrl_scan
 print("start download...", end="")
 dd.update_current_month()
 print("ok")
-print("start getting gmnums...", end="")
+print("start getting mgnums...", end="")
 xbrl_scan.update_current_month()
 print("ok")

@@ -14,7 +14,7 @@ class LogFile(object):
         self.log_file = None
         if filename is not None:        
             if os.path.exists(filename) and append:
-                self.log_file = open(filename,"a")            
+                self.log_file = open(filename, "a")            
             else:
                 self.log_file = open(filename, "w")
             
@@ -30,6 +30,7 @@ class LogFile(object):
     def close(self):
         if self.log_file is not None:
             self.log_file.close()
+            del self.log_file
             
     def write_tb(self, tb):        
         traceback.print_tb(tb, file=self.log_file)        

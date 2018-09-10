@@ -13,56 +13,55 @@ import zipfile
 import os
 import shutil
 import sys
+import traceback
+import log_file
 
-def SECdownload(year, month, part_dir):
+#class ScraperLogFile(object):
+#    def __init__(self, filename):
+#        self.log_file = None
+#        if os.path.exists(filename):
+#            self.log_file = open(filename,"a")            
+#        else:
+#            self.log_file = open(filename, "w")
+#            
+#        self.write("session timestamp {0}".format(dt.date.today()))
+#        
+#    def write(self, info, end="\n"):
+#        self.log_file.write(str(info)+end)
+#    def close(self):
+#        self.log_file.close()
+        
+def SECdownload(year, month, part_dir, log):
     
     root_link = "https://www.sec.gov/Archives/edgar/monthly/"
     rss_filename = "xbrlrss-" + str(year) + "-" + str(month).zfill(2) + ".xml"
     link = root_link + rss_filename
     rss_filename = rss_filename[4:]
     
-    if DownloadFile(link, part_dir + rss_filename):
+    if DownloadFile(link, part_dir + rss_filename, log):
         return part_dir + rss_filename
     else:
         return ""
-#    tryout = 3
-#    while tryout > 0:
-#        print("Try to get rss file: %s, attempt %d " %(rss_filename, 4-tryout)) 
-#        try:
-#            req = urllib.request.Request(link)
-#            rss = urllib.request.urlopen(req)
-#            sec_data = rss.read()
-#            print("Success!")
-#            break
-#        except:
-#            print("Fail!")
-#            tryout = tryout - 1
-#    if sec_data != None:
-#        with open(rss_filename, "wb") as f:
-#            f.write(sec_data)
-#        return True
-#    return False
   
-def ItemFilesDownload(item, target_dir, temp_dir, ns):
+def ItemFilesDownload(item, target_dir, temp_dir, ns, log):
     
     xbrl_section = item.find("edgar:xbrlFiling", ns)
     cik_id = xbrl_section.find("edgar:cikNumber", ns).text
     access_id = xbrl_section.find("edgar:accessionNumber", ns).text
     filer = xbrl_section.find("edgar:companyName", ns).text
     
-    print("\tDownloading %s cik %s" %(filer, cik_id))
-
     zip_filename = target_dir+"/"+cik_id+"-"+access_id+".zip"
     if os.path.exists(zip_filename):
-        print("\t" + zip_filename + " exist!")
+        #log.write("\t" + zip_filename + " exist!")
         return
-    try:         
+    try:
+        log.write("\tDownloading %s cik %s" %(filer, cik_id))         
         enc = item.find("enclosure")
         one_file_url = enc.get("url")      
-        if DownloadFile(one_file_url, zip_filename):
-            print("\tZip file downloaded!")
+        if DownloadFile(one_file_url, zip_filename, log):
+            log.write("\tZip file downloaded!")
         else:
-            print("Fail!")
+            log.write("Fail!")
     
     except:
         all_files_read = True
@@ -74,7 +73,7 @@ def ItemFilesDownload(item, target_dir, temp_dir, ns):
         for f in files:
            file_url = f.get("{"+ns["edgar"]+"}"+"url")
            filename = file_url.split("/")[-1]
-           if not DownloadFile(file_url, temp_dir + filename):
+           if not DownloadFile(file_url, temp_dir + filename, log):
                all_files_read = False
                break
            else:
@@ -87,13 +86,13 @@ def ItemFilesDownload(item, target_dir, temp_dir, ns):
         
         if not all_files_read:
             os.remove(zip_filename)
-            print("Fail!")
+            log.write("Fail!")
         else:
-            print("\tSuccess!")
+            log.write("\tSuccess!")
             
     return
-def DownloadFile(url_text, filename):
-    
+
+def DownloadFile(url_text, filename, log):    
     tryout = 3
     good_read = False
     body = None
@@ -107,11 +106,11 @@ def DownloadFile(url_text, filename):
             good_read = True
             break
         except:
-            print("\t%d attempt of downloading %s fail" %(4-tryout, url_text))
-            print(sys.exc_info())
+            log.write("\t%d attempt of downloading %s fail" %(4-tryout, url_text))
+            log.write(sys.exc_info())
             tryout = tryout - 1
     if not good_read:        
-       print("Couldn't download file %s" % url_text)
+       log.write("Couldn't download file %s" % url_text)
     else:
         of = open(filename, "wb")
         of.write(body)
@@ -157,8 +156,7 @@ def global_downloader():
                         ns[elem[0].lower()] = elem[1]
                     if event == "start" and root == None: 
                         root = elem        
-                edgar = "{" + ns["edgar"] + "}"
-    #            c = root.find("channel", ns)
+                        
                 items = root.iter("item")
                 for item in items:
                     ItemFilesDownload(item, part_dir, temp_dir, ns)
@@ -167,8 +165,8 @@ def global_downloader():
     except:
         print("Something went wrong!")
         print(sys.exc_info())
-        
-def update_current_month():
+
+def download_one_month(m,y,log, err_log):
     try:
         root_dir = "d:/SEC/"
         temp_dir = root_dir + "tmp/"
@@ -177,17 +175,9 @@ def update_current_month():
         if not os.path.exists(temp_dir):
             os.mkdir(temp_dir)
         
-        y = dt.date.today().year
-        m = dt.date.today().month
-        if dt.date.today().day == 1:
-            m -= 1
-        if m == 0:
-            m = 12
-            y -= 1
-            
-        print("year:{0}, month:{1}".format(y, m))
+        log.write("year:{0}, month:{1}".format(y, m))
         part_dir = CreatePartialDir(y, m, root_dir)            
-        rss_filename = SECdownload(y, m, part_dir)
+        rss_filename = SECdownload(y, m, part_dir, log)
         
         if rss_filename == "":               
             return
@@ -206,11 +196,30 @@ def update_current_month():
                 
         items = root.iter("item")
         for item in items:
-            ItemFilesDownload(item, part_dir, temp_dir, ns)
-            
+            ItemFilesDownload(item, part_dir, temp_dir, ns, log)            
         
     except:
-        print("Something went wrong!")
-        print(sys.exc_info())
+        err_log.write("Something went wrong!")
+        err_log.write(sys.exc_info()[0])        
+        err_log.write(sys.exc_info()[1])
+        traceback.print_tb(sys.exc_info()[2], file=err_log.log_file)
         
-update_current_month()
+def update_current_month():
+    try:
+        y = dt.date.today().year
+        m = dt.date.today().month
+        if dt.date.today().day == 1:
+            m -= 1
+        if m == 0:
+            m = 12
+            y -= 1
+        
+        log = log_file.LogFile("d:/sec/scraper_log.txt", append=True)
+        err_log = log_file.LogFile("d:/sec/scraper_err_log.txt", append=True)
+        download_one_month(m,y,log,err_log)
+        log.close()
+        err_log.close()
+    except:
+        log.close()
+        err_log.close()
+

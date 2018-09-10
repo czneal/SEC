@@ -13,7 +13,7 @@ import xbrl_file
 import database_operations as dbo
 import json
 import sys
-import download
+import log_file
 import traceback
 
 def SECdownload(year, month):
@@ -199,7 +199,7 @@ def update_current_month(y=None, m=None):
                 m = 12
                 y -= 1
         
-        err_log = download.ScraperLogFile("d:/sec/xbrl_err_log.txt")
+        err_log = log_file.LogFile("d:/sec/xbrl_err_log.txt")
         log = xbrl_file.LogFile("d:/sec/xbrl_log-{0}-{1}-{2}.{3}".format(y,m,dt.date.today(),"txt"))
         scan_period(y, m, log)        
     except:        

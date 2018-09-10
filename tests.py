@@ -11,6 +11,7 @@ import sys
 import json
 import pandas as pd
 import traceback
+import tree_operations as to
 
 def set_chapters(items):
     val = {}
@@ -110,3 +111,28 @@ def double_classification(fy):
         info = sys.exc_info()
         print(info[0],info[1])
         traceback.print_tb(info[2])
+        
+def liabilities_weights(fy):
+    try:
+        con = do.OpenConnection(host="server")
+        cur = con.cursor(dictionary=True)
+        cur.execute("select * from reports where fin_year=%(fy)s", {"fy":fy})
+        data = []
+        for index, r in enumerate(cur):
+            structure = json.loads(r["structure"])
+            for chapter_name in structure:
+                if not cl.ChapterClassificator.match_balance_sheet(chapter_name):
+                    continue
+                for _, liab in to.enumerate_tags(structure, tag="us-gaap:Liabilities"):
+                    for n, _, w in to.enumerate_tags_weight(liab):
+                        data.append([r["adsh"], n, w])
+            print("\rProcessed with {0}".format(index), end="")
+        print()
+        df = pd.DataFrame(data, columns=["adsh","name","weight"])
+        df.to_csv("Outputs/liabilities_weights.csv",sep="\t")
+    except:
+        raise
+    finally:
+        con.close()
+        
+liabilities_weights(2016)

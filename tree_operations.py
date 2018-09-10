@@ -19,6 +19,20 @@ def enumerate_tags(structure, tag = None):
                 yield name, child
             for p, c in enumerate_tags(child, tag):
                 yield p, c
+
+def enumerate_tags_weight(structure, tag = None):
+    root = None
+    if "children" in structure:
+        root = structure["children"]
+    else:
+        root = structure
+        
+    if root is not None:
+        for name, child in root.items():
+            if tag is None or tag == name:
+                yield name, child, child["weight"]
+            for p, c, w in enumerate_tags_weight(child, tag):
+                yield p, c, w
                 
 def calculate_by_tree(facts, structure, chapter = None, root_node_name = None):
     result = {}
