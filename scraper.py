@@ -4,7 +4,7 @@ Created on Fri Jul 20 17:59:12 2018
 
 @author: Media
 """
-import download as dd
+import scraper_sec as dd
 import xbrl_scan
 
 print("start download...", end="")

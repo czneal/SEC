@@ -15,22 +15,8 @@ import shutil
 import sys
 import traceback
 import log_file
+from settings import Settings
 
-#class ScraperLogFile(object):
-#    def __init__(self, filename):
-#        self.log_file = None
-#        if os.path.exists(filename):
-#            self.log_file = open(filename,"a")            
-#        else:
-#            self.log_file = open(filename, "w")
-#            
-#        self.write("session timestamp {0}".format(dt.date.today()))
-#        
-#    def write(self, info, end="\n"):
-#        self.log_file.write(str(info)+end)
-#    def close(self):
-#        self.log_file.close()
-        
 def SECdownload(year, month, part_dir, log):
     
     root_link = "https://www.sec.gov/Archives/edgar/monthly/"
@@ -129,7 +115,7 @@ def global_downloader():
     #ns = {'edgar': 'http://www.sec.gov/Archives/edgar',
     #      'atom': 'http://www.w3.org/2005/Atom'}
     try:
-        root_dir = "d:/SEC/"
+        root_dir = Settings.root_dir()
         temp_dir = root_dir + "tmp/"
         if not os.path.exists(root_dir):
             os.mkdir(root_dir)
@@ -168,7 +154,7 @@ def global_downloader():
 
 def download_one_month(m,y,log, err_log):
     try:
-        root_dir = "d:/SEC/"
+        root_dir = Settings.root_dir()
         temp_dir = root_dir + "tmp/"
         if not os.path.exists(root_dir):
             os.mkdir(root_dir)
@@ -214,8 +200,8 @@ def update_current_month():
             m = 12
             y -= 1
         
-        log = log_file.LogFile("d:/sec/scraper_log.txt", append=True)
-        err_log = log_file.LogFile("d:/sec/scraper_err_log.txt", append=True)
+        log = log_file.LogFile(Settings.root_dir() + "scraper_log.txt", append=True)
+        err_log = log_file.LogFile(Settings.root_dir() + "scraper_err_log.txt", append=True)
         download_one_month(m,y,log,err_log)
         log.close()
         err_log.close()

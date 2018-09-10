@@ -10,14 +10,16 @@ import mysql.connector
 import sys
 import traceback
 import pandas as pd
+from settings import Settings
 
-def OpenConnection(host = "server"):
+def OpenConnection(host=Settings.host()):
     hosts = {"server":"server", "remote":"95.31.1.243","localhost":"localhost"}
+    
     return mysql.connector.connect(user="app", password="Burkina!7faso", 
                               host=hosts[host], database="reports",
-                              ssl_ca = "d:/Documents/Certs/ca.pem",
-                              ssl_cert = "d:/Documents/Certs/client-cert.pem",
-                              ssl_key = "d:/Documents/Certs/client-key.pem",
+                              ssl_ca = Settings.ssl_dir()+"ca.pem",
+                              ssl_cert = Settings.ssl_dir()+"client-cert.pem",
+                              ssl_key = Settings.ssl_dir()+"client-key.pem",
                               connection_timeout = 1000)
 
 class Table(object):

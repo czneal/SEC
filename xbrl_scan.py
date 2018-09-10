@@ -14,7 +14,7 @@ import database_operations as dbo
 import json
 import sys
 import log_file
-import traceback
+from settings import Settings
 
 def SECdownload(year, month):
     sec_data = None
@@ -88,7 +88,7 @@ def write_mgnums(report, table, adsh, cur):
     table.flush(cur)
         
     
-def scan_period(year, month, log, sec_dir="d:/sec/", cik_filter=0):    
+def scan_period(year, month, log, sec_dir=Settings.root_dir(), cik_filter=0):    
     log.write_to_log("year: " + str(year) + " month: " + str(month))
     print("year:", year, "month:", month)
     
@@ -199,19 +199,18 @@ def update_current_month(y=None, m=None):
                 m = 12
                 y -= 1
         
-        err_log = log_file.LogFile("d:/sec/xbrl_err_log.txt")
-        log = xbrl_file.LogFile("d:/sec/xbrl_log-{0}-{1}-{2}.{3}".format(y,m,dt.date.today(),"txt"))
+        err_log = log_file.LogFile(Settings.root_dir() + "xbrl_err_log.txt")
+        log = xbrl_file.LogFile(Settings.root_dir() + "xbrl_log-{0}-{1}-{2}.{3}".format(y,m,dt.date.today(),"txt"))
         scan_period(y, m, log)        
     except:        
         err_log.write(sys.exc_info()[0])
         err_log.write(sys.exc_info()[1])
-        traceback.print_tb(sys.exc_info()[1], file=err_log.log_file)
     finally:    
         log.close()
         err_log.close()
         
 def update_parameteres_in_database():    
-    for year in range(2010, 2019):
+    for year in range(2011, 2019):
         for month in range(1,13):
             update_current_month(year, month) 
         
