@@ -67,22 +67,22 @@ class Table(object):
             
         return insert[:-1]
     
-    def write(self, header, values, cur):
-        values_dict = {}
-        for f in self.fields:
-            if f in header:
-                if values[header[f]] in {''}:
-                    values_dict[f] = None
-                else:
-                    values_dict[f] = values[header[f]]
-            else:
-                values_dict[f] = None
-                
-        for f in self.not_null_fields:
-            if f not in values_dict or values_dict[f] is None:
-                return
+    def write(self, values, cur):
+        if type(values) == type(dict()):
+            values = [values]
             
-        self.data.append(values_dict)
+        for value in values:
+            for f in self.fields:
+                if f not in values:
+                    values[f] = None
+                elif values[f] == '':
+                    values[f] = None
+                
+            for f in self.not_null_fields:
+                if value[f] is None:
+                    return
+            
+        self.data.append(values)
         if len(self.data) >= self.buffer_size:
             self.flush(cur)
         
@@ -98,11 +98,14 @@ class Table(object):
         header = {e.lower():i for i, e in enumerate(header)}
         for row in df_with_none.itertuples():
             if type(row[0]) == tuple:
-                values = list(row[0])
+                r = list(row[0])
             else:
-                values = [row[0]]
-            values.extend(row[1:])
-            self.write(header, values, cur)
+                r = [row[0]]
+            r.extend(row[1:])
+            values = {}
+            for h, hi in header.items():
+                values[h] = r[hi] 
+            self.write(values, cur)
         self.flush(cur)
         
 class get_procedure(object):

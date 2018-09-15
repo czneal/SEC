@@ -10,8 +10,11 @@ import database_operations as do
 import sys
 import json
 import pandas as pd
+import numpy as np
 import traceback
 import tree_operations as to
+import liabilities_custom as lc
+import log_file
 
 def set_chapters(items):
     val = {}
@@ -114,7 +117,7 @@ def double_classification(fy):
         
 def liabilities_weights(fy):
     try:
-        con = do.OpenConnection(host="server")
+        con = do.OpenConnection()
         cur = con.cursor(dictionary=True)
         cur.execute("select * from reports where fin_year=%(fy)s and trusted=1", {"fy":fy})
         data = []
@@ -136,4 +139,106 @@ def liabilities_weights(fy):
     finally:
         con.close()
         
-liabilities_weights(2016)
+def tags_not_in_liabilities_structure(fy):
+    try:
+        con = do.OpenConnection()
+        lcl = cl.LiabilititesClassificator()
+        shecl = cl.StockHoldersEquityClassificator()
+        
+        
+        con_num = do.OpenConnection()
+        cur = con.cursor(dictionary=True)
+        cur_nums = con_num.cursor(dictionary=True)
+        cur.execute("select * from reports where fin_year=%(fy)s limit 10", {"fy":fy})
+        data = []
+        for index, r in enumerate(cur):
+            print("\rProcessed with {0}".format(index), end="")
+            
+            structure = json.loads(r["structure"])
+            cur_nums.execute("select concat(version, ':', tag) as tag from mgnums where adsh=%(adsh)s", {"adsh":r["adsh"]})
+            tags = set()
+            for num in cur_nums.fetchall():
+                if shecl.predict(num["tag"]) < 0.8:
+                    tags.add(num["tag"])
+            
+            liab_tags = set()
+            for chapter_name, chapter in structure.items():
+                if not cl.ChapterClassificator.match_balance_sheet(chapter_name):
+                    continue
+                
+                for _, liab in to.enumerate_tags(chapter, tag="us-gaap:LiabilitiesAndStockholdersEquity"):
+                    for n, c in to.enumerate_tags(liab):
+                        liab_tags.add(n)
+                if len(liab_tags) == 0:
+                    continue
+                
+                tags = tags.difference(liab_tags)
+                for tag in tags:
+                    if lcl.predict(tag.split(":")[-1]) > 0.8:
+                        data.append([r["cik"], r["adsh"], tag])
+        print()
+        df = pd.DataFrame(data, columns=["cik", "adsh", "tag"])
+        df.to_csv("outputs/liab_tags_notin_structure.csv", sep="\t")
+        
+    finally:
+        con.close()
+
+def cal_liabilities_variants(fy):
+    print("loading models...", end="")
+    diff_liabs = lc.DifferentLiabilities()
+    print("ok")
+    print("start calculus:")
+    df = diff_liabs.calc_liabilities(fy, log_file.LogFile("outputs/liab_class_2017.log", append=False))
+    print("end")
+    df.set_index(["adsh"], inplace=True)
+    return df
+    
+#df = pd.read_csv("outputs/liab_custom_variants.csv", sep="\t")
+df = cal_liabilities_variants(2017)
+df.to_csv("outputs/liab_custom_variants_2017.csv", sep="\t")
+df.set_index(["adsh"], inplace=True)
+
+l = "us-gaap:Liabilities"
+errors = []
+for i, c in enumerate(df.columns):
+    if c.startswith("lcc") or c.startswith("lcpc"):     
+        df["err_"+c] = np.abs((df[c] - df[l])/df[l])
+        errors.append(["err_"+c, np.mean(df["err_"+c]), df["err_"+c].max(),
+                       df["err_"+c].argmax()])
+
+a = "us-gaap:LiabilitiesAndStockHoldersEquity"
+b = "us-gaap:StockholdersEquity"
+df["err_lshe_she"] = np.abs((df[a] -df[b] - df[l])/df[l])
+errors.append(["err_lshe_she", np.mean(df["err_lshe_she"]), 
+               df["err_lshe_she"].max(),
+               df["err_lshe_she"].argmax()])
+
+errors = pd.DataFrame(errors, columns=["error_name", "mean", "max", "argmax"]).set_index("error_name")
+errors.to_csv("outputs/liab_custom_errors_2017.csv", sep="\t")
+#structure = json.loads(open("outputs/structure.json").read())
+#for (p, c, _, root) in to.enumerate_tags_basic(structure, 
+#                               tag="us-gaap:liabilitiesAndStockHoldersEquity", 
+#                               chapter="bs"):
+#    facts = {}
+#    for index, (p, c, leaf) in enumerate(to.enumerate_tags_parent_child_leaf(root)):
+#        if leaf: facts[c] = float(index)
+#    
+#    print("by_leafs:{0}".format(to.TreeSum.by_leafs(facts, root)))
+#    
+#    facts["us-gaap:Liabilities"] = 100
+#    print("by_tops:{0}".format(to.TreeSum.by_tops(facts, root)))
+#    
+#    print(facts)
+    
+#print("\tenumerate_tags_basic")
+#print([(c,w,p) for (c,w,p,_) in to.enumerate_tags_basic(structure)])
+#print("\tenumerate_tags_basic chap_id = 'bs'")
+#print([(c,w,p) for (c,w,p,_) in to.enumerate_tags_basic(structure,chapter='bs')])
+#print("\tenumerate_tags_basic tag='us-gaap:Liabilities'")
+#print([(c,w,p) for (c,w,p,_) in to.enumerate_tags_basic(structure, tag='us-gaap:Liabilities')])
+#print("\tenumerate_tags_parent_child")
+#print([(p,c) for (p,c) in to.enumerate_tags_parent_child(structure)])
+#print("\tenumerate_tags_parent_child_leaf")
+#print([(p,c,l) for (p,c,l) in to.enumerate_tags_parent_child_leaf(structure)])
+#print("\tenumerate_tags_parent_child_leaf chapter='bs'")
+#print([(p,c,l) for (p,c,l) in to.enumerate_tags_parent_child_leaf(structure, chapter='bs')])

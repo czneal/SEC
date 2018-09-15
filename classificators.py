@@ -8,9 +8,6 @@ import re
 import numpy as np
 from keras.preprocessing import sequence
 from keras.models import load_model
-from keras.models import Sequential
-from keras.layers import Dense, Embedding
-from keras.layers import LSTM
 
 
 class ChapterClassificator(object):
@@ -44,34 +41,44 @@ class ChapterClassificator(object):
                 return True
         return False
 
-def concatenate_arrays(parent, child, max_len):
-    half_len = int(max_len/2)
-    conc_array = np.zeros((len(parent) ,max_len))
-    conc_array[conc_array==0]=1
-    for i in range(len(parent)):
-        for j in range(0,min(half_len,len(parent[i]))):
-            conc_array[i][j]=parent[i][j]
-        for j in range(0,min(half_len,len(child[i]))):
-            conc_array[i][j+half_len]=child[i][j]        
-    return(conc_array)
-    
-class LiabilititesClassificator(object):
-    def __init__(self):
-        with open("LbClf/liabilities_class_dict_v2018-05-24.csv") as f:
-            self.tag_to_code = {l.split(";")[0]:l.replace("\n","").split(";")[1] for l in f}
-        self.model = load_model("LbClf/liabilities_class_v2018-05-24.h5")
-        self.bs_stat = {}
-        with open("LbClf/bs_stat.csv") as f:
-            for l in f:
-                tag = l.split("\t")[0].split(":")[1]
-                pref = l.split("\t")[0].split(":")[0]
-                if pref == "us-gaap":
-                    self.bs_stat[tag] = int(l.replace("\n","").split("\t")[1])
+  
+class Classificator(object):
+    def __init__(self, fdict, fmodel):        
+        self._load_dict(fdict)
+        self._load_model(fmodel)
         
-            
-    def predict(self, tag):        
-        if tag in self.bs_stat:
-            return 0.0
+    def _load_dict(self, filename):
+        with open(filename) as f:
+            self.tag_to_code = {l.split(";")[0]:l.replace("\n","").split(";")[1] for l in f}
+    
+    def _load_model(self, filename):
+        self.model = load_model(filename)
+        
+    def concatenate_arrays(parent, child, max_len):
+        half_len = int(max_len/2)
+        conc_array = np.zeros((len(parent) ,max_len))
+        conc_array[conc_array==0]=1
+        for i in range(len(parent)):
+            for j in range(0,min(half_len,len(parent[i]))):
+                conc_array[i][j]=parent[i][j]
+            for j in range(0,min(half_len,len(child[i]))):
+                conc_array[i][j+half_len]=child[i][j]        
+        return(conc_array)
+    
+    def remove_prefix(tag):
+        if ":" in tag:
+            return tag.split(":")[-1]
+        else:
+            return tag
+    
+class LiabClassStub(object):
+    def predict(self, p, c):
+        return 1.0
+    
+class LiabClassSingle(Classificator):            
+    def predict(self, parent, tag):
+        tag = LiabClassSingle.remove_prefix(tag)
+        
         t = re.findall('[A-Z][^A-Z]*', tag)
         k= [self.tag_to_code.get(j,1) for j in t]
         to_predict = np.zeros((1,len(k)))
@@ -84,13 +91,11 @@ class LiabilititesClassificator(object):
         
         return predicted
     
-class LiabilitiesClassificator2(object):
-    def __init(self):
-        with open("LbClf/liabilities_class_dict_v2018-08-17.csv") as f:
-            self.tag_to_code = {l.split(";")[0]:l.replace("\n","").split(";")[1] for l in f}
-        self.model = load_model("LbClf/liabilities_class_v2018-08-17.h5")
-    
+class LiabClassPC(Classificator):    
     def predict(self, parent, child):
+        parent = LiabClassPC.remove_prefix(parent)
+        child = LiabClassPC.remove_prefix(child)
+        
         t = re.findall('[A-Z][^A-Z]*', parent)
         k_parent= [self.tag_to_code.get(j,1) for j in t] 
         
@@ -105,9 +110,22 @@ class LiabilitiesClassificator2(object):
         
         to_predict_child = np.zeros((1, len(k_child)))
         to_predict_child[0]= k_child
-        to_predict  = concatenate_arrays( to_predict_parent, to_predict_child,maxlen)
+        to_predict  = Classificator.concatenate_arrays(to_predict_parent, 
+                                                       to_predict_child,
+                                                       maxlen)
         
         to_predict = sequence.pad_sequences(to_predict, maxlen=maxlen)
         predicted = self.model.predict(to_predict)
         
         return predicted
+    
+class StockHoldersEquityClassificator(object):
+    def __init__(self):
+        with open("LbClf/liab_stockhold_stat.csv") as f:
+            self.stat = set([l.split("\t")[0] for l in f])
+    
+    def predict(self, tag):
+        if tag in self.stat:
+            return 1.0
+        else:
+            return 0.0

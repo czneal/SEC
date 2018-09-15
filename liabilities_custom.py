@@ -16,6 +16,7 @@ import json
 import numpy as np
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error
+import pandas as pd
 
 class LiabilitiesCalculator(object):
     def __init__(self, log=None, err_log=None):
@@ -29,20 +30,25 @@ class LiabilitiesCalculator(object):
             self.err_log = self.log
         print("ok")
         
-    def calc_liabilities(self, fy):
+    def calc_liabilities(self, fy, custom_l_tag):
         try:
             con = do.OpenConnection()
             cur = con.cursor(dictionary=True, buffered=True)
             cur.execute("select * from reports where fin_year=%(fy)s", {"fy":fy})
-            params = do.Table("mgnums", con, buffer_size=100)
+            params = do.Table("mgnums", con, buffer_size=1000)
             
             for report_index, report in enumerate(cur):
                 liabilities = self.calc_report_liabilities(con, report["structure"], report["adsh"])                
                     
-                params.write({"adsh":0,"tag":1,"version":2,"value":3,"uom":4,"fy":5,"type":6,"ddate":7},
-                             [report["adsh"],"mg_liabilities","mg",liabilities,
-                              "usd", fy, "I", report["period"]],
-                             con.cursor())
+                params.write({"adsh":report["adsh"],
+                              "tag":custom_l_tag,
+                              "version":"mg",
+                              "value":liabilities,
+                              "uom":"usd",
+                              "fy":fy,
+                              "type":"I",
+                              "ddate":report["period"]},
+                              con.cursor())
                 print("\rProcessed with {0}".format(report_index), end="")
             
             print()
@@ -61,22 +67,28 @@ class LiabilitiesCalculator(object):
     
     def calc_report_liabilities(self, con, structure, adsh):
         structure = json.loads(structure)
-        lshe = set()
-        for chapter_name, chapter in structure.items():
-            if not cl.ChapterClassificator.match_balance_sheet(chapter_name):
-                continue
-            for name, node in to.enumerate_tags(chapter,"us-gaap:LiabilitiesAndStockholdersEquity"):                        
-                lshe.update([tag_name for tag_name, _ in to.enumerate_tags(node)])
-                                
+                     
         cur_nums = con.cursor(dictionary=True)
         cur_nums.execute("select * from mgnums where adsh=%(adsh)s and uom='usd' and version<>'mg'", 
                          {"adsh":adsh})
         num_rows = cur_nums.fetchall()
-        facts = {}        
-        for num in num_rows:
-            tag_to_test = num["version"] + ":" + num["tag"]
-            if tag_to_test == "us-gaap:Liabilities":
-                continue
+        
+        for (p, c, _, root) in to.enumerate_tags_basic(structure, 
+                               tag="us-gaap:liabilitiesAndStockHoldersEquity", 
+                               chapter="bs"):
+            facts = {}
+            facts_leaf = {}
+            for (p, c, leaf) in to.enumerate_tags_parent_child_leaf(root):
+                facts [c] = 0.0
+                if leaf:                    
+                    facts_leaf[c] = 0.0
+                
+                    
+                
+            for num in num_rows:
+                tag_to_test = num["version"] + ":" + num["tag"]
+                if tag_to_test == "us-gaap:Liabilities":
+                    continue
             
             if tag_to_test in lshe:
                 result = ""
@@ -153,9 +165,91 @@ def error_exploration(fy):
         con.close()
         
     return Y
-        
-#l = LiabilitiesCalculator(log=log_file.LogFile("lbclf/liab_test_log.csv", append=False))
-#l.calc_liabilities(2016)
-#fill_liabilities_table()
 
-Y = error_exploration(2016)
+class DifferentLiabilities(object):
+    def __init__(self):
+        self.cldict = {}
+#        self.cldict["lcc_old"] = cl.LiabClassStub()
+#        self.cldict["lcc_new"] = cl.LiabClassStub()
+#        self.cldict["lcpc_leaf"] = cl.LiabClassStub()
+#        self.cldict["lcpc_tree"] = cl.LiabClassStub()
+        self.cldict["lcc_old"] = cl.LiabClassSingle("LbClf/liabilities_class_dict_v2018-05-24.csv",
+                               "LbClf/liabilities_class_v2018-05-24.h5")
+        self.cldict["lcc_new"] = cl.LiabClassSingle("LbClf/liabilities_class_dict_v2018-08-17.csv",
+                               "LbClf/liabilities_class_v2018-09-12.h5")
+        self.cldict["lcpc_leaf"] = cl.LiabClassPC("LbClf/liabilities_class_dict_v2018-08-17.csv",
+                               "LbClf/liabilities_class_pch_v2018-08-17.h5")
+        self.cldict["lcpc_tree"] = cl.LiabClassPC("LbClf/liabilities_class_dict_v2018-08-17.csv",
+                               "LbClf/liabilities_class_pch_v2018-09-12.h5")
+        
+    def calc_report_liabilities(self, con, structure, adsh, log):
+        structure = json.loads(structure)
+        
+        #fetch all facts for this report             
+        cur = con.cursor(dictionary=True)
+        cur.execute("select * from mgnums where adsh=%(adsh)s and uom='usd' and version<>'mg'", 
+                         {"adsh":adsh})
+        #make them searcheable
+        nums = {r["version"].lower() + ":" + r["tag"].lower(): float(r["value"]) for r in cur}
+        #make for each classifier its own facts list
+        cl_facts = {name:{} for name in self.cldict}
+        cl_facts_leaf = {name:{} for name in self.cldict}
+        liabs = {}   
+        #find "us-gaap:liabilitiesAndStockHoldersEquity"
+        for (_, _, _, root) in to.enumerate_tags_basic(structure, 
+                               tag="us-gaap:LiabilitiesAndStockHoldersEquity", 
+                               chapter="bs"):            
+            #go trough structure and test fact names
+            for (p, c, leaf) in to.enumerate_tags_parent_child_leaf(root):
+                if c == "us-gaap:Liabilities": continue
+                if c.lower() not in nums: continue
+            
+                for cl_name, cl_obj in self.cldict.items():
+                    result = ""
+                    predict = cl_obj.predict(p, c)
+                    if predict>0.8:
+                        cl_facts[cl_name][c] = nums[c.lower()]
+                        if leaf:
+                            cl_facts_leaf[cl_name][c] = nums[c.lower()]
+                        result = "ok"
+                    else:
+                        result = "fail"
+                    log.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(adsh, cl_name, p, c, result, predict))
+            
+            #calculate liabilities
+            for index, cl_name in enumerate(self.cldict):
+                liabs[cl_name + "_leaf"] = to.TreeSum.by_leafs(cl_facts_leaf[cl_name], root)
+                liabs[cl_name + "_tops"] = to.TreeSum.by_tops(cl_facts[cl_name], root)
+                liabs[cl_name + "_sum"] = sum(cl_facts_leaf[cl_name].values())
+            
+            add_tags = ["us-gaap:Liabilities", "us-gaap:Assets", 
+                          "us-gaap:LiabilitiesAndStockHoldersEquity",
+                          "us-gaap:StockholdersEquity"]
+            for tag in add_tags:
+                if tag.lower() in nums:
+                    liabs[tag] = nums[tag.lower()]
+                
+                
+            break
+        return liabs
+    
+    def calc_liabilities(self, fy, log):
+        try:
+            con = do.OpenConnection()
+            cur = con.cursor(dictionary=True, buffered=True)
+            cur.execute("select * from reports where fin_year=%(fy)s", {"fy":fy})
+            
+            data = []
+            for report_index, report in enumerate(cur):
+                liabs = self.calc_report_liabilities(con, report["structure"], report["adsh"], log)                
+                liabs["adsh"] = report["adsh"]
+                liabs["cik"] = report["cik"]
+                data.append(liabs)
+                print("\rProcessed with {0}".format(report_index+1), end="")
+            
+            print()
+            
+        finally:
+            con.close()
+            
+        return pd.DataFrame(data)
