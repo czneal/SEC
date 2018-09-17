@@ -188,15 +188,17 @@ def calc_liabilities_variants(fy):
     diff_liabs = lc.DifferentLiabilities()
     print("ok")
     print("start calculus:")
-    log =  log_file.LogFile("outputs/liab_class_"+
-                                                          str(fy) + 
+    log =  log_file.LogFile("outputs/liab_class_" + str(fy) + 
                                                           ".log", append=False)
     df = diff_liabs.calc_liabilities(fy,log)
     log.close()
     
     print("end")
     df.set_index(["adsh"], inplace=True)    
-    error_calculus(df).to_csv("outputs/liab_custom_errors_" + str(fy) + ".csv", sep="\t")
+    errors = error_calculus(df)
+    errors["fy"] = fy
+    errors.to_csv("outputs/liab_custom_errors_" + str(fy) + ".csv", sep="\t")
+    df["fy"] = fy
     df.to_csv("outputs/liab_custom_"+str(fy)+".csv")
     
     return df
@@ -222,7 +224,9 @@ def error_calculus(df):
     return errors
 
 for y in range(2013,2018):
+    print("year:{0}".format(y))
     calc_liabilities_variants(y)
+    print()
 #df = pd.read_csv("outputs/liab_custom_variants.csv", sep="\t")
 #df = cal_liabilities_variants(2017)
 #df.to_csv("outputs/liab_custom_variants_2017.csv", sep="\t")

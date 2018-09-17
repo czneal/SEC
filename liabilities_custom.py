@@ -141,32 +141,6 @@ def fill_liabilities_table():
         con.close()
         do.print_error()
         
-def error_exploration(fy):
-    try:
-        con = do.OpenConnection(host="server")
-        cur = con.cursor(dictionary=True)
-        cur.execute("""select * from mgliabilities 
-                    where fy=%(fy)s 
-                        and Liabilities <> 0 
-                        and mg_liabilities<>0
-                        and assets>100000000
-                        and lshe_she <> 0""", {"fy":fy})
-        data = []
-        for r in cur:
-            data.append([r["mg_liabilities"], r["LSHE_SHE"], r["Liabilities"]])
-            
-        Y = np.array(data)
-        print("algorithm r2_score {0}, mean_squared_error {1}".format(r2_score(Y[:,2], Y[:,0]), 
-              mean_squared_error(Y[:,2], Y[:,0])))
-        print("LSHE-SHE r2_score {0}, mean_squared_error {1}".format(r2_score(Y[:,2], Y[:,1]),
-              mean_squared_error(Y[:,2], Y[:,1])))
-    except:
-        do.print_error()
-    finally:
-        con.close()
-        
-    return Y
-
 class DifferentLiabilities(object):
     def __init__(self):
         self.cldict = {}
@@ -238,7 +212,7 @@ class DifferentLiabilities(object):
         try:
             con = do.OpenConnection()
             cur = con.cursor(dictionary=True, buffered=True)
-            cur.execute("select * from reports where fin_year=%(fy)s" + Settings.select_limit(), 
+            cur.execute("select * from reports where fin_year=%(fy)s " + Settings.select_limit(), 
                         {"fy":fy})
             
             data = []
