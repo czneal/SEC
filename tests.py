@@ -183,38 +183,53 @@ def tags_not_in_liabilities_structure(fy):
     finally:
         con.close()
 
-def cal_liabilities_variants(fy):
+def calc_liabilities_variants(fy):
     print("loading models...", end="")
     diff_liabs = lc.DifferentLiabilities()
     print("ok")
     print("start calculus:")
-    df = diff_liabs.calc_liabilities(fy, log_file.LogFile("outputs/liab_class_2017.log", append=False))
+    log =  log_file.LogFile("outputs/liab_class_"+
+                                                          str(fy) + 
+                                                          ".log", append=False)
+    df = diff_liabs.calc_liabilities(fy,log)
+    log.close()
+    
     print("end")
     df.set_index(["adsh"], inplace=True)
+    df.to_csv("outputs/liab_custom_"+str(fy)+".csv")
+    
+    error_calculus(df).to_csv("outputs/liab_custom_errors_" + str(fy) + ".csv", sep="\t")
+    
     return df
     
+def error_calculus(df):
+    l = "us-gaap:Liabilities"
+    errors = []
+    for i, c in enumerate(df.columns):
+        if c.startswith("lcc") or c.startswith("lcpc"):     
+            df["err_"+c] = np.abs((df[c] - df[l])/df[l])
+            errors.append(["err_"+c, np.mean(df["err_"+c]), df["err_"+c].max(),
+                           df["err_"+c].idxmax()])
+    
+    a = "us-gaap:LiabilitiesAndStockHoldersEquity"
+    b = "us-gaap:StockholdersEquity"
+    df["err_lshe_she"] = np.abs((df[a] -df[b] - df[l])/df[l])
+    errors.append(["err_lshe_she", np.mean(df["err_lshe_she"]), 
+                   df["err_lshe_she"].max(),
+                   df["err_lshe_she"].idxmax()])
+    
+    errors = pd.DataFrame(errors, columns=["error_name", "mean", "max", "argmax"]).set_index("error_name")
+    
+    return errors
+
+for y in range(2013,2018):
+    calc_liabilities_variants(y)
 #df = pd.read_csv("outputs/liab_custom_variants.csv", sep="\t")
-df = cal_liabilities_variants(2017)
-df.to_csv("outputs/liab_custom_variants_2017.csv", sep="\t")
-df.set_index(["adsh"], inplace=True)
+#df = cal_liabilities_variants(2017)
+#df.to_csv("outputs/liab_custom_variants_2017.csv", sep="\t")
+#df.set_index(["adsh"], inplace=True)
 
-l = "us-gaap:Liabilities"
-errors = []
-for i, c in enumerate(df.columns):
-    if c.startswith("lcc") or c.startswith("lcpc"):     
-        df["err_"+c] = np.abs((df[c] - df[l])/df[l])
-        errors.append(["err_"+c, np.mean(df["err_"+c]), df["err_"+c].max(),
-                       df["err_"+c].argmax()])
 
-a = "us-gaap:LiabilitiesAndStockHoldersEquity"
-b = "us-gaap:StockholdersEquity"
-df["err_lshe_she"] = np.abs((df[a] -df[b] - df[l])/df[l])
-errors.append(["err_lshe_she", np.mean(df["err_lshe_she"]), 
-               df["err_lshe_she"].max(),
-               df["err_lshe_she"].argmax()])
-
-errors = pd.DataFrame(errors, columns=["error_name", "mean", "max", "argmax"]).set_index("error_name")
-errors.to_csv("outputs/liab_custom_errors_2017.csv", sep="\t")
 #structure = json.loads(open("outputs/structure.json").read())
 #for (p, c, _, root) in to.enumerate_tags_basic(structure, 
 #                               tag="us-gaap:liabilitiesAndStockHoldersEquity", 

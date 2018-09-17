@@ -17,6 +17,7 @@ import numpy as np
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error
 import pandas as pd
+from settings import Settings
 
 class LiabilitiesCalculator(object):
     def __init__(self, log=None, err_log=None):
@@ -237,7 +238,8 @@ class DifferentLiabilities(object):
         try:
             con = do.OpenConnection()
             cur = con.cursor(dictionary=True, buffered=True)
-            cur.execute("select * from reports where fin_year=%(fy)s", {"fy":fy})
+            cur.execute("select * from reports where fin_year=%(fy)s" + Settings.select_limit(), 
+                        {"fy":fy})
             
             data = []
             for report_index, report in enumerate(cur):

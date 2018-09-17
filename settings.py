@@ -12,6 +12,7 @@ class Settings(object):
         try:
             f = open("global.settings")
             settings = json.loads(f.read())
+            f.close()
         except:
             print("create settings file")
             raise
@@ -25,4 +26,7 @@ class Settings(object):
     
     def host():
         return Settings.__open()["host"]
+    
+    def select_limit():
+        return Settings.__open()["select_limit"]
             
