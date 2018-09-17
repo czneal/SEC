@@ -110,7 +110,6 @@ Test
 Outputs
 *.txt
 *.log
-*.csv
 *.npy
 *.settings
 
