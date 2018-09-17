@@ -195,10 +195,9 @@ def calc_liabilities_variants(fy):
     log.close()
     
     print("end")
-    df.set_index(["adsh"], inplace=True)
-    df.to_csv("outputs/liab_custom_"+str(fy)+".csv")
-    
+    df.set_index(["adsh"], inplace=True)    
     error_calculus(df).to_csv("outputs/liab_custom_errors_" + str(fy) + ".csv", sep="\t")
+    df.to_csv("outputs/liab_custom_"+str(fy)+".csv")
     
     return df
     
