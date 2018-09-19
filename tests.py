@@ -194,7 +194,8 @@ def calc_liabilities_variants(fy):
     log.close()
     
     print("end")
-    df.set_index(["adsh"], inplace=True)    
+    df.set_index(["adsh"], inplace=True)
+    df.loc[df["us-gaap:Liabilities"]==0.0, "us-gaap:Liabilities"] = np.nan
     errors = error_calculus(df)
     errors["fy"] = fy
     errors.to_csv("outputs/liab_custom_errors_" + str(fy) + ".csv", sep="\t")
