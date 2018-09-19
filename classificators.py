@@ -74,7 +74,7 @@ class Classificator(object):
 class LiabClassStub(object):
     def predict(self, p, c):
         return 1.0
-    
+
 class LiabClassSingle(Classificator):            
     def predict(self, parent, tag):
         tag = LiabClassSingle.remove_prefix(tag)
@@ -118,7 +118,34 @@ class LiabClassPC(Classificator):
         predicted = self.model.predict(to_predict)
         
         return predicted
-    
+
+class LiabClassMixed(LiabClassPC):
+    def __init__(self, fdict, fmodel):
+        super().__init__(fdict, fmodel)
+        self.stat_class = LiabilitiesStatisticClassificator()
+        
+    def predict(self, parent, child):
+        predict = self.stat_class.predict(parent, child)
+        if predict > 0.5:
+            return predict
+        else:
+            return super().predict(parent, child)
+        
+class LiabilitiesStatisticClassificator(object):
+    def __init__(self, count=100):
+        self.stat = set()
+        with open("LbClf/liabilities_stat.csv") as f:
+            for l in f:
+                l = l.split("\t")
+                if int(l[1]) >= count:
+                    self.stat.add(l[0])
+        
+    def predict(self, parent, child):
+        if child in self.stat:
+            return 1.0
+        else:
+            return 0.0
+        
 class StockHoldersEquityClassificator(object):
     def __init__(self):
         with open("LbClf/liab_stockhold_stat.csv") as f:

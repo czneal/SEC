@@ -156,6 +156,9 @@ class DifferentLiabilities(object):
                                "LbClf/liabilities_class_pch_v2018-08-17.h5")
         self.cldict["lcpc_tree"] = cl.LiabClassPC("LbClf/liabilities_class_dict_v2018-08-17.csv",
                                "LbClf/liabilities_class_pch_v2018-09-12.h5")
+        self.cldict["lcpc_m_leaf"] = cl.LiabClassMixed("LbClf/liabilities_class_dict_v2018-08-17.csv",
+                               "LbClf/liabilities_class_pch_v2018-08-17.h5")
+        
         
     def calc_report_liabilities(self, con, structure, adsh, log):
         structure = json.loads(structure)
