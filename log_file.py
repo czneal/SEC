@@ -10,15 +10,16 @@ import traceback
 import datetime as dt
 
 class LogFile(object):
-    def __init__(self, filename=None, append=True):
+    def __init__(self, filename=None, append=True, timestamp=True):
         self.log_file = None
         if filename is not None:        
             if os.path.exists(filename) and append:
                 self.log_file = open(filename, "a")            
             else:
                 self.log_file = open(filename, "w")
+        if timestamp:    
+            self.write("session timestamp {0}".format(dt.date.today()))
             
-        self.write("session timestamp {0}".format(dt.date.today()))
         
     def write(self, info, end=os.linesep):
         if self.log_file is None:

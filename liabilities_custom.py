@@ -13,9 +13,6 @@ import log_file
 import tree_operations as to
 import sys
 import json
-import numpy as np
-from sklearn.metrics import r2_score
-from sklearn.metrics import mean_squared_error
 import pandas as pd
 from settings import Settings
 
@@ -148,16 +145,14 @@ class DifferentLiabilities(object):
 #        self.cldict["lcc_new"] = cl.LiabClassStub()
 #        self.cldict["lcpc_leaf"] = cl.LiabClassStub()
 #        self.cldict["lcpc_tree"] = cl.LiabClassStub()
-        self.cldict["lcc_old"] = cl.LiabClassSingle("LbClf/liabilities_class_dict_v2018-05-24.csv",
-                               "LbClf/liabilities_class_v2018-05-24.h5")
-        self.cldict["lcc_new"] = cl.LiabClassSingle("LbClf/liabilities_class_dict_v2018-08-17.csv",
-                               "LbClf/liabilities_class_v2018-09-12.h5")
-        self.cldict["lcpc_leaf"] = cl.LiabClassPC("LbClf/liabilities_class_dict_v2018-08-17.csv",
-                               "LbClf/liabilities_class_pch_v2018-08-17.h5")
-        self.cldict["lcpc_tree"] = cl.LiabClassPC("LbClf/liabilities_class_dict_v2018-08-17.csv",
+        self.cldict["lcpc_old"] = cl.LiabClassPC("LbClf/liabilities_class_dict_v2018-08-17.csv",
                                "LbClf/liabilities_class_pch_v2018-09-12.h5")
-        self.cldict["lcpc_m_leaf"] = cl.LiabClassMixed("LbClf/liabilities_class_dict_v2018-08-17.csv",
-                               "LbClf/liabilities_class_pch_v2018-08-17.h5")
+        self.cldict["lcpc_new"] = cl.LiabClassPC("LbClf/liabilities_class_dict_v2018-08-17.csv",
+                               "LbClf/liabilities_class_pch_v2018-09-17.h5")
+        self.cldict["lcpc_m_new"] = cl.LiabClassMixed("LbClf/liabilities_class_dict_v2018-08-17.csv",
+                               "LbClf/liabilities_class_pch_v2018-09-12.h5")
+        self.cldict["lcpc_m_old"] = cl.LiabClassMixed("LbClf/liabilities_class_dict_v2018-08-17.csv",
+                               "LbClf/liabilities_class_pch_v2018-09-17.h5")
         
         
     def calc_report_liabilities(self, con, structure, adsh, log):
@@ -215,7 +210,8 @@ class DifferentLiabilities(object):
         try:
             con = do.OpenConnection()
             cur = con.cursor(dictionary=True, buffered=True)
-            cur.execute("select * from reports where fin_year=%(fy)s " + Settings.select_limit(), 
+            cur.execute("select * from reports where fin_year=%(fy)s " + 
+                        Settings.select_limit(), 
                         {"fy":fy})
             
             data = []

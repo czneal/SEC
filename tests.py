@@ -115,7 +115,7 @@ def double_classification(fy):
         print(info[0],info[1])
         traceback.print_tb(info[2])
         
-def liabilities_weights(fy):
+def liabilities_weights_year(fy):
     try:
         con = do.OpenConnection()
         cur = con.cursor(dictionary=True)
@@ -139,68 +139,38 @@ def liabilities_weights(fy):
     finally:
         con.close()
         
-def tags_not_in_liabilities_structure(fy):
-    try:
-        con = do.OpenConnection()
-        lcl = cl.LiabilititesClassificator()
-        shecl = cl.StockHoldersEquityClassificator()
-        
-        
-        con_num = do.OpenConnection()
-        cur = con.cursor(dictionary=True)
-        cur_nums = con_num.cursor(dictionary=True)
-        cur.execute("select * from reports where fin_year=%(fy)s limit 10", {"fy":fy})
-        data = []
-        for index, r in enumerate(cur):
-            print("\rProcessed with {0}".format(index), end="")
-            
-            structure = json.loads(r["structure"])
-            cur_nums.execute("select concat(version, ':', tag) as tag from mgnums where adsh=%(adsh)s", {"adsh":r["adsh"]})
-            tags = set()
-            for num in cur_nums.fetchall():
-                if shecl.predict(num["tag"]) < 0.8:
-                    tags.add(num["tag"])
-            
-            liab_tags = set()
-            for chapter_name, chapter in structure.items():
-                if not cl.ChapterClassificator.match_balance_sheet(chapter_name):
-                    continue
-                
-                for _, liab in to.enumerate_tags(chapter, tag="us-gaap:LiabilitiesAndStockholdersEquity"):
-                    for n, c in to.enumerate_tags(liab):
-                        liab_tags.add(n)
-                if len(liab_tags) == 0:
-                    continue
-                
-                tags = tags.difference(liab_tags)
-                for tag in tags:
-                    if lcl.predict(tag.split(":")[-1]) > 0.8:
-                        data.append([r["cik"], r["adsh"], tag])
-        print()
-        df = pd.DataFrame(data, columns=["cik", "adsh", "tag"])
-        df.to_csv("outputs/liab_tags_notin_structure.csv", sep="\t")
-        
-    finally:
-        con.close()
-
-def calc_liabilities_variants(fy):
+def calc_liabilities_variants():
+    years = list(range(2013, 2018))
+    
     print("loading models...", end="")
     diff_liabs = lc.DifferentLiabilities()
     print("ok")
-    print("start calculus:")
-    log =  log_file.LogFile("outputs/liab_class_" + str(fy) + 
-                                                          ".log", append=False)
-    df = diff_liabs.calc_liabilities(fy,log)
-    log.close()
+    print("open log file...", end="")
+    log = log_file.LogFile("outputs/liab_class.log", 
+                            append=False, 
     
-    print("end")
+                        timestamp=False)
+    print("ok")
+    
+    print("start calculus:")
+    frames = []
+    for fy in years:
+        print("\tyear:{0}".format(fy))
+        
+        df = diff_liabs.calc_liabilities(fy, log)
+        error_calculus(df)
+        frames.append(df)
+        df["fy"] = fy
+        
+    df = pd.concat(frames)
+    log.close()
+    print("end calculus")
+    
+    print("save to csv...", end="")
     df.set_index(["adsh"], inplace=True)
     df.loc[df["us-gaap:Liabilities"]==0.0, "us-gaap:Liabilities"] = np.nan
-    errors = error_calculus(df)
-    errors["fy"] = fy
-    errors.to_csv("outputs/liab_custom_errors_" + str(fy) + ".csv", sep="\t")
-    df["fy"] = fy
-    df.to_csv("outputs/liab_custom_"+str(fy)+".csv")
+    df.to_csv("outputs/liab_custom.csv")
+    print("ok")
     
     return df
     
@@ -215,7 +185,8 @@ def error_calculus(df):
     
     a = "us-gaap:LiabilitiesAndStockHoldersEquity"
     b = "us-gaap:StockholdersEquity"
-    df["err_lshe_she"] = np.abs((df[a] -df[b] - df[l])/df[l])
+    df["lshe-she"] = df[a] - df[b]
+    df["err_lshe_she"] = np.abs((df["lshe-she"] - df[l])/df[l])
     errors.append(["err_lshe_she", np.mean(df["err_lshe_she"]), 
                    df["err_lshe_she"].max(),
                    df["err_lshe_she"].idxmax()])
@@ -224,10 +195,8 @@ def error_calculus(df):
     
     return errors
 
-for y in range(2013,2018):
-    print("year:{0}".format(y))
-    calc_liabilities_variants(y)
-    print()
+df = calc_liabilities_variants()
+    
 #df = pd.read_csv("outputs/liab_custom_variants.csv", sep="\t")
 #df = cal_liabilities_variants(2017)
 #df.to_csv("outputs/liab_custom_variants_2017.csv", sep="\t")
@@ -238,6 +207,8 @@ for y in range(2013,2018):
 #for (p, c, _, root) in to.enumerate_tags_basic(structure, 
 #                               tag="us-gaap:liabilitiesAndStockHoldersEquity", 
 #                               chapter="bs"):
+#    for node in to.enumerate_tags_basic_leaf(root):
+#        print(node[4] + node[1], node[5], node[2])
 #    facts = {}
 #    for index, (p, c, leaf) in enumerate(to.enumerate_tags_parent_child_leaf(root)):
 #        if leaf: facts[c] = float(index)

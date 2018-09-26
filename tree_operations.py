@@ -6,23 +6,56 @@ Created on Fri Oct 13 12:58:44 2017
 """
 import classificators as cl
 
-def enumerate_tags_basic(structure, tag = None, chapter = None):
+def enumerate_tags_basic_leaf(structure, tag = None, chapter = None, offset="", delim="  "):
+    """
+    returns tuple: (parent, child, child_weight, child_structure, offset, leaf)
+    """
+    for node in _enumerate_tags_basic(structure, tag, chapter):
+        if "children" not in node[3] or node[3]["children"] is None:
+            yield node + (True,)
+        else:
+            yield node + (False,)
+            
+def _enumerate_tags_basic(structure, tag = None, chapter = None, offset="", delim="  "):
+    """
+    returns tuple: (parent, child, child_weight, child_structure, offset)
+    """
     root = None
     if "children" in structure:
         root = structure["children"]
     else:
         for retval in enumerate_chapter_tags(structure, chapter):
             if tag is None or tag.lower() == retval[1].lower():
-                yield retval
-            for tags in enumerate_tags_basic(retval[3], tag, chapter):
+                yield retval + (offset,)
+            for tags in _enumerate_tags_basic(retval[3], tag, chapter, offset+delim, delim):
                 yield tags
                     
     if root is not None:
         for name, child in root.items():
             if tag is None or tag.lower() == name.lower():
-                yield (structure["name"], name, child["weight"], child)
-            for (parent_name, tag_name, tag_weight, tag_data) in enumerate_tags_basic(child, tag, chapter):
-                yield (parent_name, tag_name, tag_weight, tag_data)
+                yield (structure["name"], name, child["weight"], child, offset)
+            for retval in _enumerate_tags_basic(child, tag, chapter, offset+delim, delim):
+                yield retval
+                
+def enumerate_tags_basic(structure, tag = None, chapter = None):
+    for node in _enumerate_tags_basic(structure, tag, chapter):
+        yield node[0:4]
+#    root = None
+#    if "children" in structure:
+#        root = structure["children"]
+#    else:
+#        for retval in enumerate_chapter_tags(structure, chapter):
+#            if tag is None or tag.lower() == retval[1].lower():
+#                yield retval
+#            for tags in enumerate_tags_basic(retval[3], tag, chapter):
+#                yield tags
+#                    
+#    if root is not None:
+#        for name, child in root.items():
+#            if tag is None or tag.lower() == name.lower():
+#                yield (structure["name"], name, child["weight"], child)
+#            for (parent_name, tag_name, tag_weight, tag_data) in enumerate_tags_basic(child, tag, chapter):
+#                yield (parent_name, tag_name, tag_weight, tag_data)
                 
 def enumerate_tags_parent_child(structure, tag=None, chapter=None):
     for (p, c, _, _) in enumerate_tags_basic(structure, tag, chapter):
@@ -40,7 +73,8 @@ def enumerate_chapter_tags(structure, chap_id = None):
         if chap_id is None or cl.ChapterClassificator.match(chapter) == chap_id:
             for tag_name, tag_data in chapter_data.items():
                 yield (chapter, tag_name, tag_data["weight"], tag_data)
-        
+
+#old ones  
 def enumerate_tags(structure, tag = None):
     root = None
     if "children" in structure:
