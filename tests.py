@@ -158,7 +158,6 @@ def calc_liabilities_variants():
         print("\tyear:{0}".format(fy))
         
         df = diff_liabs.calc_liabilities(fy, log)
-        error_calculus(df)
         frames.append(df)
         df["fy"] = fy
         
@@ -169,6 +168,7 @@ def calc_liabilities_variants():
     print("save to csv...", end="")
     df.set_index(["adsh"], inplace=True)
     df.loc[df["us-gaap:Liabilities"]==0.0, "us-gaap:Liabilities"] = np.nan
+    error_calculus(df)
     df.to_csv("outputs/liab_custom.csv")
     print("ok")
     

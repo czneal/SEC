@@ -193,7 +193,10 @@ class DifferentLiabilities(object):
             for index, cl_name in enumerate(self.cldict):
                 liabs[cl_name + "_leaf"] = to.TreeSum.by_leafs(cl_facts_leaf[cl_name], root)
                 liabs[cl_name + "_tops"] = to.TreeSum.by_tops(cl_facts[cl_name], root)
-                liabs[cl_name + "_sum"] = sum(cl_facts_leaf[cl_name].values())
+                if len(cl_facts_leaf[cl_name]) > 0:
+                    liabs[cl_name + "_sum"] = sum(cl_facts_leaf[cl_name].values())
+                else:
+                    liabs[cl_name + "_sum"] = None
             
             add_tags = ["us-gaap:Liabilities", "us-gaap:Assets", 
                           "us-gaap:LiabilitiesAndStockHoldersEquity",
