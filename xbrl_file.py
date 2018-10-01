@@ -241,6 +241,15 @@ class XBRLFile:
                     self.units[name] = "shares"
                 if m.endswith("pure"):
                     self.units[name] = "pure"
+    
+    def compare_dates(d1, d2):
+        d1 = dt.datetime(int(d1.split('-')[0]), 
+                         int(d1.split('-')[1]), int(d1.split('-')[2]))
+        d2 = dt.datetime(int(d2.split('-')[0]), 
+                         int(d2.split('-')[1]), int(d2.split('-')[2]))
+        if abs((d1-d2).days) <= 10:
+            return True
+        return False
         
     def read_contexts_section(self, root, ns, xbrli):
         self.log.write_to_log("start reading contexts...")
@@ -263,7 +272,7 @@ class XBRLFile:
                 if instant is None:
                     continue
                 d = period[0].text.strip()                
-                if d == self.ddate:
+                if XBRLFile.compare_dates(d, self.ddate):
                     self.contexts[elem.attrib["id"]] = [d]
             else:
                 startDate = period.find(xbrli+"startDate")
@@ -273,7 +282,7 @@ class XBRLFile:
                 d1 = period[0].text.strip()
                 d2 = period[1].text.strip()
                 other[elem.attrib["id"]] = [d1,d2]
-                if d2 == self.ddate:
+                if XBRLFile.compare_dates(d2, self.ddate):
                     d = dt.date(int(d1[0:4]),int(d1[5:7]),int(d1[8:10]))
                     length = (fin-d).days
                     if length > duration and length < 380:
@@ -354,11 +363,40 @@ class XmlTreeTools(object):
         #parse namespace names
         for event, elem in c:
             if event == "start-ns":
-                ns[elem[0].lower()] = elem[1]
+                ns[elem[1]] = elem[0].lower()
             if event == "start" and root == None: 
                 root = elem
-        self.ns = ns
+        
+#        links = set()
+#        for e in root.iter():
+#            for attr in e.attrib:
+#                vals = attr.split('{')
+#                if len(vals) == 1:
+#                    continue
+#                links.add(vals[1].split('}')[0])
+#            vals = e.tag.split('{')
+#            if len(vals) == 1:
+#                continue
+#            links.add(vals[1].split('}')[0])
+#                
+#        
+#        ns = dict([(ns[k], k) for k in links])
+        blank = [(v,k) for (k,v) in ns.items() if v == '']
+        nss = {}
+        if len(blank) >= 2:            
+            for k,v in ns.items():
+               if v == '':
+                   if k == "http://www.xbrl.org/2003/instance":
+                       nss[v] = k
+                   else:
+                       nss[k.split('/')[-1]] = k
+               else:
+                   nss[v] = k
+        else:
+            nss = dict([(v,k) for k,v in ns.items()])
+        ns = nss
         self.root = root
+        self.ns = ns
         
         if "xbrli" in ns: 
             self.xbrli = "{"+ns["xbrli"]+"}"
@@ -371,7 +409,9 @@ class XmlTreeTools(object):
             self.link = "{" +ns[""]+ "}"
             
         if "xlink" in ns:
-            self.xlink = "{"+ns["xlink"]+"}"        
+            self.xlink = "{"+ns["xlink"]+"}"
+        elif "" in ns:
+            self.xlink = "{" +ns[""]+ "}"
         if "" in ns:
             self.empty = "{"+ns[""]+"}"
         elif "link" in ns:
@@ -757,11 +797,11 @@ class Fact(object):
             self.value = value
         
 
-#log = LogFile("l.txt")
-#r = XBRLFile(log)
-#r.read("z:/sec/2017/02/0000012927-0000012927-17-000006.zip", "ba-20161231.xml")
-#
-#log.close()
+log = LogFile("outputs/l.txt")
+r = XBRLFile(log)
+r.read("z:/sec/2014/02/0000939767-0000939767-14-000009.zip", "exel-20131231.xml")
+
+log.close()
 #
 #with open("structure_boeing.txt","w") as f:
 #    f.write(r.structure_dumps())

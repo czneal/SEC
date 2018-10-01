@@ -16,6 +16,15 @@ import sys
 import log_file
 from settings import Settings
 
+class AdshFilter(object):
+    def __init__(self, filename):
+        self.adshs = set()
+        with open(filename) as f:
+            self.adshs = set([l.replace('\n','') for l in f.readlines()])
+            
+    def check(self, adsh):
+        return adsh in self.adshs
+    
 def SECdownload(year, month):
     sec_data = None
     root_link = "https://www.sec.gov/Archives/edgar/monthly/"
@@ -83,12 +92,12 @@ def write_mgnums(report, table, adsh, cur):
                 values.append("D")
             values.append(report.ddate)
         
-        table.write(header, values, cur)
+        table.write({h:values[i] for h,i in header.items()}, cur)
         
     table.flush(cur)
         
     
-def scan_period(year, month, log, sec_dir=Settings.root_dir(), cik_filter=0):    
+def scan_period(year, month, log, sec_dir=Settings.root_dir(), cik_filter=0, adsh_filter=None):    
     log.write_to_log("year: " + str(year) + " month: " + str(month))
     print("year:", year, "month:", month)
     
@@ -137,11 +146,10 @@ def scan_period(year, month, log, sec_dir=Settings.root_dir(), cik_filter=0):
                     continue
             
             adsh = edgar.find("edgar:accessionNumber", ns).text
-#            dtstr = edgar.find("edgar:period",ns).text
-#            period = dt.date(int(dtstr[:4]), int(dtstr[4:6]), int(dtstr[6:]))
-#            period_end = dtstr[4:8]
-#            if edgar.find("edgar:fiscalYearEnd", ns) is not None:
-#                period_end = edgar.find("edgar:fiscalYearEnd", ns).text
+            if adsh_filter is not None:
+                if not adsh_filter(adsh):
+                    continue
+                
             form = edgar.find("edgar:formType", ns).text
             
             
@@ -171,11 +179,16 @@ def scan_period(year, month, log, sec_dir=Settings.root_dir(), cik_filter=0):
                 continue
             
             
-            companies.write({"company_name":0,"cik":1, "sic":2, "isin":3}, [company_name, cik, sic,  report.isin], cur)
-            reports.write({"adsh":0, "cik":1, "period":2, "period_end":3, "quarter":4, 
-                           "file_date":5, "file_link":6, "form":7, "fin_year":8, "contexts":9, "structure":10, "trusted":11}, 
-                          [adsh, cik, report.ddate, report.fye, 0, file_date, z_filename, form, report.fy,
-                           json.dumps(report.contexts), report.structure_dumps(), report.trusted], cur)
+            companies.write({"company_name":company_name,"cik":cik, "sic":sic, "isin":report.isin}, cur)
+            reports.write({"adsh":adsh, "cik":cik, "period":report.ddate, 
+                           "period_end":report.fye, "quarter":0, 
+                           "file_date":file_date, 
+                           "file_link":z_filename, "form":form, 
+                           "fin_year":report.fy, 
+                           "contexts":json.dumps(report.contexts), 
+                           "structure":report.structure_dumps(), 
+                           "trusted":report.trusted}, 
+                             cur)
     
             write_mgnums(report, mgnums, adsh, cur)
             con.commit()

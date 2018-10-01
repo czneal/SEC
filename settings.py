@@ -29,4 +29,10 @@ class Settings(object):
     
     def select_limit():
         return Settings.__open()["select_limit"]
+    
+    def years():
+        return Settings.__open()["years"]
+    
+    def output_dir():
+        return Settings.__open()["output_dir"]
             

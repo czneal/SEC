@@ -14,6 +14,7 @@ import tree_operations as to
 import sys
 import json
 import pandas as pd
+import numpy as np
 from settings import Settings
 
 class LiabilitiesCalculator(object):
@@ -231,3 +232,37 @@ class DifferentLiabilities(object):
             con.close()
             
         return pd.DataFrame(data)
+    
+class LSHEAdvanced(object):
+    def __init__(self, adshs):
+        self.count = 0
+        self.structures = do.read_report_structures(adshs)
+        self.liab = cl.LiabilitiesStaticClassifier("LbClf/liab_stat.csv")
+        self.lshe = cl.LSHEDirectChildrenClassifier("lbClf/lshe_direct.csv")
+        
+    def calc(self, adsh):
+        print("\rprocessed:{0}", self.count, end="")
+        self.count += 1
+        structure = json.loads(self.structures.loc[adsh]["structure"])
+        for elem in to._enumerate_tags_basic(structure,
+                tag="us-gaap:LiabilitiesAndStockHoldersEquity",
+                chapter = "bs"):
+            if elem[3] is None or elem[3]["children"] is None:
+                return np.nan
+            tags = set(t for t in elem[3]["children"])
+            
+            nums = do.read_report_nums(adsh)
+            
+            val = np.nan
+            for t in tags:
+                if self.lshe.predict("", t) < 0.8:
+                    return np.nan
+                
+                if self.liab.predict("", t) > 0.8 and t in nums.index:
+                    if np.isnan(val):
+                        val = 0.0
+                    val += nums.loc[t]["value"]
+                    
+            return val
+                    
+                

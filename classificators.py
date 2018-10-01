@@ -6,6 +6,11 @@ Created on Thu Apr 12 16:45:52 2018
 """
 import re
 import numpy as np
+import database_operations as do
+import tree_operations as to
+import json
+import pandas as pd
+from settings import Settings
 from keras.preprocessing import sequence
 from keras.models import load_model
 
@@ -17,8 +22,8 @@ class ChapterClassificator(object):
             chap = "bs"
         if ChapterClassificator.match_cash_flow(chapter_name):
             chap = "cf"
-        if ChapterClassificator.match_statement_income(chapter_name):
-            chap = "si"
+        if ChapterClassificator.match_income_statement(chapter_name):
+            chap = "is"
             
         return chap
     
@@ -26,10 +31,10 @@ class ChapterClassificator(object):
         words = ["balance","financial","condition"]
         return ChapterClassificator.match_words(words, chapter_name)
     
-    def match_statement_income(chapter_name):
+    def match_income_statement(chapter_name):
         words = ["income", "operations", "earnings", "comprehensive*.loss"]
         return ChapterClassificator.match_words(words, chapter_name)    
-        
+            
     def match_cash_flow(chapter_name):
         words = ["cash.*flow"]
         return ChapterClassificator.match_words(words, chapter_name)    
@@ -103,7 +108,7 @@ class LiabClassPC(Classificator):
         k_child= [self.tag_to_code.get(j,1) for j in t]
         
         maxlen = 12 #word length len(parent) + len(child) 
-        max_features = 1314 #dict length
+        #max_features = 1314 #dict length
         
         to_predict_parent = np.zeros((1, len(k_parent)))
         to_predict_parent[0]= k_parent
@@ -122,7 +127,7 @@ class LiabClassPC(Classificator):
 class LiabClassMixed(LiabClassPC):
     def __init__(self, fdict, fmodel):
         super().__init__(fdict, fmodel)
-        self.stat_class = LiabilitiesStatisticClassificator()
+        self.stat_class = LiabilitiesStaticClassifier("LbClf/liab_stat.csv")
         
     def predict(self, parent, child):
         predict = self.stat_class.predict(parent, child)
@@ -130,29 +135,86 @@ class LiabClassMixed(LiabClassPC):
             return predict
         else:
             return super().predict(parent, child)
-        
-class LiabilitiesStatisticClassificator(object):
-    def __init__(self, count=100):
+
+class StaticClassifier(object):
+    def __init__(self, filename, count=100):
         self.stat = set()
-        with open("LbClf/liabilities_stat.csv") as f:
+        with open(filename) as f:
             for l in f:
                 l = l.split("\t")
                 if int(l[1]) >= count:
                     self.stat.add(l[0])
-        
+                    
     def predict(self, parent, child):
         if child in self.stat:
             return 1.0
         else:
             return 0.0
         
-class StockHoldersEquityClassificator(object):
-    def __init__(self):
-        with open("LbClf/liab_stockhold_stat.csv") as f:
-            self.stat = set([l.split("\t")[0] for l in f])
-    
-    def predict(self, tag):
-        if tag in self.stat:
-            return 1.0
-        else:
-            return 0.0
+class LiabilitiesStaticClassifier(StaticClassifier):
+    def fill_stat(stat, structure):
+        for elem in to._enumerate_tags_basic(structure, 
+                                             tag="us-gaap:Liabilities", 
+                                             chapter="bs"):
+            for child in to._enumerate_tags_basic(elem[3]):
+                if child[1] in stat:
+                    stat[child[1]] += 1
+                else:
+                    stat[child[1]] = 1
+                    
+    def make(filename):
+        try:
+            con = do.OpenConnection()
+            cur = con.cursor(dictionary = True)
+            sql = ("select * from reports where fin_year between {0} and {1} ".
+                       format(Settings.years()[0], Settings.years()[1]))
+            cur.execute(sql + Settings.select_limit())
+            stat = {"us-gaap:Liabilities":10000}
+            for r in cur:
+                structure = json.loads(r["structure"])
+                LiabilitiesStaticClassifier.fill_stat(stat, structure)
+            (pd.DataFrame.
+                 from_dict(stat, orient='index', columns=["cnt"]).
+                 sort_values("cnt", ascending=False).
+                 to_csv(filename, sep='\t', header=False))
+        except:
+            raise
+        finally:
+            con.close()        
+            
+class LSHEDirectChildrenClassifier(StaticClassifier):
+    def make(filename):
+        try:
+            con = do.OpenConnection()
+            cur = con.cursor(dictionary = True)
+            sql = ("select * from reports where fin_year between {0} and {1} ".
+                       format(Settings.years()[0], Settings.years()[1]))
+            cur.execute(sql + Settings.select_limit())
+            stat = {}
+            for r in cur:
+                structure = json.loads(r["structure"])
+                for elem in to._enumerate_tags_basic(structure, 
+                                 tag="us-gaap:LiabilitiesAndStockHoldersEquity", 
+                                 chapter="bs"):
+                    if elem is None or elem[3] is None or elem[3]["children"] is None:
+                        continue
+                    
+                    for child in elem[3]["children"]:
+                        if child in stat:
+                            stat[child] += 1
+                        else:
+                            stat[child] = 1
+                            
+            (pd.DataFrame.
+                 from_dict(stat, orient='index', columns=["cnt"]).
+                 sort_values("cnt", ascending=False).
+                 to_csv(filename, sep='\t', header=False))
+        except:
+            raise
+        finally:
+            con.close()
+        
+        
+class StockHoldersEquityClassificator(StaticClassifier):
+    def make(filename):
+        return

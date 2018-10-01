@@ -11,10 +11,12 @@ import sys
 import json
 import pandas as pd
 import numpy as np
-import traceback
 import tree_operations as to
 import liabilities_custom as lc
 import log_file
+from settings import Settings
+import xbrl_scan
+import xbrl_file
 
 def set_chapters(items):
     val = {}
@@ -61,59 +63,36 @@ def chapter_classification():
     
     filtered = grp[(grp["bs"]<1) | (grp["cf"]<1) | (grp["si"]<1)]
     
-#liab = cl.LiabilititesClassificator()
-#print(liab.predict("CashCollateralDepositsForCommodityPurchases"))
-    
-def chapter_analizator(fy):
+def double_classification():
     try:
-        con = do.OpenConnection(host="95.31.1.243")
-        cur = con.cursor(dictionary=True)
-        cur.execute("select * from reports where fin_year=%(fy)s", {"fy":fy})
-        unclass_chapters = []
-        for index, r in enumerate(cur):
-            structure = json.loads(r["structure"])
-            for chapter_name in structure:
-                if cl.ChapterClassificator.match(chapter_name) == None:
-                    unclass_chapters.append([chapter_name, r["cik"]])
-            print("\rProcessed with {0}".format(index), end="")
-                    
-        df = pd.DataFrame(data=unclass_chapters, columns=["chpater_name", "cik"])
-        df.to_csv("unclass_chapters.csv", sep="\t")
-        con.close()
-    except:
-        con.close()
-        info = sys.exc_info()
-        print(info[0],info[1])
-        traceback.print_tb(info[2])
-        
-def double_classification(fy):
-    try:
+        years = 'fin_year between ' + str(Settings.years()[0]) + ' and ' + str(Settings.years()[1])
         con = do.OpenConnection(host="server")
         cur = con.cursor(dictionary=True)
-        cur.execute("select * from reports where fin_year=%(fy)s", {"fy":fy})
+        sql = "select * from reports where " + years + Settings.select_limit()
+        cur.execute(sql)
         chapters = []
         for index, r in enumerate(cur):
             structure = json.loads(r["structure"])
             for chapter_name in structure:
-                cnt = 0
+                symbols = []
                 if cl.ChapterClassificator.match_balance_sheet(chapter_name):
-                    cnt += 1
+                    symbols.append('bs')
                 if cl.ChapterClassificator.match_cash_flow(chapter_name):
-                    cnt += 1
-                if cl.ChapterClassificator.match_statement_income(chapter_name):
-                    cnt += 1
-                if cnt > 1:
-                    chapters.append([chapter_name, r["cik"], cnt])
+                    symbols.append('cf')
+                if cl.ChapterClassificator.match_income_statement(chapter_name):
+                    symbols.append('is')
+                
+                chapters.append([r["adsh"], r["cik"], chapter_name, set_mask(symbols)])
             print("\rProcessed with {0}".format(index), end="")
                     
-        df = pd.DataFrame(data=chapters, columns=["chapter_name", "cik", "cnt"])
-        df.to_csv("doubleclass_chapters.csv", sep="\t")
+        df = (pd.DataFrame(data=chapters, columns=["adsh", "cik", "chapter", 'mask'])
+                .set_index('adsh')
+                )
+        df.to_csv(Settings.output_dir() + "doubleclass_chapters.csv")
+    finally:
         con.close()
-    except:
-        con.close()
-        info = sys.exc_info()
-        print(info[0],info[1])
-        traceback.print_tb(info[2])
+    
+    return df
         
 def liabilities_weights_year(fy):
     try:
@@ -195,8 +174,75 @@ def error_calculus(df):
     
     return errors
 
-df = calc_liabilities_variants()
+def liab_lshe_adv():
+    df = pd.read_csv("outputs/diffliabs/liab_custom.csv").set_index("adsh").sort_index()
+    f = df
     
+    print("read structures...", end="")
+    lshe = lc.LSHEAdvanced(f.index)
+    print("ok")
+    
+    print("start calculus...", end="")
+    f["lshe_adv"] = f.apply(lambda x: lshe.calc(x.name), axis=1)
+    print("ok")
+
+def read_tag_values(query, tags):
+    try:
+        con = do.OpenConnection()
+        cur = con.cursor(dictionary=True)
+        cur.execute("create temporary table tags (tag VARCHAR(256) CHARACTER SET utf8 not null, PRIMARY KEY (tag))")
+        cur.executemany("insert into tags (tag) values (%s)", list((e,) for e in tags))
+        cur.execute(query)
+        df = (pd.DataFrame(cur.fetchall())
+                .set_index(["adsh", 'tag'])
+                .unstack()
+            )
+        df.columns = [c[1] for c in df.columns]
+    finally:
+        con.close()
+        
+    return df
+
+def read_values(query):
+    try:
+        con = do.OpenConnection()
+        cur = con.cursor(dictionary=True)
+        cur.execute(query)
+        df = (pd.DataFrame(cur.fetchall()))
+    finally:
+        con.close()
+        
+    return df
+
+f = xbrl_scan.AdshFilter("outputs/adsh_for_reread.txt")
+log = xbrl_file.LogFile("outputs/l.txt")
+for y in range(2013,2018):
+    for m in range(1,13):
+        xbrl_scan.scan_period(y, m, log, adsh_filter = f.check)
+
+#years = " between {0} and {1}".format(Settings.years()[0], Settings.years()[1])
+#df= read_tag_values("""select adsh, concat(version,':',n.tag) as tag, value 
+#                from mgnums n, tags t
+#                where t.tag = n.tag and fy """ + years + 
+#                Settings.select_limit(),
+#                ['Assets', 'AssetsCurrent',
+#                 'AssetsNoncurrent', 
+#                 'LiabilitiesAndStockHoldersEquity',
+#                 'Liabilities', 'LiabilitiesCurrent',
+#                 'LiabilitiesNoncurrent'])
+#    
+#reports = do.read_reports_attr(range(Settings.years()[0], Settings.years()[1] + 1))
+#df = pd.merge(reports, df, how='left', left_index=True, right_index=True)
+#url = "https://www.sec.gov/cgi-bin/viewer?action=view&cik={0}&accession_number={1}&xbrl_type=v#"
+#df["url"] = df.apply(lambda x: url.format(x["cik"], x.name), axis=1)
+#
+#f = df[df['us-gaap:Assets'].isnull() &
+#       df['us-gaap:AssetsCurrent'].isnull() &
+#       df['us-gaap:AssetsNoncurrent'].isnull()] 
+
+
+
+
 #df = pd.read_csv("outputs/liab_custom_variants.csv", sep="\t")
 #df = cal_liabilities_variants(2017)
 #df.to_csv("outputs/liab_custom_variants_2017.csv", sep="\t")

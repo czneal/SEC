@@ -71,18 +71,18 @@ class Table(object):
         if type(values) == type(dict()):
             values = [values]
             
-        for value in values:
+        for row in values:
             for f in self.fields:
-                if f not in values:
-                    values[f] = None
-                elif values[f] == '':
-                    values[f] = None
+                if f not in row:
+                    row[f] = None
+                elif row[f] == '':
+                    row[f] = None
                 
             for f in self.not_null_fields:
-                if value[f] is None:
+                if row[f] is None:
                     return
             
-        self.data.append(values)
+        self.data.extend(values)
         if len(self.data) >= self.buffer_size:
             self.flush(cur)
         
@@ -95,6 +95,10 @@ class Table(object):
         df_with_none = df.where((pd.notnull(df)), None)
         header = list(df_with_none.index.names)
         header.extend(df_with_none.columns)
+        for i, e in enumerate(header):
+            if e is None:
+                header[i] = 'idx{0}'.format(i)
+                
         header = {e.lower():i for i, e in enumerate(header)}
         for row in df_with_none.itertuples():
             if type(row[0]) == tuple:
@@ -135,3 +139,55 @@ class get_procedure(object):
 def print_error():
     print(sys.exc_info())
     traceback.print_tb(sys.exc_info()[2])
+    
+def read_reports_attr(years):
+    s = "("
+    for y in years:
+        s += "{0},".format(y)
+    s = s[:-1] + ")"
+    
+    try:
+        con = OpenConnection()
+        cur = con.cursor(dictionary=True)
+        cur.execute("""select adsh, trusted, 
+                    	case structure
+                    		when '{}' then 0
+                            else 1
+                        end as exist, company_name, c.cik
+                    from reports r, companies c
+                    where fin_year in """ + s + """
+                        and c.cik = r.cik""" + Settings.select_limit())
+        
+        reports = pd.DataFrame(cur.fetchall())
+        reports.set_index("adsh", inplace=True)    
+    finally:
+        con.close()
+        
+    return reports
+
+def read_report_structures(adshs):
+    try:
+        con = OpenConnection()
+        cur = con.cursor(dictionary=True)
+        cur.execute("create temporary table adshs (adsh VARCHAR(20) CHARACTER SET utf8 not null, PRIMARY KEY (adsh))")
+        cur.executemany("insert into adshs (adsh) values (%s)", list((e,) for e in adshs))
+        cur.execute("""select r.adsh, structure 
+                        from reports r, adshs a 
+                        where r.adsh = a.adsh""")
+        df = pd.DataFrame(cur.fetchall())
+        df.set_index("adsh", inplace=True)
+    finally:
+        con.close()
+        
+    return df
+
+def read_report_nums(adsh):
+    try:
+        con = OpenConnection("localhost")
+        cur = con.cursor(dictionary=True)
+        cur.execute("select concat(version,':',tag) as tag, value from mgnums where adsh = (%s)",(adsh,))
+        df = pd.DataFrame(cur.fetchall(), columns=["tag","value"]).set_index("tag")
+        df["value"] = df["value"].astype('float')
+    finally:
+        con.close()
+    return df.sort_index()
