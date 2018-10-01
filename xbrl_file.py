@@ -797,11 +797,11 @@ class Fact(object):
             self.value = value
         
 
-log = LogFile("outputs/l.txt")
-r = XBRLFile(log)
-r.read("z:/sec/2014/02/0000939767-0000939767-14-000009.zip", "exel-20131231.xml")
-
-log.close()
+#log = LogFile("outputs/l.txt")
+#r = XBRLFile(log)
+#r.read("z:/sec/2014/02/0000939767-0000939767-14-000009.zip", "exel-20131231.xml")
+#
+#log.close()
 #
 #with open("structure_boeing.txt","w") as f:
 #    f.write(r.structure_dumps())
