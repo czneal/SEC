@@ -325,15 +325,26 @@ class XBRLFile:
         
         instant = info[info['instant'] & 
                        (np.abs(info['edate'] - edate) <= tolerance)]
-        c = instant.groupby('context')['context'].count().sort_values().index[-1]
+        c = instant.groupby('context')['context'].count().sort_values()
+        if c.shape[0]==0:
+            self.instant_cntx = 'bad'
+        else:
+            self.instant_cntx = c.index[-1]
+            
         #instant = instant[(instant['context'] == c)]
-        self.instant_cntx = c
-        
+                
         noninstant = info[~info['instant'] & 
                        ((np.abs(info['edate'] - edate) <= tolerance) |
                         (np.abs(info['sdate'] - sdate) <= tolerance))]
                        
         c = noninstant.groupby('context')['context'].count().sort_values().iloc[-2:]
+        
+        if c.shape[0] == 1:
+            self.noninstant_cntx = [c.index[0]]
+            return
+        elif c.shape[0] == 0:
+            self.noninstant_cntx = ['bad']
+            return
         
         v1 = c.iloc[0]
         v2 = c.iloc[1]
@@ -343,8 +354,8 @@ class XBRLFile:
             #noninstant = noninstant[(noninstant['context'] == c[1])]
         else:
             self.noninstant_cntx = [c[0], c[1]]
-            noninstant = noninstant[(noninstant['context'] == c[0]) |
-                    (noninstant['context'] == c[1])]
+#            noninstant = noninstant[(noninstant['context'] == c[0]) |
+#                    (noninstant['context'] == c[1])]
         
     
 class LogFile(object):
@@ -819,7 +830,8 @@ r = XBRLFile(log)
 #file3 = ('z:/sec/2014/02/0000012927-0000012927-14-000004.zip',
 #         'ba-20131231.xml')
 #
-#r.read(file2[0], file2[1])
+#r.read('d:/sec/2014/03/0001003815-0001003815-14-000002.zip', None)
+#r.find_contexts()
 
 data = []
 
@@ -833,7 +845,7 @@ try:
     
     for index, row in enumerate(cur):
         print('\rProcessed with:{0}...'.format(index+1), end='')
-        r.read("z" + row['file_link'][1:], None)
+        r.read(row['file_link'], None)
         r.find_contexts()
         contexts = json.loads(row['contexts'])
         check = True
