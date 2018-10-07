@@ -214,31 +214,36 @@ def read_values(query):
         
     return df
 
-f = xbrl_scan.AdshFilter("outputs/adsh_for_reread.txt")
-log = xbrl_file.LogFile("outputs/l.txt")
-for y in range(2013,2018):
-    for m in range(1,13):
-        xbrl_scan.scan_period(y, m, log, adsh_filter = f.check)
+#f = xbrl_scan.AdshFilter("outputs/adsh_for_reread.txt")
+#log = xbrl_file.LogFile("outputs/l.txt")
+#for y in range(2013,2018):
+#    for m in range(1,13):
+#        xbrl_scan.scan_period(y, m, log, adsh_filter = f.check)
+    
+tickers = read_values("select * from nasdaqtraded where cik is not null")
 
-#years = " between {0} and {1}".format(Settings.years()[0], Settings.years()[1])
-#df= read_tag_values("""select adsh, concat(version,':',n.tag) as tag, value 
-#                from mgnums n, tags t
-#                where t.tag = n.tag and fy """ + years + 
-#                Settings.select_limit(),
-#                ['Assets', 'AssetsCurrent',
-#                 'AssetsNoncurrent', 
-#                 'LiabilitiesAndStockHoldersEquity',
-#                 'Liabilities', 'LiabilitiesCurrent',
-#                 'LiabilitiesNoncurrent'])
-#    
-#reports = do.read_reports_attr(range(Settings.years()[0], Settings.years()[1] + 1))
-#df = pd.merge(reports, df, how='left', left_index=True, right_index=True)
-#url = "https://www.sec.gov/cgi-bin/viewer?action=view&cik={0}&accession_number={1}&xbrl_type=v#"
-#df["url"] = df.apply(lambda x: url.format(x["cik"], x.name), axis=1)
-#
-#f = df[df['us-gaap:Assets'].isnull() &
-#       df['us-gaap:AssetsCurrent'].isnull() &
-#       df['us-gaap:AssetsNoncurrent'].isnull()] 
+years = " between {0} and {1}".format(Settings.years()[0], Settings.years()[1])
+df= read_tag_values("""select adsh, concat(version,':',n.tag) as tag, value 
+                from mgnums n, tags t
+                where t.tag = n.tag and fy """ + years + 
+                Settings.select_limit(),
+                ['Assets', 'AssetsCurrent',
+                 'AssetsNoncurrent', 
+                 'LiabilitiesAndStockHoldersEquity',
+                 'Liabilities', 'LiabilitiesCurrent',
+                 'LiabilitiesNoncurrent'])
+    
+reports = do.read_reports_attr(range(Settings.years()[0], Settings.years()[1] + 1))
+df = pd.merge(reports, df, how='left', left_index=True, right_index=True)
+url = "https://www.sec.gov/cgi-bin/viewer?action=view&cik={0}&accession_number={1}&xbrl_type=v#"
+df["url"] = df.apply(lambda x: url.format(x["cik"], x.name), axis=1)
+df = pd.merge(df, tickers, how='left', left_on='cik', right_on='cik')
+
+f = df[df['us-gaap:Assets'].isnull() &
+       df['us-gaap:AssetsCurrent'].isnull() &
+       df['us-gaap:AssetsNoncurrent'].isnull()] 
+
+f.to_excel("outputs/assets.xlsx")
 
 
 

@@ -5,65 +5,18 @@ Created on Wed Oct 11 11:44:49 2017
 @author: Asus
 """
 
-import xml.etree.ElementTree as ET
-import zipfile
+import xbrl_file as xbrl
 import datetime as dt
 import re
 import os
 import json
 import io
 import sys
+import pandas as pd
+import numpy as np
+import database_operations as do
+from settings import Settings
 
-def str2date(s):
-    dtparts = [int(p) for p in s.strip().split('-')]
-    return dt.date(dtparts[0], dtparts[1], dtparts[2])
-
-class XBRLZipPacket(object):
-    def __init__(self, zip_filename, xbrl_filename=None):
-        self.zip_filename = zip_filename
-        self.xbrl_filename = xbrl_filename
-        self.xbrl_file = None
-        self.xsd_file = None
-        self.cal_file = None
-        self.pre_file = None
-        
-    def open_packet(self, log):     
-        log.write_to_log("open zip archive: "+self.zip_filename)
-        
-        z_file = None        
-        try:
-            z_file = zipfile.ZipFile(self.zip_filename)
-        except:
-            log.write_to_log("bad zip file: " + self.zip_filename)
-        if z_file == None:
-            return False
-        
-        files = z_file.namelist()
-        files = [f.replace('.xml','') for f in files if f.endswith('.xml')]
-        files = set([f.split('_')[0] for f in files])
-        self.xbrl_filename = files.pop() + '.xml'
-        
-        try:
-            
-            self.xbrl_file = z_file.open(self.xbrl_filename)
-            self.xsd_file = z_file.open(self.xbrl_filename[0:-3] + "xsd")
-            self.cal_file = z_file.open(self.xbrl_filename[0:-4]+"_cal.xml")
-            self.pre_file = z_file.open(self.xbrl_filename[0:-4]+"_pre.xml")
-        except:
-            if self.xbrl_file is None:
-                log.write_to_log("missing xbrl file in zip file")
-            elif self.xsd_file is None:
-                log.write_to_log("missing xsd file in zip file")
-            elif self.cal_file is None:
-                log.write_to_log("missing cal file in zip file")
-            elif self.pre_file is None:
-                log.write_to_log("missing pre file in zip file")
-            else:
-                log.write_to_log("error while readin zip archive")
-            return False
-        
-        return True
-   
 class XBRLFile:    
     def __init__(self, log_file = None):
         self.log = log_file
@@ -77,7 +30,7 @@ class XBRLFile:
     def read(self, zip_filename, xbrl_filename):
         try:
             #unpack zip file and get cal_filename, xbrl_filename, pre_filename, xsd_filename
-            packet = XBRLZipPacket(zip_filename, xbrl_filename)
+            packet = xbrl.XBRLZipPacket(zip_filename, xbrl_filename)
             if not packet.open_packet(self.log):
                 return False
             
@@ -89,7 +42,7 @@ class XBRLFile:
             cal_file.read(packet.cal_file, self.chapters)
             pre_file.read(packet.pre_file, self.chapters)
             
-            tools = XmlTreeTools()
+            tools = xbrl.XmlTreeTools()
             tools.read_xml_tree(packet.xbrl_file)
             
             root, ns = tools.root, tools.ns
@@ -114,7 +67,7 @@ class XBRLFile:
             calc_log = io.StringIO()
             for _, c in self.chapters.items():
                 c.check_cal_scheme(self.facts, calc_log)
-                c.update_pre_values(self.facts)
+                #c.update_pre_values(self.facts)
             calc_log.flush()
             calc_log.seek(0)
             self.calc_log = calc_log.read()
@@ -263,59 +216,67 @@ class XBRLFile:
         
     def read_contexts_section(self, root, ns, xbrli):
         self.log.write_to_log("start reading contexts...")
-        self.contexts = {}
-        other = {}
-        #find dates for context filtering        
-        fin = dt.date(int(self.ddate[0:4]), int(self.ddate[5:7]), int(self.ddate[8:10]))        
         
-        #read full year contexts without segments        
-        duration = 0
-        st = None
-        c_name = ""
-        for elem in root.findall("./"+xbrli+"context"):            
-            if len(list(elem.iter(xbrli+"segment"))) > 0:
+               
+        self.contexts = {} 
+        for elem in root.findall("./"+xbrli+"context"):
+            cntx = Context(elem.iter())
+            if cntx.dim is not None and len(cntx.dim)>1:
                 continue
-                        
-            period = elem.find(xbrli+"period")            
-            if len(list(period)) == 1:
-                instant = period.find(xbrli+"instant")
-                if instant is None:
-                    continue
-                d = period[0].text.strip()                
-                if XBRLFile.compare_dates(d, self.ddate):
-                    self.contexts[elem.attrib["id"]] = [d]
-            else:
-                startDate = period.find(xbrli+"startDate")
-                if startDate is None:
-                    continue
-                
-                d1 = period[0].text.strip()
-                d2 = period[1].text.strip()
-                other[elem.attrib["id"]] = [d1,d2]
-                if XBRLFile.compare_dates(d2, self.ddate):
-                    d = dt.date(int(d1[0:4]),int(d1[5:7]),int(d1[8:10]))
-                    length = (fin-d).days
-                    if length > duration and length < 380:
-                        st = d
-                        duration = length
-                        c_name = elem.attrib["id"]
-        if st is not None:
-            self.contexts[c_name] = [str(st), str(fin)]
-            other.pop(c_name)
-            for name, [d1,d2] in other.items():
-                d1 = dt.date(int(d1[0:4]),int(d1[5:7]),int(d1[8:10]))
-                d2 = dt.date(int(d2[0:4]),int(d2[5:7]),int(d2[8:10]))
-                if st < d1:
-                    st = d1
-                if fin > d2:
-                    fin = d2
-                if (fin-st).days > 320:
-                    self.contexts[name] = [str(d1),str(d2)]
-        else:
-            self.log.write_to_log("  entity contexts not found")
-            
-        if len(self.contexts) != 2:
-            self.log.write_to_log("  missing contexts")
+            self.contexts[cntx.id] = cntx
+        
+#        other = {}
+#        #find dates for context filtering        
+#        fin = dt.date(int(self.ddate[0:4]), int(self.ddate[5:7]), int(self.ddate[8:10]))        
+#        
+#        #read full year contexts without segments        
+#        duration = 0
+#        st = None
+#        c_name = ""
+#        for elem in root.findall("./"+xbrli+"context"):            
+#            if len(list(elem.iter(xbrli+"segment"))) > 0:
+#                continue
+#                        
+#            period = elem.find(xbrli+"period")            
+#            if len(list(period)) == 1:
+#                instant = period.find(xbrli+"instant")
+#                if instant is None:
+#                    continue
+#                d = period[0].text.strip()                
+#                if XBRLFile.compare_dates(d, self.ddate):
+#                    self.contexts[elem.attrib["id"]] = [d]
+#            else:
+#                startDate = period.find(xbrli+"startDate")
+#                if startDate is None:
+#                    continue
+#                
+#                d1 = period[0].text.strip()
+#                d2 = period[1].text.strip()
+#                other[elem.attrib["id"]] = [d1,d2]
+#                if XBRLFile.compare_dates(d2, self.ddate):
+#                    d = dt.date(int(d1[0:4]),int(d1[5:7]),int(d1[8:10]))
+#                    length = (fin-d).days
+#                    if length > duration and length < 380:
+#                        st = d
+#                        duration = length
+#                        c_name = elem.attrib["id"]
+#        if st is not None:
+#            self.contexts[c_name] = [str(st), str(fin)]
+#            other.pop(c_name)
+#            for name, [d1,d2] in other.items():
+#                d1 = dt.date(int(d1[0:4]),int(d1[5:7]),int(d1[8:10]))
+#                d2 = dt.date(int(d2[0:4]),int(d2[5:7]),int(d2[8:10]))
+#                if st < d1:
+#                    st = d1
+#                if fin > d2:
+#                    fin = d2
+#                if (fin-st).days > 320:
+#                    self.contexts[name] = [str(d1),str(d2)]
+#        else:
+#            self.log.write_to_log("  entity contexts not found")
+#            
+#        if len(self.contexts) != 2:
+#            self.log.write_to_log("  missing contexts")
             
         self.log.write_to_log("end reading contexts...ok")
         
@@ -336,12 +297,55 @@ class XBRLFile:
                         continue
                     f.uom = self.units[f.uom]
                     
-                    if f.name in self.facts:
-                        self.facts[f.name].update(elem)
+                    if (f.name, f.context) in self.facts:
+                        self.facts[(f.name, f.context)].update(elem)
                     else:
                         if f.context in self.contexts:
-                            self.facts[f.name] = f
+                            self.facts[(f.name, f.context)] = f
         self.log.write_to_log("end reading facts section...ok")
+        
+    def find_contexts(self):
+        data = []
+        
+        for _, cntx in self.contexts.items():
+            data.extend(cntx.aslist())
+            
+        df = pd.DataFrame(data, columns=Context.attr)
+#        df['sdate'] = pd.to_datetime(df['sdate'])
+#        df['edate'] = pd.to_datetime(df['edate'])
+        
+        data = [[name, context, fact.value] for ((name,context),fact) in r.facts.items()]
+        facts = pd.DataFrame(data, columns=['tag', 'context', 'value'])
+        
+        edate = xbrl.str2date(r.ddate)
+        sdate = edate - dt.timedelta(days=365.2425)
+        tolerance = dt.timedelta(days=10)
+        
+        info = pd.merge(facts, df, 'inner', left_on='context', right_on='id')
+        
+        instant = info[info['instant'] & 
+                       (np.abs(info['edate'] - edate) <= tolerance)]
+        c = instant.groupby('context')['context'].count().sort_values().index[-1]
+        #instant = instant[(instant['context'] == c)]
+        self.instant_cntx = c
+        
+        noninstant = info[~info['instant'] & 
+                       ((np.abs(info['edate'] - edate) <= tolerance) |
+                        (np.abs(info['sdate'] - sdate) <= tolerance))]
+                       
+        c = noninstant.groupby('context')['context'].count().sort_values().iloc[-2:]
+        
+        v1 = c.iloc[0]
+        v2 = c.iloc[1]
+        c = c.index
+        if 2*abs(v1-v2)/(v1+v2) > 0.25:
+            self.noninstant_cntx = [c[1]]
+            #noninstant = noninstant[(noninstant['context'] == c[1])]
+        else:
+            self.noninstant_cntx = [c[0], c[1]]
+            noninstant = noninstant[(noninstant['context'] == c[0]) |
+                    (noninstant['context'] == c[1])]
+        
     
 class LogFile(object):
     def __init__(self, filename):
@@ -356,77 +360,6 @@ class LogFile(object):
         self.log_file.close()
         del self.log_file
         
-class XmlTreeTools(object):
-    def __init__(self):
-        self.root = None
-        self.ns = None
-        self.xbrli = ""
-        self.link = ""
-        self.empty = ""
-        
-    def read_xml_tree(self, xml_file):
-        events = ("start-ns", "start")
-        ns = {}
-        c = ET.iterparse(xml_file, events=events)
-        c = iter(c)
-        root = None
-        #parse namespace names
-        for event, elem in c:
-            if event == "start-ns":
-                ns[elem[1]] = elem[0].lower()
-            if event == "start" and root == None: 
-                root = elem
-        
-#        links = set()
-#        for e in root.iter():
-#            for attr in e.attrib:
-#                vals = attr.split('{')
-#                if len(vals) == 1:
-#                    continue
-#                links.add(vals[1].split('}')[0])
-#            vals = e.tag.split('{')
-#            if len(vals) == 1:
-#                continue
-#            links.add(vals[1].split('}')[0])
-#                
-#        
-#        ns = dict([(ns[k], k) for k in links])
-        blank = [(v,k) for (k,v) in ns.items() if v == '']
-        nss = {}
-        if len(blank) >= 2:            
-            for k,v in ns.items():
-               if v == '':
-                   if k == "http://www.xbrl.org/2003/instance":
-                       nss[v] = k
-                   else:
-                       nss[k.split('/')[-1]] = k
-               else:
-                   nss[v] = k
-        else:
-            nss = dict([(v,k) for k,v in ns.items()])
-        ns = nss
-        self.root = root
-        self.ns = ns
-        
-        if "xbrli" in ns: 
-            self.xbrli = "{"+ns["xbrli"]+"}"
-        elif "" in ns:
-            self.xbrli = "{"+ns[""]+"}"
-    
-        if "link" in ns:
-            self.link = "{" +ns["link"]+ "}"
-        elif "" in ns:
-            self.link = "{" +ns[""]+ "}"
-            
-        if "xlink" in ns:
-            self.xlink = "{"+ns["xlink"]+"}"
-        elif "" in ns:
-            self.xlink = "{" +ns[""]+ "}"
-        if "" in ns:
-            self.empty = "{"+ns[""]+"}"
-        elif "link" in ns:
-            self.empty = "{"+ns["link"]+"}"
-    
 class Node(object):
     """Represent node in calculation tree
     name - us_gaap or custom name
@@ -507,6 +440,9 @@ class Chapter(object):
         self.nodes_pre = {}    
     def read_cal(self, calcLink, empty, xlink):
         """reads chapter content from cal file"""
+#        if self.chapter != 'sta':
+#            return
+        
         nodes_ids = {}
         
         for loc in calcLink.iter(empty+"loc"):
@@ -560,6 +496,8 @@ class Chapter(object):
     def get_pre_tags(self):
         """Returns set of tags shown in Statements sections of report, 
         tags stored as "us-gaap:TagName", "custom:CustomTagName" """
+#        if self.chapter != 'sta':
+#            return set()
         
         tags = set()
         
@@ -574,6 +512,9 @@ class Chapter(object):
     def get_cal_tags(self):
         """Returns set of tags shown in calculation scheme
         """
+#        if self.chapter != 'sta':
+#            return set()
+        
         tags = set()
         for name, node in self.nodes.items():
             if node.parent is None:
@@ -653,7 +594,7 @@ class XSDFile(object):
             matchTable = re.compile('.*\(Table.*\).*')
             matchDetail = re.compile('.*\(Detail.*\).*')
             
-            tools = XmlTreeTools()
+            tools = xbrl.XmlTreeTools()
             tools.read_xml_tree(xsd_file)
             root = tools.root
             link = tools.link
@@ -693,7 +634,7 @@ class CALFile(object):
     def read(self, cal_filename, chapters):
         self.log.write_to_log("start reading calculation scheme...")
         
-        tools = XmlTreeTools()
+        tools = xbrl.XmlTreeTools()
         tools.read_xml_tree(cal_filename)
         
         xlink, empty = tools.xlink, tools.empty
@@ -747,7 +688,7 @@ class PREFile(object):
     def read(self, pre_filename, chapters):
         self.log.write_to_log("start reading presentation scheme...")
         
-        tools = XmlTreeTools()
+        tools = xbrl.XmlTreeTools()
         tools.read_xml_tree(pre_filename)
         xlink, empty = tools.xlink, tools.empty
         root = tools.root
@@ -782,12 +723,12 @@ class Fact(object):
             decimals = abs(int(decimals))
         
         if elem.text is None:
-            value = 0
+            value = 0.0
         else:
             try:
                 value = float(elem.text.strip())
             except ValueError:
-                value = 0
+                value = 0.0
                 
         #check overflow of mysql decimal(24,4)
         if abs(value) > 10**19:
@@ -813,7 +754,115 @@ class Fact(object):
 #       "pcl-20131231.xml")
 #
 #log.close()
+
+
+class Context(object):
+    attr = ['id', 'instant', 'sdate', 'edate', 'axis', 'dim']
+    def __init__(self, elems):
+        self.instant = None
+        self.sdate = None
+        self.edate = None
+        self.axis = None
+        self.dim = None
+        self.id = None
+        
+        self.read(elems)
+        
+    def __str__(self):
+        return ("(id:{0}, instant:{1}, startDate:{2}, endDate: {3}, axis:{4}, dimension:{5})"
+                .format(self.id, self.instant, self.sdate, self.edate,
+                        self.axis, self.dim))
+    
+    def aslist(self):
+        x = []
+        if self.axis is None:
+            x.append([self.id, self.instant, 
+                      self.sdate, self.edate,
+                      None, None])
+        else:
+            for a, d in zip(self.axis, self.dim):
+                x.append([self.id, self.instant, 
+                          self.sdate, self.edate,
+                          a, d])
+        return x
+        
+    
+    def read(self, elems):
+        for e in elems:
+            name = e.tag.lower().split('}')[-1]
+            if name == 'context':
+                self.id = e.attrib['id']
+            if 'instant' == name:
+                self.instant = True
+                self.edate = xbrl.str2date(e.text)
+            if 'startdate' == name:
+                self.instant = False
+                self.sdate = xbrl.str2date(e.text)
+            if 'enddate' == name:
+                self.instant = False
+                self.edate = xbrl.str2date(e.text)
+            if 'explicitmember' == name:
+                if self.dim is None:
+                    self.dim = []
+                    self.axis = []
+                self.axis.append(e.text.strip().replace(':','_'))
+                self.dim.append(e.attrib['dimension']
+                            .replace(':', '_'))
+
+
+log = LogFile("outputs/l.txt")
+r = XBRLFile(log)
+#file = ('z:/sec/2018/02/0000030554-0000030554-18-000002.zip',
+#        'dd-20171231.xml')
+#file2 = ("z:/sec/2014/03/0000031235-0001193125-14-106388.zip", 
+#       "kodk-20131231.xml")
+#file3 = ('z:/sec/2014/02/0000012927-0000012927-14-000004.zip',
+#         'ba-20131231.xml')
 #
-#with open("structure_boeing.txt","w") as f:
-#    f.write(r.structure_dumps())
+#r.read(file2[0], file2[1])
+
+data = []
+
+try:
+    con = do.OpenConnection()
+    cur = con.cursor(dictionary=True)
+    cur.execute('select adsh, cik, file_link, contexts from reports ' +
+                ' where fin_year between {0} and {1}'
+                .format(Settings.years()[0], Settings.years()[1]) + 
+                Settings.select_limit())
+    
+    for index, row in enumerate(cur):
+        print('\rProcessed with:{0}...'.format(index+1), end='')
+        r.read("z" + row['file_link'][1:], None)
+        r.find_contexts()
+        contexts = json.loads(row['contexts'])
+        check = True
+        if not r.instant_cntx in contexts:
+            check = False
+        for c in r.noninstant_cntx:
+            if not c in contexts:
+                check = False
+        rep = [row['adsh'], row['cik'], row['file_link'], check, contexts.keys(),
+               r.instant_cntx, r.noninstant_cntx]
+        data.append(rep)
+        
+    print('ok')
+    df = pd.DataFrame(data, columns=['adsh', 'cik', 'file_link', 'check',
+                                     'old_cntx', 'instant', 'noninstant'])
+    
+        
+finally:
+    con.close()
+    log.close()
+#df['end'] = np.abs(df['edate'] - edate) <= diff
+#df['start'] = np.abs(df['sdate'] - sdate) <= diff
+#end = df[df['end']  & (df['instant'] != True)].sort_values('sdate')
+#start = df[df['start'] & (df['instant'] != True)].sort_values('edate')
+#end['date'] = pd.to_datetime(end['sdate'])
+#start['date'] = pd.to_datetime(start['edate'])
+#
+#pp = pd.merge_asof(start, end, on='date',
+#                   tolerance = pd.Timedelta(days=5),
+#                   direction='nearest')
+        
 
