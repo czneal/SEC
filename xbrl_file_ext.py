@@ -26,6 +26,8 @@ class XBRLFile:
         self.trusted = True
         self.fact_tags = None
         self.units = None
+        self.instant_cntx = None
+        self.noninstant_cntx = None
     
     def read(self, zip_filename, xbrl_filename):
         try:
@@ -86,12 +88,26 @@ class XBRLFile:
             return False
         return True
     
-    def used_tags(self):
+    def used_tags(self, only_sta=True):
         fact_tags = set()        
         for _, c in self.chapters.items():
-            fact_tags.update(c.get_cal_tags())
-            fact_tags.update(c.get_pre_tags())
+            fact_tags.update(c.get_cal_tags(only_sta))
+            fact_tags.update(c.get_pre_tags(only_sta))
         return fact_tags
+    
+    def get_dimentions(self, only_sta=True):
+        dim = set()
+        dim.add(None)
+        for _, c in self.chapters.items():
+            dim.update(c.get_dimentions(only_sta))
+        return dim
+    
+    def get_dim_members(self, only_sta=True):
+        member = set()
+        member.add(None)
+        for _, c in self.chapters.items():
+            member.update(c.get_members(only_sta))
+        return member
     
     def structure_dumps(self):
         dump = {}
@@ -224,59 +240,6 @@ class XBRLFile:
             if cntx.dim is not None and len(cntx.dim)>1:
                 continue
             self.contexts[cntx.id] = cntx
-        
-#        other = {}
-#        #find dates for context filtering        
-#        fin = dt.date(int(self.ddate[0:4]), int(self.ddate[5:7]), int(self.ddate[8:10]))        
-#        
-#        #read full year contexts without segments        
-#        duration = 0
-#        st = None
-#        c_name = ""
-#        for elem in root.findall("./"+xbrli+"context"):            
-#            if len(list(elem.iter(xbrli+"segment"))) > 0:
-#                continue
-#                        
-#            period = elem.find(xbrli+"period")            
-#            if len(list(period)) == 1:
-#                instant = period.find(xbrli+"instant")
-#                if instant is None:
-#                    continue
-#                d = period[0].text.strip()                
-#                if XBRLFile.compare_dates(d, self.ddate):
-#                    self.contexts[elem.attrib["id"]] = [d]
-#            else:
-#                startDate = period.find(xbrli+"startDate")
-#                if startDate is None:
-#                    continue
-#                
-#                d1 = period[0].text.strip()
-#                d2 = period[1].text.strip()
-#                other[elem.attrib["id"]] = [d1,d2]
-#                if XBRLFile.compare_dates(d2, self.ddate):
-#                    d = dt.date(int(d1[0:4]),int(d1[5:7]),int(d1[8:10]))
-#                    length = (fin-d).days
-#                    if length > duration and length < 380:
-#                        st = d
-#                        duration = length
-#                        c_name = elem.attrib["id"]
-#        if st is not None:
-#            self.contexts[c_name] = [str(st), str(fin)]
-#            other.pop(c_name)
-#            for name, [d1,d2] in other.items():
-#                d1 = dt.date(int(d1[0:4]),int(d1[5:7]),int(d1[8:10]))
-#                d2 = dt.date(int(d2[0:4]),int(d2[5:7]),int(d2[8:10]))
-#                if st < d1:
-#                    st = d1
-#                if fin > d2:
-#                    fin = d2
-#                if (fin-st).days > 320:
-#                    self.contexts[name] = [str(d1),str(d2)]
-#        else:
-#            self.log.write_to_log("  entity contexts not found")
-#            
-#        if len(self.contexts) != 2:
-#            self.log.write_to_log("  missing contexts")
             
         self.log.write_to_log("end reading contexts...ok")
         
@@ -305,58 +268,64 @@ class XBRLFile:
         self.log.write_to_log("end reading facts section...ok")
         
     def find_contexts(self):
-        data = []
+        contexts = pd.DataFrame(data = [e.aslist() for (n, e) in r.contexts.items()],
+                        columns = ['context', 'instant', 'sdate', 'edate',
+                                   'dim', 'member'])
+        contexts = contexts[contexts['dim'].isin(list(r.get_dimentions())) &
+                            contexts['member'].isin(list(r.get_dim_members()))]
         
-        for _, cntx in self.contexts.items():
-            data.extend(cntx.aslist())
-            
-        df = pd.DataFrame(data, columns=Context.attr)
-#        df['sdate'] = pd.to_datetime(df['sdate'])
-#        df['edate'] = pd.to_datetime(df['edate'])
+        facts = pd.DataFrame(data = [fact.aslist() for ((f, c), fact) in r.facts.items()],
+                             columns=['tag', 'value', 'uom', 'context'])
         
-        data = [[name, context, fact.value] for ((name,context),fact) in r.facts.items()]
-        facts = pd.DataFrame(data, columns=['tag', 'context', 'value'])
+        facts = (facts.merge(contexts, 'inner', left_on='context', right_on='context')
+                      .sort_values(['tag','dim','member']))
         
-        edate = xbrl.str2date(r.ddate)
+        edate = (facts.groupby('edate')['edate'].count()
+                                .sort_values(ascending=False).iloc[:5]
+                                .index.max())
+        self.ddate = edate                
         sdate = edate - dt.timedelta(days=365.2425)
         tolerance = dt.timedelta(days=10)
-        
-        info = pd.merge(facts, df, 'inner', left_on='context', right_on='id')
-        
-        instant = info[info['instant'] & 
-                       (np.abs(info['edate'] - edate) <= tolerance)]
-        c = instant.groupby('context')['context'].count().sort_values()
-        if c.shape[0]==0:
-            self.instant_cntx = 'bad'
-        else:
-            self.instant_cntx = c.index[-1]
-            
-        #instant = instant[(instant['context'] == c)]
                 
-        noninstant = info[~info['instant'] & 
-                       ((np.abs(info['edate'] - edate) <= tolerance) |
-                        (np.abs(info['sdate'] - sdate) <= tolerance))]
+        instant = facts[facts['instant'] & 
+                       (np.abs(facts['edate'] - edate) <= tolerance)]        
+        noninstant = facts[~facts['instant'] & 
+                       ((np.abs(facts['edate'] - edate) <= tolerance) &
+                       (np.abs(facts['sdate'] - sdate) <= tolerance))]
                        
-        c = noninstant.groupby('context')['context'].count().sort_values().iloc[-2:]
+        inst_markers = ['us-gaap:Assets', 'us-gaap:Liabilities',
+                        'us-gaap:us-gaap:LiabilitiesAndStockholdersEquity']
+        instant = instant[instant['tag'].isin(inst_markers)]
         
-        if c.shape[0] == 1:
-            self.noninstant_cntx = [c.index[0]]
-            return
-        elif c.shape[0] == 0:
-            self.noninstant_cntx = ['bad']
-            return
-        
-        v1 = c.iloc[0]
-        v2 = c.iloc[1]
-        c = c.index
-        if 2*abs(v1-v2)/(v1+v2) > 0.25:
-            self.noninstant_cntx = [c[1]]
-            #noninstant = noninstant[(noninstant['context'] == c[1])]
-        else:
-            self.noninstant_cntx = [c[0], c[1]]
-#            noninstant = noninstant[(noninstant['context'] == c[0]) |
-#                    (noninstant['context'] == c[1])]
-        
+        null_contexts = instant[instant['dim'].isnull()]['context'].unique()
+        if null_contexts.shape[0] == 1:
+            self.instant_cntx = null_contexts[0]
+        if null_contexts.shape[0] > 1:
+            self.instant_cntx = list(null_contexts)
+        if null_contexts.shape[0] == 0:
+            uc = instant['context'].unique()
+            if uc.shape[0] == 1:
+                self.instant_cntx = uc[0]
+            if uc.shape[0] > 1:
+                self.instant_cntx = list(uc)
+            
+                
+        noninst_markers = ['us-gaap:ProfitLoss', 'us-gaap:OperatingIncomeLoss',
+                           'us-gaap:IncomeTaxExpenseBenefit', 'us-gaap:InterestExpense']
+        noninstant = noninstant[noninstant['tag'].isin(noninst_markers)]
+        null_contexts = noninstant[noninstant['dim'].isnull()]['context'].unique()
+        if null_contexts.shape[0] == 1:
+            self.noninstant_cntx = null_contexts[0]
+        if null_contexts.shape[0] > 1:
+            self.noninstant_cntx = list(null_contexts)
+        if null_contexts.shape[0] == 0:
+            uc = noninstant['context'].unique()
+            if uc.shape[0] == 1:
+                self.noninstant_cntx = uc[0]
+            if uc.shape[0] > 1:
+                self.noninstant_cntx = list(uc)
+            
+        return
     
 class LogFile(object):
     def __init__(self, filename):
@@ -448,11 +417,14 @@ class Chapter(object):
         self.chapter = chapter
         self.label = label
         self.nodes = {}
-        self.nodes_pre = {}    
-    def read_cal(self, calcLink, empty, xlink):
+        self.nodes_pre = {}
+        self.dim = set()
+        self.member = set()
+        
+    def read_cal(self, calcLink, empty, xlink, only_sta = False):
         """reads chapter content from cal file"""
-#        if self.chapter != 'sta':
-#            return
+        if only_sta and self.chapter != 'sta':
+            return
         
         nodes_ids = {}
         
@@ -478,9 +450,9 @@ class Chapter(object):
             self.nodes[p_name].children[c_name] = [self.nodes[c_name], weight]
             self.nodes[c_name].parent = self.nodes[p_name]
             
-    def read_pre(self, preLink, empty, xlink):
+    def read_pre(self, preLink, empty, xlink, only_sta = False):
         """reads chapter content from pre file, reads chapters which comes from Statement section of report"""
-        if self.chapter != "sta":
+        if only_sta and self.chapter != "sta":
             return
         
         nodes_ids = {}
@@ -493,7 +465,17 @@ class Chapter(object):
             tag = href.split("_")[-1]
             
             if tag.endswith("Abstract"):
-                continue            
+                continue
+            if tag.endswith("Axis"):
+                self.dim.add(href)
+                continue
+            if tag.endswith('Member'):
+                self.member.add(href)
+                continue
+            if tag.endswith('Domain'):
+                self.member.add(href)
+                continue
+            
             if loc_id in nodes_ids:
                 continue
             
@@ -504,11 +486,23 @@ class Chapter(object):
             nodes_ids[loc_id] = n.name
             self.nodes_pre[n.name] = n
     
-    def get_pre_tags(self):
+    def get_dimentions(self, only_sta = True):
+        if only_sta and self.chapter != 'sta':
+            return set()
+        
+        return self.dim
+    
+    def get_members(self, only_sta = True):
+        if only_sta and self.chapter != 'sta':
+            return set()
+        
+        return self.member
+        
+    def get_pre_tags(self, only_sta=True):
         """Returns set of tags shown in Statements sections of report, 
         tags stored as "us-gaap:TagName", "custom:CustomTagName" """
-#        if self.chapter != 'sta':
-#            return set()
+        if only_sta and self.chapter != 'sta':
+            return set()
         
         tags = set()
         
@@ -520,11 +514,11 @@ class Chapter(object):
                     tags.add(n.name)
         return tags
     
-    def get_cal_tags(self):
+    def get_cal_tags(self, only_sta=True):
         """Returns set of tags shown in calculation scheme
         """
-#        if self.chapter != 'sta':
-#            return set()
+        if only_sta and self.chapter != 'sta':
+            return set()
         
         tags = set()
         for name, node in self.nodes.items():
@@ -533,8 +527,8 @@ class Chapter(object):
                     tags.add(c.name)
         return tags
                 
-    def print_self(self):
-        if self.chapter != "sta":
+    def print_self(self, only_sta=True):
+        if only_sta and self.chapter != "sta":
             return
         if len(self.nodes) == 0 and len(self.nodes_pre) == 0:
             return
@@ -547,8 +541,8 @@ class Chapter(object):
         for _, node in self.nodes_pre.items():
             print(" "+ node.name, node.value, "Presentation")
             
-    def check_cal_scheme(self, facts, calc_log):
-        if self.chapter != "sta":
+    def check_cal_scheme(self, facts, calc_log, only_sta = True):
+        if only_sta and self.chapter != "sta":
             return
         
         for _, n in self.nodes.items():
@@ -717,6 +711,9 @@ class Fact(object):
         self.source = source.lower()
         self.name = source+":"+self.tag
         
+    def aslist(self):
+        return [self.name, self.value, self.uom, self.context]
+        
     def read(elem):        
         context = elem.attrib["contextRef"].strip()
                 
@@ -773,8 +770,8 @@ class Context(object):
         self.instant = None
         self.sdate = None
         self.edate = None
-        self.axis = None
         self.dim = None
+        self.member = None
         self.id = None
         
         self.read(elems)
@@ -782,19 +779,17 @@ class Context(object):
     def __str__(self):
         return ("(id:{0}, instant:{1}, startDate:{2}, endDate: {3}, axis:{4}, dimension:{5})"
                 .format(self.id, self.instant, self.sdate, self.edate,
-                        self.axis, self.dim))
+                        self.dim, self.member))
     
     def aslist(self):
-        x = []
-        if self.axis is None:
-            x.append([self.id, self.instant, 
+        if self.member is None:
+            x = [self.id, self.instant, 
                       self.sdate, self.edate,
-                      None, None])
-        else:
-            for a, d in zip(self.axis, self.dim):
-                x.append([self.id, self.instant, 
+                      None, None]
+        else:            
+            x = [self.id, self.instant, 
                           self.sdate, self.edate,
-                          a, d])
+                          self.dim[0], self.member[0]]
         return x
         
     
@@ -815,8 +810,8 @@ class Context(object):
             if 'explicitmember' == name:
                 if self.dim is None:
                     self.dim = []
-                    self.axis = []
-                self.axis.append(e.text.strip().replace(':','_'))
+                    self.member = []
+                self.member.append(e.text.strip().replace(':','_'))
                 self.dim.append(e.attrib['dimension']
                             .replace(':', '_'))
 
@@ -829,9 +824,14 @@ r = XBRLFile(log)
 #       "kodk-20131231.xml")
 #file3 = ('z:/sec/2014/02/0000012927-0000012927-14-000004.zip',
 #         'ba-20131231.xml')
+#file4 = ('z:/sec/2014/02/0000006201-0000006201-14-000004.zip', 'american airlines')
+#file5 = ('z:/sec/2014/03/0000083402-0000083402-14-000011.zip', 'resource america')
+#file6 = ('z:/sec/2014/05/0000704051-0000704051-14-000063.zip', 'legg amson')
 #
-#r.read('d:/sec/2014/03/0001003815-0001003815-14-000002.zip', None)
+#r.read(file6[0], None)
 #r.find_contexts()
+#
+#log.close()
 
 data = []
 
@@ -845,16 +845,15 @@ try:
     
     for index, row in enumerate(cur):
         print('\rProcessed with:{0}...'.format(index+1), end='')
-        r.read(row['file_link'], None)
+        r.read('z' + row['file_link'][1:], None)
         r.find_contexts()
         contexts = json.loads(row['contexts'])
         check = True
         if not r.instant_cntx in contexts:
             check = False
-        for c in r.noninstant_cntx:
-            if not c in contexts:
-                check = False
-        rep = [row['adsh'], row['cik'], row['file_link'], check, contexts.keys(),
+        if not r.noninstant_cntx in contexts:
+            check = False
+        rep = [row['adsh'], row['cik'], row['file_link'], check, list(contexts.keys()),
                r.instant_cntx, r.noninstant_cntx]
         data.append(rep)
         
@@ -866,15 +865,8 @@ try:
 finally:
     con.close()
     log.close()
-#df['end'] = np.abs(df['edate'] - edate) <= diff
-#df['start'] = np.abs(df['sdate'] - sdate) <= diff
-#end = df[df['end']  & (df['instant'] != True)].sort_values('sdate')
-#start = df[df['start'] & (df['instant'] != True)].sort_values('edate')
-#end['date'] = pd.to_datetime(end['sdate'])
-#start['date'] = pd.to_datetime(start['edate'])
-#
-#pp = pd.merge_asof(start, end, on='date',
-#                   tolerance = pd.Timedelta(days=5),
-#                   direction='nearest')
-        
+    
+url = "https://www.sec.gov/cgi-bin/viewer?action=view&cik={0}&accession_number={1}&xbrl_type=v#"
+df["url"] = df.apply(lambda x: url.format(x["cik"], x['adsh']), axis=1)
+df.to_excel('outputs/contexts.xlsx')
 
