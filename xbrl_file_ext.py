@@ -20,6 +20,9 @@ from settings import Settings
 class XBRLFile:    
     def __init__(self, log_file = None):
         self.log = log_file
+        self.__setup_members()
+        
+    def __setup_members(self):        
         self.facts = {}
         self.contexts = None
         self.chapters = None
@@ -30,6 +33,7 @@ class XBRLFile:
         self.noninstant_cntx = None
     
     def read(self, zip_filename, xbrl_filename):
+        self.__setup_members()
         try:
             #unpack zip file and get cal_filename, xbrl_filename, pre_filename, xsd_filename
             packet = xbrl.XBRLZipPacket(zip_filename, xbrl_filename)
