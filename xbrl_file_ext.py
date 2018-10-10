@@ -31,11 +31,17 @@ class XBRLFile:
         self.units = None
         self.instant_cntx = None
         self.noninstant_cntx = None
+        self.ddate = None
+        self.cik_adsh = None
     
     def read(self, zip_filename, xbrl_filename):
         self.__setup_members()
         try:
             #unpack zip file and get cal_filename, xbrl_filename, pre_filename, xsd_filename
+            self.cik_adsh = (zip_filename
+                         .split('/')[-1]
+                         .split('.')[0])
+            
             packet = xbrl.XBRLZipPacket(zip_filename, xbrl_filename)
             if not packet.open_packet(self.log):
                 return False
@@ -284,9 +290,18 @@ class XBRLFile:
         facts = (facts.merge(contexts, 'inner', left_on='context', right_on='context')
                       .sort_values(['tag','dim','member']))
         
-        edate = (facts.groupby('edate')['edate'].count()
-                                .sort_values(ascending=False).iloc[:5]
-                                .index.max())
+        dates = (facts.groupby('edate')['edate']
+                      .count()
+                      .sort_values(ascending=False))
+        dates = dates[dates>dates.mean()]
+        edate = dates.index.max()
+        if pd.isnull(edate):
+            #this means that there is no apropriate sections in reports
+            return
+        
+        if xbrl.str2date(self.ddate) != edate:
+            print(self.cik_adsh, 'ddate != edate')
+            
         self.ddate = edate                
         sdate = edate - dt.timedelta(days=365.2425)
         tolerance = dt.timedelta(days=10)
@@ -822,55 +837,59 @@ class Context(object):
 
 log = LogFile("outputs/l.txt")
 r = XBRLFile(log)
-#file = ('z:/sec/2018/02/0000030554-0000030554-18-000002.zip',
-#        'dd-20171231.xml')
-#file2 = ("z:/sec/2014/03/0000031235-0001193125-14-106388.zip", 
-#       "kodk-20131231.xml")
-#file3 = ('z:/sec/2014/02/0000012927-0000012927-14-000004.zip',
-#         'ba-20131231.xml')
-#file4 = ('z:/sec/2014/02/0000006201-0000006201-14-000004.zip', 'american airlines')
-#file5 = ('z:/sec/2014/03/0000083402-0000083402-14-000011.zip', 'resource america')
-#file6 = ('z:/sec/2014/05/0000704051-0000704051-14-000063.zip', 'legg amson')
-#
-#r.read(file6[0], None)
-#r.find_contexts()
-#
-#log.close()
+file = ('z:/sec/2018/02/0000030554-0000030554-18-000002.zip',
+        'dd-20171231.xml')
+file2 = ("z:/sec/2014/03/0000031235-0001193125-14-106388.zip", 
+       "kodk-20131231.xml")
+file3 = ('z:/sec/2014/02/0000012927-0000012927-14-000004.zip',
+         'ba-20131231.xml')
+file4 = ('z:/sec/2014/02/0000006201-0000006201-14-000004.zip', 'american airlines')
+file5 = ('z:/sec/2014/03/0000083402-0000083402-14-000011.zip', 'resource america')
+file6 = ('z:/sec/2014/05/0000704051-0000704051-14-000063.zip', 'legg mason')
+file7 = ('z:/sec/2013/06/0000014693-0000014693-13-000038.zip', 'BROWN FORMAN CORP')
+file8 = ('z:/sec/2014/04/0001584207-0001104659-14-032472.zip', 'springleaf')
+file9 = ('z:/sec/2014/02/0000003499-0000003499-14-000005.zip', 'alexanders')
 
-data = []
+r.read(file6[0], None)
+r.find_contexts()
+print(r.instant_cntx, r.noninstant_cntx)
 
-try:
-    con = do.OpenConnection()
-    cur = con.cursor(dictionary=True)
-    cur.execute('select adsh, cik, file_link, contexts from reports ' +
-                ' where fin_year between {0} and {1}'
-                .format(Settings.years()[0], Settings.years()[1]) + 
-                Settings.select_limit())
-    
-    for index, row in enumerate(cur):
-        print('\rProcessed with:{0}...'.format(index+1), end='')
-        r.read('z' + row['file_link'][1:], None)
-        r.find_contexts()
-        contexts = json.loads(row['contexts'])
-        check = True
-        if not r.instant_cntx in contexts:
-            check = False
-        if not r.noninstant_cntx in contexts:
-            check = False
-        rep = [row['adsh'], row['cik'], row['file_link'], check, list(contexts.keys()),
-               r.instant_cntx, r.noninstant_cntx]
-        data.append(rep)
-        
-    print('ok')
-    df = pd.DataFrame(data, columns=['adsh', 'cik', 'file_link', 'check',
-                                     'old_cntx', 'instant', 'noninstant'])
-    
-        
-finally:
-    con.close()
-    log.close()
-    
-url = "https://www.sec.gov/cgi-bin/viewer?action=view&cik={0}&accession_number={1}&xbrl_type=v#"
-df["url"] = df.apply(lambda x: url.format(x["cik"], x['adsh']), axis=1)
-df.to_excel('outputs/contexts.xlsx')
+log.close()
+
+#data = []
+#
+#try:
+#    con = do.OpenConnection()
+#    cur = con.cursor(dictionary=True)
+#    cur.execute('select adsh, cik, file_link, contexts from reports ' +
+#                ' where fin_year between {0} and {1}'
+#                .format(Settings.years()[0], Settings.years()[1]) + 
+#                Settings.select_limit())
+#    
+#    for index, row in enumerate(cur):
+#        print('\rProcessed with:{0}...'.format(index+1), end='')
+#        r.read('z' + row['file_link'][1:], None)
+#        r.find_contexts()
+#        contexts = json.loads(row['contexts'])
+#        check = True
+#        if not r.instant_cntx in contexts:
+#            check = False
+#        if not r.noninstant_cntx in contexts:
+#            check = False
+#        rep = [row['adsh'], row['cik'], row['file_link'], check, list(contexts.keys()),
+#               r.instant_cntx, r.noninstant_cntx]
+#        data.append(rep)
+#        
+#    print('ok')
+#    df = pd.DataFrame(data, columns=['adsh', 'cik', 'file_link', 'check',
+#                                     'old_cntx', 'instant', 'noninstant'])
+#    
+#        
+#finally:
+#    con.close()
+#    log.close()
+#    
+#url = "https://www.sec.gov/cgi-bin/viewer?action=view&cik={0}&accession_number={1}&xbrl_type=v#"
+#df["url"] = df.apply(lambda x: url.format(x["cik"], x['adsh']), axis=1)
+#df.to_excel('outputs/contexts.xlsx')
 
