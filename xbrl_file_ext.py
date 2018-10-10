@@ -293,7 +293,7 @@ class XBRLFile:
         dates = (facts.groupby('edate')['edate']
                       .count()
                       .sort_values(ascending=False))
-        dates = dates[dates>dates.mean()]
+        dates = dates[dates>dates.mean()/2]
         edate = dates.index.max()
         if pd.isnull(edate):
             #this means that there is no apropriate sections in reports
@@ -304,7 +304,7 @@ class XBRLFile:
             
         self.ddate = edate                
         sdate = edate - dt.timedelta(days=365.2425)
-        tolerance = dt.timedelta(days=10)
+        tolerance = dt.timedelta(days=8)
                 
         instant = facts[facts['instant'] & 
                        (np.abs(facts['edate'] - edate) <= tolerance)]        
@@ -313,7 +313,8 @@ class XBRLFile:
                        (np.abs(facts['sdate'] - sdate) <= tolerance))]
                        
         inst_markers = ['us-gaap:Assets', 'us-gaap:Liabilities',
-                        'us-gaap:us-gaap:LiabilitiesAndStockholdersEquity']
+                        'us-gaap:us-gaap:LiabilitiesAndStockholdersEquity',
+                        'us-gaap:AssetsCurrent', 'us-gaap:LiabilitiesCurrent']
         instant = instant[instant['tag'].isin(inst_markers)]
         
         null_contexts = instant[instant['dim'].isnull()]['context'].unique()
@@ -330,7 +331,11 @@ class XBRLFile:
             
                 
         noninst_markers = ['us-gaap:ProfitLoss', 'us-gaap:OperatingIncomeLoss',
-                           'us-gaap:IncomeTaxExpenseBenefit', 'us-gaap:InterestExpense']
+                           'us-gaap:IncomeTaxExpenseBenefit', 'us-gaap:InterestExpense',
+                           'us-gaap:GeneralAndAdministrativeExpense','us-gaap:OperatingExpenses',
+                           'us-gaap:ComprehensiveIncomeNetOfTax', 'us-gaap:Revenues',
+                           'us-gaap:ProfitLoss', 'us-gaap:GrossProfit',
+                           'us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest']
         noninstant = noninstant[noninstant['tag'].isin(noninst_markers)]
         null_contexts = noninstant[noninstant['dim'].isnull()]['context'].unique()
         if null_contexts.shape[0] == 1:
@@ -775,12 +780,17 @@ class Fact(object):
             self.value = value
         
 
-#log = LogFile("outputs/l.txt")
-#r = XBRLFile(log)
-#r.read("z:/sec/2014/02/0000849213-0000849213-14-000010.zip", 
-#       "pcl-20131231.xml")
-#
-#log.close()
+class ContextsGroundTruth(object):
+    def __init__(self, filename):
+        self.contexts = (pd.read_csv(filename, sep='\t',
+                                     names=['adsh', 'inst', 'noninst'])
+                            .set_index('adsh'))
+    def get_contexts(self, adsh):
+        if adsh in self.contexts.index:
+            return {self.contexts.loc[adsh]['inst']:1,
+                    self.contexts.loc[adsh]['noninst']:2}
+        
+        return None
 
 
 class Context(object):
@@ -837,59 +847,79 @@ class Context(object):
 
 log = LogFile("outputs/l.txt")
 r = XBRLFile(log)
-file = ('z:/sec/2018/02/0000030554-0000030554-18-000002.zip',
-        'dd-20171231.xml')
-file2 = ("z:/sec/2014/03/0000031235-0001193125-14-106388.zip", 
-       "kodk-20131231.xml")
-file3 = ('z:/sec/2014/02/0000012927-0000012927-14-000004.zip',
-         'ba-20131231.xml')
-file4 = ('z:/sec/2014/02/0000006201-0000006201-14-000004.zip', 'american airlines')
-file5 = ('z:/sec/2014/03/0000083402-0000083402-14-000011.zip', 'resource america')
-file6 = ('z:/sec/2014/05/0000704051-0000704051-14-000063.zip', 'legg mason')
-file7 = ('z:/sec/2013/06/0000014693-0000014693-13-000038.zip', 'BROWN FORMAN CORP')
-file8 = ('z:/sec/2014/04/0001584207-0001104659-14-032472.zip', 'springleaf')
-file9 = ('z:/sec/2014/02/0000003499-0000003499-14-000005.zip', 'alexanders')
-
-r.read(file6[0], None)
-r.find_contexts()
-print(r.instant_cntx, r.noninstant_cntx)
-
-log.close()
-
-#data = []
+#file = ('z:/sec/2018/02/0000030554-0000030554-18-000002.zip',
+#        'dd-20171231.xml')
+#file2 = ("z:/sec/2014/03/0000031235-0001193125-14-106388.zip", 
+#       "kodk-20131231.xml")
+#file3 = ('z:/sec/2014/02/0000012927-0000012927-14-000004.zip',
+#         'ba-20131231.xml')
+#file4 = ('z:/sec/2014/02/0000006201-0000006201-14-000004.zip', 'american airlines')
+#file5 = ('z:/sec/2014/03/0000083402-0000083402-14-000011.zip', 'resource america')
+#file6 = ('z:/sec/2014/05/0000704051-0000704051-14-000063.zip', 'FI2014Q4_dei_LegalEntityAxis_lm_ConsolidatedLeggMasonDomain','FD2014Q4YTD_dei_LegalEntityAxis_lm_ConsolidatedLeggMasonDomain','legg mason')
+#file7 = ('z:/sec/2013/06/0000014693-0000014693-13-000038.zip', 'BROWN FORMAN CORP')
+#file8 = ('z:/sec/2014/04/0001584207-0001104659-14-032472.zip', 'springleaf')
+#file9 = ('z:/sec/2014/02/0000003499-0000003499-14-000005.zip', 'alexanders')
+#file10 = ('z:/sec/2013/09/0000086759-0001144204-13-051352.zip', '')
+#file11 = ('Z:/SEC/2013/08/0000068270-0000068270-13-000036.zip', '')
+#file12 = ('z:/sec/2014/03/0000215419-0000215419-14-000021.zip','FI2013Q4','FD2013Q4YTD')
+#file13 = ('z:/sec/2013/10/0000352991-0000352991-13-000029.zip', 'AsOf2013-06-30','From2012-07-01To2013-06-30')
+#file14 = ('z:/sec/2014/02/0001507196-0000721748-14-000197.zip', 'AsOf2013-08-31', 'From2012-09-01to2013-08-31')
+#file15 = ('z:/sec/2014/03/0001174672-0000721748-14-000312.zip', 'AsOf2013-12-31', 'From2013-01-01to2013-12-31')
+#file16 = ('z:/sec/2014/04/0001488501-0000721748-14-000362.zip', 'AsOf2013-12-31', 'From2013-01-01to2013-12-31')
+#file17 = ('z:/sec/2014/05/0001571384-0000721748-14-000420.zip', 'AsOf2013-12-31', 'From2013-01-01to2013-12-31')
+#file18 = ('z:/sec/2014/02/0000742112-0000742112-14-000017.zip', 'FI2013Q4' , 'FD2013Q4YTD')
+#file19 = ('z:/sec/2014/03/0000778438-0000778438-14-000009.zip', 'FI2013Q4_us-gaap_StatementScenarioAxis_us-gaap_SuccessorMember', 'D2014Q1PreMerger_us-gaap_StatementScenarioAxis_us-gaap_PredecessorMember') #succ-pred
+#file20 = ('z:/sec/2014/06/0000911568-0000810663-14-000009.zip', 'PAsOn03_31_2014', 'P04_01_2013To03_31_2014')
+#file21 = ('z:/sec/2014/03/0000873799-0000873799-14-000002.zip', 'c20131231', 'c20130101to20131231')
+#file22 = ('z:/sec/2014/03/0000747159-0000892626-14-000057.zip', 'AsOf2013-12-31', 'From2013-01-01to2013-12-31')
+#file23 = ('z:/sec/2014/03/0000934543-0000934543-14-000005.zip', '', '')
 #
-#try:
-#    con = do.OpenConnection()
-#    cur = con.cursor(dictionary=True)
-#    cur.execute('select adsh, cik, file_link, contexts from reports ' +
-#                ' where fin_year between {0} and {1}'
-#                .format(Settings.years()[0], Settings.years()[1]) + 
-#                Settings.select_limit())
-#    
-#    for index, row in enumerate(cur):
-#        print('\rProcessed with:{0}...'.format(index+1), end='')
-#        r.read('z' + row['file_link'][1:], None)
-#        r.find_contexts()
-#        contexts = json.loads(row['contexts'])
-#        check = True
-#        if not r.instant_cntx in contexts:
-#            check = False
-#        if not r.noninstant_cntx in contexts:
-#            check = False
-#        rep = [row['adsh'], row['cik'], row['file_link'], check, list(contexts.keys()),
-#               r.instant_cntx, r.noninstant_cntx]
-#        data.append(rep)
-#        
-#    print('ok')
-#    df = pd.DataFrame(data, columns=['adsh', 'cik', 'file_link', 'check',
-#                                     'old_cntx', 'instant', 'noninstant'])
-#    
-#        
-#finally:
-#    con.close()
-#    log.close()
-#    
-#url = "https://www.sec.gov/cgi-bin/viewer?action=view&cik={0}&accession_number={1}&xbrl_type=v#"
-#df["url"] = df.apply(lambda x: url.format(x["cik"], x['adsh']), axis=1)
-#df.to_excel('outputs/contexts.xlsx')
+#r.read(file23[0], None)
+#r.find_contexts()
+#print(r.instant_cntx, r.noninstant_cntx)
+#
+#log.close()
+
+data = []
+gt = ContextsGroundTruth('outputs/ground_contexts.csv')
+
+try:
+    con = do.OpenConnection()
+    cur = con.cursor(dictionary=True)
+    cur.execute('select adsh, cik, file_link, contexts from reports ' +
+                ' where fin_year between {0} and {1}'
+                .format(Settings.years()[0], Settings.years()[1]) + 
+                Settings.select_limit())
+    
+    for index, row in enumerate(cur):
+        print('\rProcessed with:{0}...'.format(index+1), end='')
+        if not r.read('z' + row['file_link'][1:], None):
+            print(row['file_link'],'bad file')
+            continue
+        
+        r.find_contexts()
+        contexts = gt.get_contexts(row['adsh'])
+        if contexts is None:
+            contexts = json.loads(row['contexts'])
+        check = True
+        if type(r.instant_cntx)==list or not r.instant_cntx in contexts:
+            check = False
+        if type(r.noninstant_cntx)==list or not r.noninstant_cntx in contexts:
+            check = False
+        rep = [row['adsh'], row['cik'], row['file_link'], check, list(contexts.keys()),
+               r.instant_cntx, r.noninstant_cntx]
+        data.append(rep)
+        
+    print('ok')
+    df = pd.DataFrame(data, columns=['adsh', 'cik', 'file_link', 'check',
+                                     'old_cntx', 'instant', 'noninstant'])
+    
+        
+finally:
+    con.close()
+    log.close()
+    
+url = "https://www.sec.gov/cgi-bin/viewer?action=view&cik={0}&accession_number={1}&xbrl_type=v#"
+df["url"] = df.apply(lambda x: url.format(x["cik"], x['adsh']), axis=1)
+df.to_excel('outputs/contexts.xlsx')
 

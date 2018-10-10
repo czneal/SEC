@@ -29,7 +29,7 @@ def SECdownload(year, month, part_dir, log):
     else:
         return ""
   
-def ItemFilesDownload(item, target_dir, temp_dir, ns, log):
+def ItemFilesDownload(item, target_dir, temp_dir, ns, log, overwrite=False):
     
     xbrl_section = item.find("edgar:xbrlFiling", ns)
     cik_id = xbrl_section.find("edgar:cikNumber", ns).text
@@ -37,7 +37,7 @@ def ItemFilesDownload(item, target_dir, temp_dir, ns, log):
     filer = xbrl_section.find("edgar:companyName", ns).text
     
     zip_filename = target_dir+"/"+cik_id+"-"+access_id+".zip"
-    if os.path.exists(zip_filename):
+    if os.path.exists(zip_filename) and not overwrite:
         #log.write("\t" + zip_filename + " exist!")
         return
     try:
