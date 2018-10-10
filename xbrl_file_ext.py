@@ -16,6 +16,7 @@ import pandas as pd
 import numpy as np
 import database_operations as do
 from settings import Settings
+import classificators as cl
 
 class XBRLFile:    
     def __init__(self, log_file = None):
@@ -33,6 +34,8 @@ class XBRLFile:
         self.noninstant_cntx = None
         self.ddate = None
         self.cik_adsh = None
+        self.ms = cl.MainSheets()
+        self.file_date = None
     
     def read(self, zip_filename, xbrl_filename):
         self.__setup_members()
@@ -41,6 +44,10 @@ class XBRLFile:
             self.cik_adsh = (zip_filename
                          .split('/')[-1]
                          .split('.')[0])
+            #only for tests
+            name = zip_filename.split('/')
+            self.file_date = dt.date(int(name[2]), int(name[3]), 27)
+            #end only for tests
             
             packet = xbrl.XBRLZipPacket(zip_filename, xbrl_filename)
             if not packet.open_packet(self.log):
@@ -105,18 +112,20 @@ class XBRLFile:
             fact_tags.update(c.get_pre_tags(only_sta))
         return fact_tags
     
-    def get_dimentions(self, only_sta=True):
+    def get_dimentions(self, only_sta=True):        
         dim = set()
         dim.add(None)
         for _, c in self.chapters.items():
-            dim.update(c.get_dimentions(only_sta))
+            if self.ms.match(c.label):
+                dim.update(c.get_dimentions(only_sta))
         return dim
     
     def get_dim_members(self, only_sta=True):
         member = set()
         member.add(None)
         for _, c in self.chapters.items():
-            member.update(c.get_members(only_sta))
+            if self.ms.match(c.label):
+                member.update(c.get_members(only_sta))
         return member
     
     def structure_dumps(self):
@@ -282,7 +291,8 @@ class XBRLFile:
                         columns = ['context', 'instant', 'sdate', 'edate',
                                    'dim', 'member'])
         contexts = contexts[contexts['dim'].isin(list(r.get_dimentions())) &
-                            contexts['member'].isin(list(r.get_dim_members()))]
+                            contexts['member'].isin(list(r.get_dim_members())) &
+                            (contexts['edate']<=self.file_date)]
         
         facts = pd.DataFrame(data = [fact.aslist() for ((f, c), fact) in r.facts.items()],
                              columns=['tag', 'value', 'uom', 'context'])
@@ -314,7 +324,8 @@ class XBRLFile:
                        
         inst_markers = ['us-gaap:Assets', 'us-gaap:Liabilities',
                         'us-gaap:us-gaap:LiabilitiesAndStockholdersEquity',
-                        'us-gaap:AssetsCurrent', 'us-gaap:LiabilitiesCurrent']
+                        'us-gaap:AssetsCurrent', 'us-gaap:LiabilitiesCurrent',
+                        'us-gaap:AssetsNet', 'us-gaap:OtherAssets']
         instant = instant[instant['tag'].isin(inst_markers)]
         
         null_contexts = instant[instant['dim'].isnull()]['context'].unique()
@@ -335,7 +346,8 @@ class XBRLFile:
                            'us-gaap:GeneralAndAdministrativeExpense','us-gaap:OperatingExpenses',
                            'us-gaap:ComprehensiveIncomeNetOfTax', 'us-gaap:Revenues',
                            'us-gaap:ProfitLoss', 'us-gaap:GrossProfit',
-                           'us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest']
+                           'us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest',
+                           'us-gaap:NetIncomeLoss']
         noninstant = noninstant[noninstant['tag'].isin(noninst_markers)]
         null_contexts = noninstant[noninstant['dim'].isnull()]['context'].unique()
         if null_contexts.shape[0] == 1:
@@ -847,6 +859,7 @@ class Context(object):
 
 log = LogFile("outputs/l.txt")
 r = XBRLFile(log)
+
 #file = ('z:/sec/2018/02/0000030554-0000030554-18-000002.zip',
 #        'dd-20171231.xml')
 #file2 = ("z:/sec/2014/03/0000031235-0001193125-14-106388.zip", 
@@ -873,8 +886,12 @@ r = XBRLFile(log)
 #file21 = ('z:/sec/2014/03/0000873799-0000873799-14-000002.zip', 'c20131231', 'c20130101to20131231')
 #file22 = ('z:/sec/2014/03/0000747159-0000892626-14-000057.zip', 'AsOf2013-12-31', 'From2013-01-01to2013-12-31')
 #file23 = ('z:/sec/2014/03/0000934543-0000934543-14-000005.zip', '', '')
+#file24 = ('z:/sec/2014/02/0001022505-0000721748-14-000106.zip', '', '')
+#file25 = ('z:/sec/2015/01/0000014177-0001437749-15-000786.zip', '', '')
+#file26 = ('z:/sec/2014/03/0001392545-0000890163-14-000012.zip','','')
+#file27 = ('z:/sec/2014/03/0000787250-0000787250-14-000011.zip','' ,'')
 #
-#r.read(file23[0], None)
+#r.read(file24[0], None)
 #r.find_contexts()
 #print(r.instant_cntx, r.noninstant_cntx)
 #
@@ -893,7 +910,7 @@ try:
     
     for index, row in enumerate(cur):
         print('\rProcessed with:{0}...'.format(index+1), end='')
-        if not r.read('z' + row['file_link'][1:], None):
+        if not r.read('z'+row['file_link'][1:], None):
             print(row['file_link'],'bad file')
             continue
         
