@@ -15,6 +15,9 @@ import io
 import sys
 
 def str2date(s):
+    if type(s) == dt.date:
+        return s
+    
     dtparts = [int(p) for p in s.strip().split('-')]
     return dt.date(dtparts[0], dtparts[1], dtparts[2])
 

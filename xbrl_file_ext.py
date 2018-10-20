@@ -30,14 +30,15 @@ class XBRLFile:
         self.trusted = True
         self.fact_tags = None
         self.units = None
-        self.instant_cntx = None
-        self.noninstant_cntx = None
+        self.cntx = {}
         self.ddate = None
         self.cik_adsh = None
         self.ms = cl.MainSheets()
         self.file_date = None
+        self.facts_df = None
+        self.cntx_df = None        
     
-    def read(self, zip_filename, xbrl_filename):
+    def read(self, zip_filename, file_date=None):
         self.__setup_members()
         try:
             #unpack zip file and get cal_filename, xbrl_filename, pre_filename, xsd_filename
@@ -45,11 +46,15 @@ class XBRLFile:
                          .split('/')[-1]
                          .split('.')[0])
             #only for tests
-            name = zip_filename.split('/')
-            self.file_date = dt.date(int(name[2]), int(name[3]), 27)
+            if file_date is None:
+                name = zip_filename.split('/')
+                self.file_date = dt.date(int(name[2]), int(name[3]), 1)
+                self.file_date = self.file_date - dt.timedelta(days=15)
+            else:
+                self.file_date = file_date
             #end only for tests
             
-            packet = xbrl.XBRLZipPacket(zip_filename, xbrl_filename)
+            packet = xbrl.XBRLZipPacket(zip_filename, None)
             if not packet.open_packet(self.log):
                 return False
             
@@ -219,6 +224,7 @@ class XBRLFile:
     def read_units_section(self, root, ns, xbrli):
         self.log.write_to_log("start reading contexts...")
         self.units = {}
+        currency = set(['usd', 'cad', 'eur'])
         
         for elem in root.findall("./"+xbrli+"unit"):
             name = elem.attrib["id"].lower().strip()
@@ -228,30 +234,30 @@ class XBRLFile:
                 denum = div[0].find(xbrli+"unitDenominator")
                 m1 = num.find(xbrli+"measure").text.lower().strip()
                 m2 = denum.find(xbrli+"measure").text.lower().strip()
-                if m1.endswith("usd") and m2.endswith("shares"):
-                    self.units[name] = "usd"
+                for c in currency:
+                    if m1.endswith(c) and m2.endswith("shares"):
+                        self.units[name] = c
             else:
                 measure = list(elem.iter(xbrli+"measure"))
                 m = measure[0].text.lower().strip()
-                if m.endswith("usd"):
-                    self.units[name] = "usd"
+                for c in currency:
+                    if m.endswith(c):
+                        self.units[name] = c
                 if m.endswith("shares"):
                     self.units[name] = "shares"
                 if m.endswith("pure"):
                     self.units[name] = "pure"
     
-    def compare_dates(d1, d2):
-        d1 = dt.datetime(int(d1.split('-')[0]), 
-                         int(d1.split('-')[1]), int(d1.split('-')[2]))
-        d2 = dt.datetime(int(d2.split('-')[0]), 
-                         int(d2.split('-')[1]), int(d2.split('-')[2]))
-        if abs((d1-d2).days) <= 10:
-            return True
-        return False
+    def fey_dist(self, ddate):
+        y = ddate.year
+        m = int(self.fye[:2])
+        d = int(self.fye[2:])
+        if m == 2 and d == 28:
+            d = 27
+        return abs((ddate-dt.date(y,m,d)).days)
         
     def read_contexts_section(self, root, ns, xbrli):
-        self.log.write_to_log("start reading contexts...")
-        
+        self.log.write_to_log("start reading contexts...")        
                
         self.contexts = {} 
         for elem in root.findall("./"+xbrli+"context"):
@@ -285,20 +291,41 @@ class XBRLFile:
                         if f.context in self.contexts:
                             self.facts[(f.name, f.context)] = f
         self.log.write_to_log("end reading facts section...ok")
-        
-    def find_contexts(self):
-        contexts = pd.DataFrame(data = [e.aslist() for (n, e) in r.contexts.items()],
+    
+    def make_contexts_facts(self, day_tolerance=8):                
+        contexts = pd.DataFrame(data = [e.aslist() for (n, e) in self.contexts.items()],
                         columns = ['context', 'instant', 'sdate', 'edate',
                                    'dim', 'member'])
-        contexts = contexts[contexts['dim'].isin(list(r.get_dimentions())) &
-                            contexts['member'].isin(list(r.get_dim_members())) &
+        contexts['dist'] = contexts['edate'].apply(self.fey_dist)
+        contexts = contexts[(contexts['dist']<=day_tolerance) &
                             (contexts['edate']<=self.file_date)]
         
-        facts = pd.DataFrame(data = [fact.aslist() for ((f, c), fact) in r.facts.items()],
+        
+        facts = pd.DataFrame(data = [fact.aslist() for ((f, c), fact) in self.facts.items()],
                              columns=['tag', 'value', 'uom', 'context'])
         
         facts = (facts.merge(contexts, 'inner', left_on='context', right_on='context')
                       .sort_values(['tag','dim','member']))
+        
+        self.cntx_df = contexts
+        self.facts_df = facts
+        
+    def find_instant_context(self, tolerance_days=8):
+        markers = set()
+        dims = set([None])
+        members = set([None])
+        for _, chapter in self.chapters.items():
+            if not self.ms.match_bs(chapter.label):
+                continue
+            markers.update(chapter.get_pre_tags())
+            markers.update(chapter.get_cal_tags())
+            dims.update(chapter.get_dimentions())
+            members.update(chapter.get_members())
+        
+        facts = self.facts_df[self.facts_df['dim'].isin(dims) &
+                              self.facts_df['member'].isin(members) &
+                              (self.facts_df['instant']) &
+                              self.facts_df['tag'].isin(markers)]
         
         dates = (facts.groupby('edate')['edate']
                       .count()
@@ -307,61 +334,122 @@ class XBRLFile:
         edate = dates.index.max()
         if pd.isnull(edate):
             #this means that there is no apropriate sections in reports
+            self.cntx['bs'] = None
             return
         
         if xbrl.str2date(self.ddate) != edate:
             print(self.cik_adsh, 'ddate != edate')
-            
-        self.ddate = edate                
-        sdate = edate - dt.timedelta(days=365.2425)
-        tolerance = dt.timedelta(days=8)
-                
-        instant = facts[facts['instant'] & 
-                       (np.abs(facts['edate'] - edate) <= tolerance)]        
-        noninstant = facts[~facts['instant'] & 
-                       ((np.abs(facts['edate'] - edate) <= tolerance) &
-                       (np.abs(facts['sdate'] - sdate) <= tolerance))]
-                       
-        inst_markers = ['us-gaap:Assets', 'us-gaap:Liabilities',
-                        'us-gaap:us-gaap:LiabilitiesAndStockholdersEquity',
-                        'us-gaap:AssetsCurrent', 'us-gaap:LiabilitiesCurrent',
-                        'us-gaap:AssetsNet', 'us-gaap:OtherAssets']
-        instant = instant[instant['tag'].isin(inst_markers)]
         
-        null_contexts = instant[instant['dim'].isnull()]['context'].unique()
-        if null_contexts.shape[0] == 1:
-            self.instant_cntx = null_contexts[0]
-        if null_contexts.shape[0] > 1:
-            self.instant_cntx = list(null_contexts)
-        if null_contexts.shape[0] == 0:
-            uc = instant['context'].unique()
-            if uc.shape[0] == 1:
-                self.instant_cntx = uc[0]
-            if uc.shape[0] > 1:
-                self.instant_cntx = list(uc)
-            
+        self.ddate = edate
+        
+        tolerance = dt.timedelta(days = tolerance_days)
                 
-        noninst_markers = ['us-gaap:ProfitLoss', 'us-gaap:OperatingIncomeLoss',
-                           'us-gaap:IncomeTaxExpenseBenefit', 'us-gaap:InterestExpense',
-                           'us-gaap:GeneralAndAdministrativeExpense','us-gaap:OperatingExpenses',
-                           'us-gaap:ComprehensiveIncomeNetOfTax', 'us-gaap:Revenues',
-                           'us-gaap:ProfitLoss', 'us-gaap:GrossProfit',
-                           'us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest',
-                           'us-gaap:NetIncomeLoss']
-        noninstant = noninstant[noninstant['tag'].isin(noninst_markers)]
-        null_contexts = noninstant[noninstant['dim'].isnull()]['context'].unique()
-        if null_contexts.shape[0] == 1:
-            self.noninstant_cntx = null_contexts[0]
-        if null_contexts.shape[0] > 1:
-            self.noninstant_cntx = list(null_contexts)
-        if null_contexts.shape[0] == 0:
-            uc = noninstant['context'].unique()
-            if uc.shape[0] == 1:
-                self.noninstant_cntx = uc[0]
-            if uc.shape[0] > 1:
-                self.noninstant_cntx = list(uc)
+        f = facts[(np.abs(facts['edate'] - edate) <= tolerance)]
+                    
+        cntx_grp = f.groupby('context')['context'].count()
+        cntx_grp = cntx_grp[cntx_grp>=cntx_grp.mean()/2]
+        cntx_grp = self.cntx_df[self.cntx_df['context'].isin(cntx_grp.index)]
+        
+        if cntx_grp.shape[0] == 1:
+            self.cntx['bs'] = cntx_grp.iloc[0]['context']
+            return
+        
+        filtered = cntx_grp[cntx_grp['dim'].isnull()]
+        if filtered.shape[0] == 1:
+            self.cntx['bs'] = filtered.iloc[0]['context']
+            return
+        if filtered.shape[0] > 1:
+            self.cntx['bs_err'] = filtered['context'].tolist()
+            return
+        
+        #filtered.shape[0] == 0:
+        filtered = cntx_grp[cntx_grp['member'].str.contains('successor', case=False)]            
+        if filtered.shape[0] == 1:
+            self.cntx['bs'] = filtered.iloc[0]['context']
+            return
+        if filtered.shape[0] > 1:
+            self.cntx['bs_err'] = filtered['context'].tolist()
+            return
+        #filtered.shape[0] == 0:
+        filtered = cntx_grp[cntx_grp['member'].str.contains('parentcompany', case=False)]
+        if filtered.shape[0] == 1:
+            self.cntx['bs'] = filtered.iloc[0]['context']
+        if filtered.shape[0] > 1:
+            self.cntx['bs_err'] = filtered['context'].tolist()
+        if filtered.shape[0] == 0:
+            self.cntx['bs_sum'] = cntx_grp['context'].tolist()
             
         return
+    
+    def find_noninstant_context(self, sheet, tolerance_days=8):
+        markers = set()
+        dims = set([None])
+        members = set([None])
+        for _, chapter in self.chapters.items():
+            if sheet == 'is' and not self.ms.match_is(chapter.label):
+                continue
+            if sheet == 'cf' and not self.ms.match_cf(chapter.label):
+                continue
+            markers.update(chapter.get_pre_tags())
+            markers.update(chapter.get_cal_tags())
+            dims.update(chapter.get_dimentions())
+            members.update(chapter.get_members())
+        
+        facts = self.facts_df[self.facts_df['dim'].isin(dims) &
+                              self.facts_df['member'].isin(members) &
+                              (self.facts_df['instant'] == False) &
+                              self.facts_df['tag'].isin(markers)]
+        
+        edate = self.ddate
+        sdate = edate - dt.timedelta(days=365.56)
+        
+        tolerance = dt.timedelta(days = tolerance_days)
+                
+        f = facts[(np.abs(facts['edate'] - edate) <= tolerance) &
+                  (np.abs(facts['sdate'] - sdate) <= tolerance)]
+                    
+        cntx_grp = self.noninstant_prep(f)
+        if cntx_grp.shape[0] == 1:
+            self.cntx[sheet] = cntx_grp.iloc[0]['context']
+        elif cntx_grp.shape[0] > 1:
+            filtered = cntx_grp[cntx_grp['dim'].isnull()]
+            if filtered.shape[0] == 1:
+                self.cntx[sheet] = filtered.iloc[0]['context']
+            elif filtered.shape[0] > 1:
+                self.cntx[sheet + '_err'] = filtered['context'].tolist()
+            else:            
+                filtered = cntx_grp[cntx_grp['member'].str.contains('parentcompany', case=False)]
+                if filtered.shape[0] == 1:
+                    self.cntx[sheet] = filtered.iloc[0]['context']
+                elif filtered.shape[0] > 1:
+                    self.cntx[sheet + '_err'] = filtered['context'].tolist()
+                else:
+                    filtered = cntx_grp[cntx_grp['member'].str.contains('successor', case=False)]
+                    if filtered.shape[0] == 1:
+                        self.cntx[sheet] = filtered.iloc[0]['context']
+                    elif filtered.shape[0] > 1:
+                        self.cntx[sheet + '_err'] = filtered['context'].tolist()
+                    else:
+                        self.cntx[sheet + '_sum'] = cntx_grp['context'].tolist()
+        else:
+            #merge contexts by date or find short periods
+            f = facts[(np.abs(facts['edate'] - edate) <= tolerance) |
+                      (np.abs(facts['sdate'] - sdate) <= tolerance)]
+            cntx_grp = self.noninstant_prep(f)
+            if cntx_grp.shape[0] == 1:
+                self.cntx[sheet] = cntx_grp.iloc[0]['context']
+            elif cntx_grp.shape[0] == 0:
+                self.cntx[sheet] = None
+            else:
+                print('should be implemented')
+      
+    
+    def noninstant_prep(self, f):
+        cntx_grp = f.groupby('context')['context'].count()
+        cntx_grp = cntx_grp[cntx_grp>=cntx_grp.mean()/2]
+        cntx_grp = self.cntx_df[self.cntx_df['context'].isin(cntx_grp.index)]
+        return cntx_grp
+    
     
 class LogFile(object):
     def __init__(self, filename):
@@ -647,7 +735,7 @@ class XSDFile(object):
                     chapter = "doc"
                 elif matchStatement.match(rol_def.text):
                     if matchParenthetical.match(rol_def.text):
-                        chapter = "sta"
+                        chapter = "par"
                     else:
                         chapter = "sta"
                 elif matchDisclosure.match(rol_def.text):
@@ -794,15 +882,22 @@ class Fact(object):
 
 class ContextsGroundTruth(object):
     def __init__(self, filename):
-        self.contexts = (pd.read_csv(filename, sep='\t',
-                                     names=['adsh', 'inst', 'noninst'])
-                            .set_index('adsh'))
+        self.contexts = (pd.read_csv(filename,sep=';')
+                            .set_index('adsh')
+                            )
+        self.contexts[pd.isnull(self.contexts)] = None
+        
     def get_contexts(self, adsh):
         if adsh in self.contexts.index:
-            return {self.contexts.loc[adsh]['inst']:1,
-                    self.contexts.loc[adsh]['noninst']:2}
+            return {'bs':self.contexts.loc[adsh]['bs'],
+                    'is':self.contexts.loc[adsh]['is'],
+                    'cf':self.contexts.loc[adsh]['cf']}
         
         return None
+    
+    def iterate(self):
+        for index, row in self.contexts.iterrows():
+            yield index, row['filename'], self.get_contexts(index)
 
 
 class Context(object):
@@ -860,41 +955,35 @@ class Context(object):
 log = LogFile("outputs/l.txt")
 r = XBRLFile(log)
 
-#file = ('z:/sec/2018/02/0000030554-0000030554-18-000002.zip',
-#        'dd-20171231.xml')
-#file2 = ("z:/sec/2014/03/0000031235-0001193125-14-106388.zip", 
-#       "kodk-20131231.xml")
-#file3 = ('z:/sec/2014/02/0000012927-0000012927-14-000004.zip',
-#         'ba-20131231.xml')
-#file4 = ('z:/sec/2014/02/0000006201-0000006201-14-000004.zip', 'american airlines')
-#file5 = ('z:/sec/2014/03/0000083402-0000083402-14-000011.zip', 'resource america')
-#file6 = ('z:/sec/2014/05/0000704051-0000704051-14-000063.zip', 'FI2014Q4_dei_LegalEntityAxis_lm_ConsolidatedLeggMasonDomain','FD2014Q4YTD_dei_LegalEntityAxis_lm_ConsolidatedLeggMasonDomain','legg mason')
-#file7 = ('z:/sec/2013/06/0000014693-0000014693-13-000038.zip', 'BROWN FORMAN CORP')
-#file8 = ('z:/sec/2014/04/0001584207-0001104659-14-032472.zip', 'springleaf')
-#file9 = ('z:/sec/2014/02/0000003499-0000003499-14-000005.zip', 'alexanders')
-#file10 = ('z:/sec/2013/09/0000086759-0001144204-13-051352.zip', '')
-#file11 = ('Z:/SEC/2013/08/0000068270-0000068270-13-000036.zip', '')
-#file12 = ('z:/sec/2014/03/0000215419-0000215419-14-000021.zip','FI2013Q4','FD2013Q4YTD')
-#file13 = ('z:/sec/2013/10/0000352991-0000352991-13-000029.zip', 'AsOf2013-06-30','From2012-07-01To2013-06-30')
-#file14 = ('z:/sec/2014/02/0001507196-0000721748-14-000197.zip', 'AsOf2013-08-31', 'From2012-09-01to2013-08-31')
-#file15 = ('z:/sec/2014/03/0001174672-0000721748-14-000312.zip', 'AsOf2013-12-31', 'From2013-01-01to2013-12-31')
-#file16 = ('z:/sec/2014/04/0001488501-0000721748-14-000362.zip', 'AsOf2013-12-31', 'From2013-01-01to2013-12-31')
-#file17 = ('z:/sec/2014/05/0001571384-0000721748-14-000420.zip', 'AsOf2013-12-31', 'From2013-01-01to2013-12-31')
-#file18 = ('z:/sec/2014/02/0000742112-0000742112-14-000017.zip', 'FI2013Q4' , 'FD2013Q4YTD')
-#file19 = ('z:/sec/2014/03/0000778438-0000778438-14-000009.zip', 'FI2013Q4_us-gaap_StatementScenarioAxis_us-gaap_SuccessorMember', 'D2014Q1PreMerger_us-gaap_StatementScenarioAxis_us-gaap_PredecessorMember') #succ-pred
-#file20 = ('z:/sec/2014/06/0000911568-0000810663-14-000009.zip', 'PAsOn03_31_2014', 'P04_01_2013To03_31_2014')
-#file21 = ('z:/sec/2014/03/0000873799-0000873799-14-000002.zip', 'c20131231', 'c20130101to20131231')
-#file22 = ('z:/sec/2014/03/0000747159-0000892626-14-000057.zip', 'AsOf2013-12-31', 'From2013-01-01to2013-12-31')
-#file23 = ('z:/sec/2014/03/0000934543-0000934543-14-000005.zip', '', '')
-#file24 = ('z:/sec/2014/02/0001022505-0000721748-14-000106.zip', '', '')
-#file25 = ('z:/sec/2015/01/0000014177-0001437749-15-000786.zip', '', '')
-#file26 = ('z:/sec/2014/03/0001392545-0000890163-14-000012.zip','','')
-#file27 = ('z:/sec/2014/03/0000787250-0000787250-14-000011.zip','' ,'')
+#file = ('d:/sec/2013/11/0000006281-0000006281-13-000040.zip','' ,'')
 #
-#r.read(file24[0], None)
-#r.find_contexts()
-#print(r.instant_cntx, r.noninstant_cntx)
+#r.read('z'+file[0][1:], None)
+#r.make_contexts_facts()
+#r.find_instant_context()
+#r.find_noninstant_context('is')
+#r.find_noninstant_context('cf')
 #
+#print(r.cntx)
+#
+#data = []
+#gt = ContextsGroundTruth('outputs/ground_contexts.csv')
+#for (adsh, filename, cntx) in gt.iterate():
+#    r.read('z' + filename[1:], None)
+#    r.make_contexts_facts()
+#    r.find_instant_context()
+#    r.find_noninstant_context('is')
+#    r.find_noninstant_context('cf')
+#    check = True
+#    for k,v in cntx.items():
+#        if k in r.cntx and v != r.cntx[k]:
+#            check = False
+#        if k not in r.cntx:
+#            check = False
+#    if not check:
+#        data.append([adsh, filename, json.dumps(r.cntx)])
+#        
+#err = pd.DataFrame(data, columns=['adsh', 'filename','cntx'])
+#err.to_csv('outputs/ground_err.csv')
 #log.close()
 
 data = []
@@ -903,33 +992,46 @@ gt = ContextsGroundTruth('outputs/ground_contexts.csv')
 try:
     con = do.OpenConnection()
     cur = con.cursor(dictionary=True)
-    cur.execute('select adsh, cik, file_link, contexts from reports ' +
+    cur.execute('select adsh, cik, file_link, file_date, contexts from reports ' +
                 ' where fin_year between {0} and {1}'
                 .format(Settings.years()[0], Settings.years()[1]) + 
                 Settings.select_limit())
     
-    for index, row in enumerate(cur):
+    for index, row in enumerate(cur.fetchall()):
         print('\rProcessed with:{0}...'.format(index+1), end='')
-        if not r.read('z'+row['file_link'][1:], None):
+        if not r.read('z'+row['file_link'][1:], row['file_date']):
             print(row['file_link'],'bad file')
             continue
         
-        r.find_contexts()
-        contexts = gt.get_contexts(row['adsh'])
-        if contexts is None:
+        r.make_contexts_facts()
+        r.find_instant_context()
+        r.find_noninstant_context('is')
+        r.find_noninstant_context('cf')
+        cntx = gt.get_contexts(row['adsh'])
+        if cntx is None:
+            cntx = {'bs':None, 'is':None, 'cf':None}
             contexts = json.loads(row['contexts'])
+            for k, v in contexts.items():
+                if len(v) == 1:
+                    cntx['bs'] = k
+                else:
+                    cntx['is'] = k
+                    cntx['cf'] = k
         check = True
-        if type(r.instant_cntx)==list or not r.instant_cntx in contexts:
-            check = False
-        if type(r.noninstant_cntx)==list or not r.noninstant_cntx in contexts:
-            check = False
-        rep = [row['adsh'], row['cik'], row['file_link'], check, list(contexts.keys()),
-               r.instant_cntx, r.noninstant_cntx]
+        for k,v in cntx.items():
+            if k in r.cntx and v != r.cntx[k]:
+                check = False
+            if k not in r.cntx:
+                check = False
+        rep = [row['adsh'], row['cik'], row['file_link'], check, 
+               cntx['bs'], cntx['is'], cntx['cf'],
+               r.cntx['bs'], r.cntx['is'], r.cntx['cf']]
         data.append(rep)
         
     print('ok')
     df = pd.DataFrame(data, columns=['adsh', 'cik', 'file_link', 'check',
-                                     'old_cntx', 'instant', 'noninstant'])
+                                     'bs', 'is', 'cf',
+                                     'n_bs', 'n_is', 'n_cf'])
     
         
 finally:

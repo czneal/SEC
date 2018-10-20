@@ -16,7 +16,7 @@ from keras.models import load_model
 
 class MainSheets(object):
     def __init__(self):
-        self.rebs = re.compile('.*balance.*sheet.*|.*financial.*position.*|.*financial.*condition.*|.*statement.*condition.*|.*assets.*liabilities.*', re.I)
+        self.rebs = re.compile('.*balance.*sheet.*|.*financial.*position.*|.*financial.*condition.*|.*statement.*condition.*|.*assets.*liabilities.*|.*statement.*assets.*', re.I)
         self.reis = re.compile('.*income.*statement.*|.*statement.*income.*|.*statement.*operation.*|.*statement.*earning.*|.*statement.*loss.*|.*result.*operation.*|.*comprehensive.*income.*|.*comprehensive.*loss.*', re.I)
         self.recf = re.compile('.*cash.*flow.*', re.I)
         self.detail = re.compile('.*\(detail.*\).*', re.I)
