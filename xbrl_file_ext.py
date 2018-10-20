@@ -335,6 +335,7 @@ class XBRLFile:
         if pd.isnull(edate):
             #this means that there is no apropriate sections in reports
             self.cntx['bs'] = None
+            self.ddate = xbrl.str2date(self.ddate)
             return
         
         if xbrl.str2date(self.ddate) != edate:
@@ -955,13 +956,13 @@ class Context(object):
 log = LogFile("outputs/l.txt")
 r = XBRLFile(log)
 
-#file = ('d:/sec/2013/11/0000006281-0000006281-13-000040.zip','' ,'')
+#file = ('d:/sec/2014/05/0000815065-0000815065-14-000004.zip','' ,'')
 #
 #r.read('z'+file[0][1:], None)
-#r.make_contexts_facts()
-#r.find_instant_context()
-#r.find_noninstant_context('is')
-#r.find_noninstant_context('cf')
+#r.make_contexts_facts(18)
+#r.find_instant_context(8)
+#r.find_noninstant_context('is', 8)
+#r.find_noninstant_context('cf', 8)
 #
 #print(r.cntx)
 #
@@ -1003,7 +1004,7 @@ try:
             print(row['file_link'],'bad file')
             continue
         
-        r.make_contexts_facts()
+        r.make_contexts_facts(18)
         r.find_instant_context()
         r.find_noninstant_context('is')
         r.find_noninstant_context('cf')
