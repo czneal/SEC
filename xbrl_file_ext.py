@@ -249,11 +249,13 @@ class XBRLFile:
                     self.units[name] = "pure"
     
     def fey_dist(self, ddate):
+        if ddate is None:
+            return None
         y = ddate.year
         m = int(self.fye[:2])
         d = int(self.fye[2:])
-        if m == 2 and d == 28:
-            d = 27
+        if m == 2 and d == 29:
+            d = 28
         return abs((ddate-dt.date(y,m,d)).days)
         
     def read_contexts_section(self, root, ns, xbrli):
@@ -296,8 +298,10 @@ class XBRLFile:
         contexts = pd.DataFrame(data = [e.aslist() for (n, e) in self.contexts.items()],
                         columns = ['context', 'instant', 'sdate', 'edate',
                                    'dim', 'member'])
-        contexts['dist'] = contexts['edate'].apply(self.fey_dist)
-        contexts = contexts[(contexts['dist']<=day_tolerance) &
+        contexts['edist'] = contexts['edate'].apply(self.fey_dist)
+        contexts['sdist'] = contexts['sdate'].apply(self.fey_dist)
+        contexts = contexts[((contexts['edist']<=day_tolerance) |
+                            (contexts['sdist']<=day_tolerance)) &
                             (contexts['edate']<=self.file_date)]
         
         
@@ -956,15 +960,15 @@ class Context(object):
 log = LogFile("outputs/l.txt")
 r = XBRLFile(log)
 
-#file = ('d:/sec/2014/05/0000815065-0000815065-14-000004.zip','' ,'')
-#
-#r.read('z'+file[0][1:], None)
-#r.make_contexts_facts(18)
-#r.find_instant_context(8)
-#r.find_noninstant_context('is', 8)
-#r.find_noninstant_context('cf', 8)
-#
-#print(r.cntx)
+file = ('d:/sec/2014/03/0000031235-0001193125-14-106388.zip','' ,'')
+
+r.read('z'+file[0][1:], None)
+r.make_contexts_facts(18)
+r.find_instant_context(8)
+r.find_noninstant_context('is', 8)
+r.find_noninstant_context('cf', 8)
+
+print(r.cntx)
 #
 #data = []
 #gt = ContextsGroundTruth('outputs/ground_contexts.csv')
@@ -987,59 +991,59 @@ r = XBRLFile(log)
 #err.to_csv('outputs/ground_err.csv')
 #log.close()
 
-data = []
-gt = ContextsGroundTruth('outputs/ground_contexts.csv')
-
-try:
-    con = do.OpenConnection()
-    cur = con.cursor(dictionary=True)
-    cur.execute('select adsh, cik, file_link, file_date, contexts from reports ' +
-                ' where fin_year between {0} and {1}'
-                .format(Settings.years()[0], Settings.years()[1]) + 
-                Settings.select_limit())
-    
-    for index, row in enumerate(cur.fetchall()):
-        print('\rProcessed with:{0}...'.format(index+1), end='')
-        if not r.read('z'+row['file_link'][1:], row['file_date']):
-            print(row['file_link'],'bad file')
-            continue
-        
-        r.make_contexts_facts(18)
-        r.find_instant_context()
-        r.find_noninstant_context('is')
-        r.find_noninstant_context('cf')
-        cntx = gt.get_contexts(row['adsh'])
-        if cntx is None:
-            cntx = {'bs':None, 'is':None, 'cf':None}
-            contexts = json.loads(row['contexts'])
-            for k, v in contexts.items():
-                if len(v) == 1:
-                    cntx['bs'] = k
-                else:
-                    cntx['is'] = k
-                    cntx['cf'] = k
-        check = True
-        for k,v in cntx.items():
-            if k in r.cntx and v != r.cntx[k]:
-                check = False
-            if k not in r.cntx:
-                check = False
-        rep = [row['adsh'], row['cik'], row['file_link'], check, 
-               cntx['bs'], cntx['is'], cntx['cf'],
-               r.cntx['bs'], r.cntx['is'], r.cntx['cf']]
-        data.append(rep)
-        
-    print('ok')
-    df = pd.DataFrame(data, columns=['adsh', 'cik', 'file_link', 'check',
-                                     'bs', 'is', 'cf',
-                                     'n_bs', 'n_is', 'n_cf'])
-    
-        
-finally:
-    con.close()
-    log.close()
-    
-url = "https://www.sec.gov/cgi-bin/viewer?action=view&cik={0}&accession_number={1}&xbrl_type=v#"
-df["url"] = df.apply(lambda x: url.format(x["cik"], x['adsh']), axis=1)
-df.to_excel('outputs/contexts.xlsx')
+#data = []
+#gt = ContextsGroundTruth('outputs/ground_contexts.csv')
+#
+#try:
+#    con = do.OpenConnection()
+#    cur = con.cursor(dictionary=True)
+#    cur.execute('select adsh, cik, file_link, file_date, contexts from reports ' +
+#                ' where fin_year between {0} and {1}'
+#                .format(Settings.years()[0], Settings.years()[1]) + 
+#                Settings.select_limit())
+#    
+#    for index, row in enumerate(cur.fetchall()):
+#        print('\rProcessed with:{0}...'.format(index+1), end='')
+#        if not r.read('z'+row['file_link'][1:], row['file_date']):
+#            print(row['file_link'],'bad file')
+#            continue
+#        
+#        r.make_contexts_facts(18)
+#        r.find_instant_context()
+#        r.find_noninstant_context('is')
+#        r.find_noninstant_context('cf')
+#        cntx = gt.get_contexts(row['adsh'])
+#        if cntx is None:
+#            cntx = {'bs':None, 'is':None, 'cf':None}
+#            contexts = json.loads(row['contexts'])
+#            for k, v in contexts.items():
+#                if len(v) == 1:
+#                    cntx['bs'] = k
+#                else:
+#                    cntx['is'] = k
+#                    cntx['cf'] = k
+#        check = True
+#        for k,v in cntx.items():
+#            if k in r.cntx and v != r.cntx[k]:
+#                check = False
+#            if k not in r.cntx:
+#                check = False
+#        rep = [row['adsh'], row['cik'], row['file_link'], check, 
+#               cntx['bs'], cntx['is'], cntx['cf'],
+#               r.cntx['bs'], r.cntx['is'], r.cntx['cf']]
+#        data.append(rep)
+#        
+#    print('ok')
+#    df = pd.DataFrame(data, columns=['adsh', 'cik', 'file_link', 'check',
+#                                     'bs', 'is', 'cf',
+#                                     'n_bs', 'n_is', 'n_cf'])
+#    
+#        
+#finally:
+#    con.close()
+#    log.close()
+#    
+#url = "https://www.sec.gov/cgi-bin/viewer?action=view&cik={0}&accession_number={1}&xbrl_type=v#"
+#df["url"] = df.apply(lambda x: url.format(x["cik"], x['adsh']), axis=1)
+#df.to_excel('outputs/contexts.xlsx')
 
