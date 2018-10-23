@@ -190,16 +190,31 @@ class Word(object):
         w.symbols.extend(right.symbols)
         return w
     
-    def reduce(self, cycle):
-        w = self.simplify()
-        old_str = str(w)
-        new_str = ''
-        while old_str != new_str:
-            old_str = str(w)
-            w = w.order(cycle)
-            w = w.simplify()
-            new_str = str(w)        
+    def reduce(self, cycle):        
+        w = Word(str(self))
+        for letter in range(cycle-1, 0, -1):
+            pos = []
+            for i, (s,pw) in enumerate(w.symbols):
+                if s == letter: pos.append(i)
+            for p in pos:
+                for i in range(p, 1, -1):
+                    if (abs(w.symbols[i-1][0] - w.symbols[i][0]) == 1 or
+                        abs(w.symbols[i-1][0] - w.symbols[i][0]) == cycle):
+                        w.symbols[i-1], w.symbols[i] = w.symbols[i], w.symbols[i-1]
+            w = w.simplify()            
+            
         return w
+    
+#    def reduce(self, cycle):
+#        w = self.simplify()
+#        old_str = str(w)
+#        new_str = ''
+#        while old_str != new_str:
+#            old_str = str(w)
+#            w = w.order(cycle)
+#            w = w.simplify()
+#            new_str = str(w)        
+#        return w
     
     def totpow(self):
         return sum([pw for (e,pw) in self.symbols])
@@ -255,11 +270,14 @@ def read_dictionary(length):
     df['word'] = df['form'].apply(lambda x: Word(x))
     return df
 
-#w = Word('a0*a2*a3**3')
-#v = rho_new(w, 6)
+
 cycle = 6
 length = 6
-#df = read_dictionary(length)
+
+df = pd.read_csv('outputs/dict6.csv')
+df['word'] = df['form'].apply(lambda x: Word(x))
+f = open('outputs/wg6.txt','w')
+
 data = []
 for g_index, g_row in enumerate(df.iterrows()):
     g = g_row[1]['word']    
@@ -272,10 +290,12 @@ for g_index, g_row in enumerate(df.iterrows()):
             data.append([str(w), str(g)])
             print()
             print(w, g)
+            f.write('{0}\t{1}\n'.format(str(w), str(g)))
+            f.flush()
             
-        if w_index%1000: 
+        if w_index%1000 == 0: 
             print('\rg_index:{0} w_index:{1} w:{2} g:{3}               '.format(w_index, g_index, w, g), end='')
-        
+f.close()
 
 
 
