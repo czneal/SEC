@@ -76,7 +76,7 @@ def sigma(word, r, G):
         
     return val
 
-def generate(length, G):
+def generate_old(length, G):
     b = []
     b.extend(G.generators)
     b.extend([e**-1 for e in G.generators])
@@ -91,17 +91,17 @@ def generate(length, G):
         yield w        
     return
 
-def generate_custom(length, n):
+def generate(length, n):
     b = [(e,1) for e in range(n)]
     b.extend([(e,-1) for e in range(n)])
     for data in it.product(b, repeat=length):
         w = Word()
         w.symbols = data
-        w = w.reduce()
+        w = w.reduce(n)
         if w.length() < length:
             continue
         if w.totpow()<0:
-            yield w.inverse().order()
+            yield w.inverse().reduce(n)
         else:
             yield w
         
@@ -124,6 +124,14 @@ class Word(object):
             else:
                 s += self.letter + '{0}**{1}*'.format(e[0],e[1])
         return s[:-1]
+    
+    def __eq__(self, w):
+        if len(w.symbols) != len(self.symbols):
+            return False
+        for (e1, pw1), (e2, pw2) in zip(self.symbols, w.symbols):
+            if e1 != e2 or pw1 != pw2:
+                return False
+        return True
     
     def read(self, s_word):
         s = s_word.replace('**','^')
@@ -191,30 +199,24 @@ class Word(object):
         return w
     
     def reduce(self, cycle):        
-        w = Word(str(self))
-        for letter in range(cycle-1, 0, -1):
-            pos = []
-            for i, (s,pw) in enumerate(w.symbols):
-                if s == letter: pos.append(i)
-            for p in pos:
-                for i in range(p, 1, -1):
-                    if (abs(w.symbols[i-1][0] - w.symbols[i][0]) == 1 or
-                        abs(w.symbols[i-1][0] - w.symbols[i][0]) == cycle):
-                        w.symbols[i-1], w.symbols[i] = w.symbols[i], w.symbols[i-1]
-            w = w.simplify()            
+        w = self.simplify()
+        while True:            
+            for letter in range(cycle-1, -1, -1):
+                pos = []
+                for i, (s,pw) in enumerate(w.symbols):
+                    if s == letter: pos.append(i)
+                for p in pos:
+                    for i in range(p, 0, -1):
+                        if (abs(w.symbols[i-1][0] - w.symbols[i][0]) == 1 or
+                            abs(w.symbols[i-1][0] - w.symbols[i][0]) == cycle-1):
+                            w.symbols[i-1], w.symbols[i] = w.symbols[i], w.symbols[i-1]
+                        else:
+                            break
+            v = w.simplify()
+            if v == w: break
+            else: w = v
             
-        return w
-    
-#    def reduce(self, cycle):
-#        w = self.simplify()
-#        old_str = str(w)
-#        new_str = ''
-#        while old_str != new_str:
-#            old_str = str(w)
-#            w = w.order(cycle)
-#            w = w.simplify()
-#            new_str = str(w)        
-#        return w
+        return v
     
     def totpow(self):
         return sum([pw for (e,pw) in self.symbols])
@@ -225,7 +227,9 @@ class Word(object):
     def isidentity(self):
         return (len(self.symbols) == 0)
     
-def dictionary(length, G):
+    __repr__ = __str__
+        
+def dictionary_old(length, G):
     data = []
     for index, word in enumerate(generate(length, G)):
         print('\r{0}'.format(index), end='')
@@ -248,56 +252,58 @@ def rho_new(w, cycle):
         new.symbols.append((cycle - e -1, pw))
     return new
 
-def dictionary_new(length, cycle):
+def dictionary(length, cycle):
     data = []
-    for index, w in enumerate(generate_custom(length, cycle)):
-        if index%100 == 0:
-            print('\rw:{0}'.format(index), end='')
-        data.append(str(w))
+    for l in range(1, length + 1):
+        for index, w in enumerate(generate(l, cycle)):
+            if index%1000 == 0:
+                print('\rlength:{0} w:{1}   '.format(l, index), end='')
+            data.append(str(w))
     print()
         
     df = pd.DataFrame(data, columns=['form']).set_index('form')
     df = df[~df.index.duplicated(keep='first')]
-    df.to_csv('outputs/wn{0}.csv'.format(length))
+    df.to_csv('outputs/dict{0}.csv'.format(length))
     
     return df
 
 def read_dictionary(length):
-    frames = []
-    for i in range(1, length+1):
-        frames.append(pd.read_csv('outputs/wn{0}.csv'.format(i)))
-    df = pd.concat(frames)
+    df = pd.read_csv('outputs/dict{0}.csv'.format(length))
     df['word'] = df['form'].apply(lambda x: Word(x))
-    return df
 
+def process_words(length, cycle, rho, istart, iend):    
+    f = open('outputs/wg{0}-{1}-{2}.txt'.format(length, istart, iend), 'w')
+    wdict = pd.read_csv('outputs/dict6.csv')
+    wdict['word'] = wdict['form'].apply(lambda x: Word(x))
+    
+    data = []
+    for g_index, g_row in enumerate(wdict.iloc[istart:iend].iterrows()):
+        g = g_row[1]['word']    
+        for w_index, w_row in enumerate(wdict.iterrows()):
+            w = w_row[1]['word']
+            rho_w = rho(w, cycle)
+            res = rho_w.inverse().mul(g.inverse()).mul(w).mul(g)
+            res = res.reduce(cycle)
+            if res.isidentity():
+                data.append([str(w), str(g)])
+                print()
+                print(w, g)
+                f.write('{0}\t{1}\n'.format(str(w), str(g)))
+                f.flush()
+                
+            if w_index%1000 == 0: 
+                print('\rg_index:{0} w_index:{1} w:{2} g:{3}               '
+                      .format(g_index + istart, w_index, w, g), end='')
+    f.close()
 
-cycle = 6
-length = 6
+from multiprocessing.dummy import Pool as ThreadPool
+pool = ThreadPool(4)
+params = [[6, 6, rho_new, 0, 1],
+          [6, 6, rho_new, 1, 2],
+          [6, 6, rho_new, 2, 3],
+          [6, 6, rho_new, 4, 5]]
 
-df = pd.read_csv('outputs/dict6.csv')
-df['word'] = df['form'].apply(lambda x: Word(x))
-f = open('outputs/wg6.txt','w')
-
-data = []
-for g_index, g_row in enumerate(df.iterrows()):
-    g = g_row[1]['word']    
-    for w_index, w_row in enumerate(df.iterrows()):
-        w = w_row[1]['word']
-        rho_w = rho_new(w, cycle)
-        res = rho_w.inverse().mul(g.inverse()).mul(w).mul(g)
-        res = res.reduce(cycle)
-        if res.isidentity():
-            data.append([str(w), str(g)])
-            print()
-            print(w, g)
-            f.write('{0}\t{1}\n'.format(str(w), str(g)))
-            f.flush()
-            
-        if w_index%1000 == 0: 
-            print('\rg_index:{0} w_index:{1} w:{2} g:{3}               '.format(w_index, g_index, w, g), end='')
-f.close()
-
-
-
-
+results = pool.starmap(process_words, params)
+pool.close() 
+pool.join()
 
