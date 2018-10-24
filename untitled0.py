@@ -295,15 +295,19 @@ def process_words(length, cycle, rho, istart, iend):
                 print('\rg_index:{0} w_index:{1} w:{2} g:{3}               '
                       .format(g_index + istart, w_index, w, g), end='')
     f.close()
+    return 'end with range:{0}-{1}'.format(istart, iend)
 
-from multiprocessing.dummy import Pool as ThreadPool
-pool = ThreadPool(4)
-params = [[6, 6, rho_new, 0, 1],
-          [6, 6, rho_new, 1, 2],
-          [6, 6, rho_new, 2, 3],
-          [6, 6, rho_new, 4, 5]]
+from multiprocessing import Pool
+import os
 
-results = pool.starmap(process_words, params)
-pool.close() 
-pool.join()
+if __name__ == '__main__':
+    cpus = os.cpu_count() - 1
+    params = []
+    start, end, step = 0, 1000, 20
+    for i in range(start, end, step):
+        params.append([6, 6, rho_new, i, i + step])    
+    with Pool(cpus) as p:
+        print(p.starmap(process_words, params))  
+
+
 
