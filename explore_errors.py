@@ -25,7 +25,7 @@ def read_class_log():
     return df.unstack().sort_index()
 
 def read_errors(reports):
-    df = (pd.read_csv("outputs/diffliabs/2018-11-13/liab_custom.csv")
+    df = (pd.read_csv("outputs/diffliabs/2018-11-13/liab_custom_lshe.csv")
             .set_index("adsh")
             .sort_index()
             .merge(reports, how='inner', left_index=True, right_index=True))
