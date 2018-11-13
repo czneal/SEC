@@ -80,18 +80,7 @@ class ChapterClassificator(object):
         return False
 
   
-class Classificator(object):
-    def __init__(self, fdict, fmodel):        
-        self._load_dict(fdict)
-        self._load_model(fmodel)
-        
-    def _load_dict(self, filename):
-        with open(filename) as f:
-            self.tag_to_code = {l.split(";")[0]:l.replace("\n","").split(";")[1] for l in f}
-    
-    def _load_model(self, filename):
-        self.model = load_model(filename)
-        
+class Classifier(object):        
     def concatenate_arrays(parent, child, max_len):
         half_len = int(max_len/2)
         conc_array = np.zeros((len(parent) ,max_len))
@@ -108,12 +97,28 @@ class Classificator(object):
             return tag.split(":")[-1]
         else:
             return tag
+        
+    def predict_value(self, nums, structure):
+        
+        return 0.0
     
-class LiabClassStub(object):
+class ModelClassifier(Classifier):
+    def __init__(self, fdict, fmodel):        
+        self._load_dict(fdict)
+        self._load_model(fmodel)
+        
+    def _load_dict(self, filename):
+        with open(filename) as f:
+            self.tag_to_code = {l.split(";")[0]:l.replace("\n","").split(";")[1] for l in f}
+    
+    def _load_model(self, filename):
+        self.model = load_model(filename)
+    
+class LiabClassStub(Classifier):
     def predict(self, p, c):
         return 1.0
 
-class LiabClassSingle(Classificator):            
+class LiabClassSingle(ModelClassifier):            
     def predict(self, parent, tag):
         tag = LiabClassSingle.remove_prefix(tag)
         
@@ -129,7 +134,7 @@ class LiabClassSingle(Classificator):
         
         return predicted
     
-class LiabClassPC(Classificator):    
+class LiabClassPC(ModelClassifier):    
     def predict(self, parent, child):
         parent = LiabClassPC.remove_prefix(parent)
         child = LiabClassPC.remove_prefix(child)
@@ -148,7 +153,7 @@ class LiabClassPC(Classificator):
         
         to_predict_child = np.zeros((1, len(k_child)))
         to_predict_child[0]= k_child
-        to_predict  = Classificator.concatenate_arrays(to_predict_parent, 
+        to_predict  = Classifier.concatenate_arrays(to_predict_parent, 
                                                        to_predict_child,
                                                        maxlen)
         
@@ -169,7 +174,7 @@ class LiabClassMixed(LiabClassPC):
         else:
             return super().predict(parent, child)
 
-class StaticClassifier(object):
+class StaticClassifier(Classifier):
     def __init__(self, filename, count=100):
         self.stat = set()
         with open(filename) as f:
@@ -246,8 +251,3 @@ class LSHEDirectChildrenClassifier(StaticClassifier):
             raise
         finally:
             con.close()
-        
-        
-class StockHoldersEquityClassificator(StaticClassifier):
-    def make(filename):
-        return
