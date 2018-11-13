@@ -96,15 +96,17 @@ def error_calculus(df):
     return errors
 
 def liab_lshe_adv():
-    df = pd.read_csv("outputs/diffliabs/liab_custom.csv").set_index("adsh").sort_index()
-    f = df
+    df = pd.read_csv("outputs/diffliabs/2018-11-13/liab_custom.csv").set_index("adsh").sort_index()
 
     print("read structures...", end="")
-    lshe = lc.LSHEAdvanced(f.index)
+    lshe = lc.LSHEAdvanced(df.index)
     print("ok")
 
     print("start calculus...", end="")
-    f["lshe_adv"] = f.apply(lambda x: lshe.calc(x.name), axis=1)
+    df["lshe_adv"] = df.apply(lambda x: lshe.calc(x.name), axis=1)
+    l = 'us-gaap:Liabilities'
+    df['err_lshe_adv'] = np.abs((df['lshe_adv']-df[l])/df[l])
+    df.to_csv('outputs/diffliabs/2018-11-13/liab_custom_lshe.csv')
     print("ok")
 
 def read_tag_values(query, tags):
@@ -135,7 +137,8 @@ def read_values(query):
 
     return df
 
-df = calc_liabilities_variants()
+#df = calc_liabilities_variants()
+df = liab_lshe_adv()
 
 #f = xbrl_scan.AdshFilter("outputs/adsh_for_reread.txt")
 #log = xbrl_file.LogFile("outputs/l.txt")

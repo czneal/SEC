@@ -117,7 +117,7 @@ class LSHEAdvanced(object):
         self.lshe = cl.LSHEDirectChildrenClassifier("lbClf/lshe_direct.csv")
 
     def calc(self, adsh):
-        print("\rprocessed:{0}", self.count, end="")
+        print("\rprocessed:{0}".format(self.count), end="")
         self.count += 1
         structure = json.loads(self.structures.loc[adsh]["structure"])
         for elem in to._enumerate_tags_basic(structure,
