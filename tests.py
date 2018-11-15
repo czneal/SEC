@@ -40,14 +40,14 @@ def liabilities_weights_year(fy):
     finally:
         con.close()
 
-def calc_liabilities_variants():
+def calc_liabilities_variants(metric):
     years = list(range(Settings.years()[0], Settings.years()[1]))
 
     print("loading models...", end="")
     diff_liabs = lc.DifferentLiabilities()
     print("ok")
     print("open log file...", end="")
-    log = log_file.LogFile("outputs/liab_class.log",
+    log = log_file.LogFile("outputs/diffliabs/2018-11-13/liab_class.log",
                             append=False,
                         timestamp=False)
     print("ok")
@@ -61,7 +61,7 @@ def calc_liabilities_variants():
         frames.append(df)
         df["fy"] = fy
 
-    df = pd.concat(frames)
+    df = pd.concat(frames, sort=False)
     log.close()
     print("end calculus")
 
@@ -69,24 +69,33 @@ def calc_liabilities_variants():
     df.set_index(["adsh"], inplace=True)
     df.loc[df["us-gaap:Liabilities"]==0.0, "us-gaap:Liabilities"] = np.nan
     error_calculus(df)
-    df.to_csv("outputs/liab_custom.csv")
+    df.to_csv("outputs/diffliabs/2018-11-13/liab_custom.csv")
     print("ok")
 
     return df
 
-def error_calculus(df):
+def error_calculus(df, metric):
     l = "us-gaap:Liabilities"
     errors = []
     for i, c in enumerate(df.columns):
         if c.startswith("lcc") or c.startswith("lcpc"):
-            df["err_"+c] = np.abs((df[c] - df[l])/df[l])
+            if metric =='percent':
+               df["err_"+c] = percent_metric(df[c], df[l])
+            if metric == 'total':
+                df["err_"+c] = total_metric(df[c], df[l])
+             
             errors.append(["err_"+c, np.mean(df["err_"+c]), df["err_"+c].max(),
                            df["err_"+c].idxmax()])
 
     a = "us-gaap:LiabilitiesAndStockHoldersEquity"
     b = "us-gaap:StockholdersEquity"
-    df["lshe-she"] = df[a] - df[b]
-    df["err_lshe_she"] = np.abs((df["lshe-she"] - df[l])/df[l])
+    df["lshe_she"] = df[a] - df[b]
+    if metric =='percent':
+        df['err_lshe_she'] = percent_metric(df['lshe_she'], df[l])
+    if metric == 'total':
+        df['err_lshe_she'] = total_metric(df['lshe_she'], df[l])
+        
+   
     errors.append(["err_lshe_she", np.mean(df["err_lshe_she"]),
                    df["err_lshe_she"].max(),
                    df["err_lshe_she"].idxmax()])
@@ -94,8 +103,13 @@ def error_calculus(df):
     errors = pd.DataFrame(errors, columns=["error_name", "mean", "max", "argmax"]).set_index("error_name")
 
     return errors
+def percent_metric(val, l):
+    return np.abs((val-l)/l)
 
-def liab_lshe_adv():
+def total_metric(val, l):
+    return np.abs(val - l)
+
+def liab_lshe_adv(metric):
     df = pd.read_csv("outputs/diffliabs/2018-11-13/liab_custom.csv").set_index("adsh").sort_index()
 
     print("read structures...", end="")
@@ -105,9 +119,15 @@ def liab_lshe_adv():
     print("start calculus...", end="")
     df["lshe_adv"] = df.apply(lambda x: lshe.calc(x.name), axis=1)
     l = 'us-gaap:Liabilities'
-    df['err_lshe_adv'] = np.abs((df['lshe_adv']-df[l])/df[l])
+    if metric =='percent':
+        df['err_lshe_adv'] = percent_metric(df['lshe_adv'], df[l])
+    if metric == 'total':
+        df['err_lshe_adv'] = total_metric(df['lshe_adv'], df[l])
+        
     df.to_csv('outputs/diffliabs/2018-11-13/liab_custom_lshe.csv')
     print("ok")
+    
+    return df
 
 def read_tag_values(query, tags):
     try:
@@ -137,8 +157,8 @@ def read_values(query):
 
     return df
 
-#df = calc_liabilities_variants()
-df = liab_lshe_adv()
+df = calc_liabilities_variants('total')
+df = liab_lshe_adv('total')
 
 #f = xbrl_scan.AdshFilter("outputs/adsh_for_reread.txt")
 #log = xbrl_file.LogFile("outputs/l.txt")

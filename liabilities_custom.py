@@ -96,6 +96,8 @@ class DifferentLiabilities(object):
 
             data = []
             for report_index, report in enumerate(cur):
+#                if report['adsh'] != '0001144204-14-019456':
+#                    continue
                 liabs = self.calc_report_liabilities(con, report["structure"], report["adsh"], log)
                 liabs["adsh"] = report["adsh"]
                 liabs["cik"] = report["cik"]

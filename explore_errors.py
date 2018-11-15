@@ -202,7 +202,7 @@ def filter_err_liab_isnull(df, vcol):
     f.sort_values('err', ascending=False)
     return f
 
-algs = ["lcpc_new_sum", "lcpc_old", "lcpc_m_old", "lcpc_m_new"]
+algs = ["lcpc_m_new_sum", "lcpc_m_new", "lcpc_old", "lcpc_m_old", "lcpc_new"]
 
 Err = ErrorsAndLogs()
 Err.explain(algs, '', None, '')
