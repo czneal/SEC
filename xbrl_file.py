@@ -5,7 +5,6 @@ Created on Wed Oct 11 11:44:49 2017
 @author: Asus
 """
 
-import xml.etree.ElementTree as ET
 import zipfile
 import datetime as dt
 import re
@@ -13,11 +12,12 @@ import os
 import json
 import io
 import sys
+from xml_tools import XmlTreeTools
 
 def str2date(s):
     if type(s) == dt.date:
         return s
-    
+
     dtparts = [int(p) for p in s.strip().split('-')]
     return dt.date(dtparts[0], dtparts[1], dtparts[2])
 
@@ -29,45 +29,45 @@ class XBRLZipPacket(object):
         self.xsd_file = None
         self.cal_file = None
         self.pre_file = None
-        
-    def open_packet(self, log):     
-        log.write_to_log("open zip archive: "+self.zip_filename)
-        
-        z_file = None        
+
+    def open_packet(self, err):
+        z_file = None
         try:
             z_file = zipfile.ZipFile(self.zip_filename)
         except:
-            log.write_to_log("bad zip file: " + self.zip_filename)
+            err.write("bad zip file: " + self.zip_filename + os.linesep)
         if z_file == None:
             return False
-        
+
         files = z_file.namelist()
         files = [f.replace('.xml','') for f in files if f.endswith('.xml')]
         files = set([f.split('_')[0] for f in files])
         self.xbrl_filename = files.pop() + '.xml'
-        
+
         try:
-            
             self.xbrl_file = z_file.open(self.xbrl_filename)
             self.xsd_file = z_file.open(self.xbrl_filename[0:-3] + "xsd")
             self.cal_file = z_file.open(self.xbrl_filename[0:-4]+"_cal.xml")
             self.pre_file = z_file.open(self.xbrl_filename[0:-4]+"_pre.xml")
+            self.lab_file = z_file.open(self.xbrl_filename[0:-4]+"_lab.xml")
         except:
             if self.xbrl_file is None:
-                log.write_to_log("missing xbrl file in zip file")
+                err.write("missing xbrl file in zip file" + os.linesep)
             elif self.xsd_file is None:
-                log.write_to_log("missing xsd file in zip file")
+                err.write("missing xsd file in zip file" + os.linesep)
             elif self.cal_file is None:
-                log.write_to_log("missing cal file in zip file")
+                err.write("missing cal file in zip file" + os.linesep)
             elif self.pre_file is None:
-                log.write_to_log("missing pre file in zip file")
+                err.write("missing pre file in zip file" + os.linesep)
+            elif self.lab_file is None:
+                err.write("missing lab file in zip file" + os.linesep)
             else:
-                log.write_to_log("error while readin zip archive")
+                err.write("error while readin zip archive" + os.linesep)
             return False
-        
+
         return True
-   
-class XBRLFile:    
+
+class XBRLFile:
     def __init__(self, log_file = None):
         self.log = log_file
         self.facts = {}
@@ -76,25 +76,25 @@ class XBRLFile:
         self.trusted = True
         self.fact_tags = None
         self.units = None
-    
+
     def read(self, zip_filename, xbrl_filename):
         try:
             #unpack zip file and get cal_filename, xbrl_filename, pre_filename, xsd_filename
             packet = XBRLZipPacket(zip_filename, xbrl_filename)
             if not packet.open_packet(self.log):
                 return False
-            
+
             xsd_file = XSDFile(self.log)
             cal_file = CALFile(self.log)
             pre_file = PREFile(self.log)
-            
-            self.chapters = xsd_file.read(packet.xsd_file)        
+
+            self.chapters = xsd_file.read(packet.xsd_file)
             cal_file.read(packet.cal_file, self.chapters)
             pre_file.read(packet.pre_file, self.chapters)
-            
+
             tools = XmlTreeTools()
             tools.read_xml_tree(packet.xbrl_file)
-            
+
             root, ns = tools.root, tools.ns
             prefixes = {}
             self.fact_tags = self.used_tags()
@@ -102,18 +102,18 @@ class XBRLFile:
                 prefix = t.split(":")[0]
                 if prefix in ns:
                     prefixes[ns[prefix]] = prefix
-                    
+
             self.read_dei_section(root, ns)
             if self.fy == 0 or self.ddate == "" or self.fye == "":
                 self.log.write_to_log("Dei section is not full")
                 return False
             if self.check_period_fy(root, ns, tools.xbrli) == False:
                 return False
-            
+
             self.read_contexts_section(root, ns, tools.xbrli)
             self.read_units_section(root, ns, tools.xbrli)
             self.read_facts_section(root, self.fact_tags, ns, prefixes)
-            
+
             calc_log = io.StringIO()
             for _, c in self.chapters.items():
                 c.check_cal_scheme(self.facts, calc_log)
@@ -121,37 +121,37 @@ class XBRLFile:
             calc_log.flush()
             calc_log.seek(0)
             self.calc_log = calc_log.read()
-            
+
             if self.calc_log != "":
                 self.trusted = False
                 self.log.write_to_log("calculation error!")
                 self.log.write_to_log(self.calc_log)
             else:
                 self.trusted = True
-            
+
             self.fact_tags = self.used_tags()
         except:
             self.log.write_to_log("unexpected error while reading:"+zip_filename)
             self.log.write_to_log(str(sys.exc_info()))
             return False
         return True
-    
+
     def used_tags(self):
-        fact_tags = set()        
+        fact_tags = set()
         for _, c in self.chapters.items():
             fact_tags.update(c.get_cal_tags())
             fact_tags.update(c.get_pre_tags())
         return fact_tags
-    
+
     def structure_dumps(self):
         dump = {}
         for _, c in self.chapters.items():
             js = c.json()
             if js is not None:
                 dump[c.label] = js
-                
+
         return json.dumps(dump)
-            
+
 
     def read_dei_section(self, root, ns):
         self.log.write_to_log("start reading dei section...")
@@ -161,7 +161,7 @@ class XBRLFile:
             self.fye = node.text.strip().replace("-","")
         else:
             self.log.write_to_log("  dei:CurrentFiscalYearEndDate not found")
-            
+
         self.ddate = ""
         node = root.find("./dei:DocumentPeriodEndDate", ns)
         if node is not None:
@@ -169,13 +169,13 @@ class XBRLFile:
             self.ddate_context = node.attrib["contextRef"].strip()
         else:
             self.log.write_to_log("  dei:DocumentPeriodEndDate not found")
-        
+
         self.isin = None
         node = root.find("./dei:TradingSymbol", ns)
         if node is not None and node.text is not None:
             self.isin = node.text.upper().strip()
             if len(self.isin)>12: self.isin = None
-            
+
         self.fy = 0
         node = root.find("./dei:DocumentFiscalYearFocus", ns)
         if node is not None:
@@ -187,19 +187,19 @@ class XBRLFile:
                 self.fy = dt.date.today().year
         else:
             self.log.write_to_log("  dei:DocumentFiscalYearFocus not found")
-            
+
         self.log.write_to_log("end reading dei section")
-        
+
     def check_period_fy(self, root, ns, xbrli):
         check = True
         dd = dt.date(int(self.ddate[0:4]), int(self.ddate[5:7]), int(self.ddate[8:10]))
         if dd.year < self.fy:
             check = False
         if abs((dt.date(self.fy, 12, 31) - dd).days)>270:
-            check = False            
-        if check: 
+            check = False
+        if check:
             return
-        
+
         d = ""
         for elem in root.findall("./"+xbrli+"context"):
             if elem.attrib["id"].strip() == self.ddate_context:
@@ -209,7 +209,7 @@ class XBRLFile:
                 else:
                     d = period[1].text.strip()
                 break
-            
+
         if d == self.ddate:
             if dd.month>3:
                 self.fy = dd.year
@@ -224,17 +224,17 @@ class XBRLFile:
                     self.fy = dd.year
                 else:
                     self.fy = dd.year-1
-                check = True                    
-        
+                check = True
+
         if not check:
             self.log.write_to_log("Period and fy inconsistence can not be solved")
         return check
-        
+
 
     def read_units_section(self, root, ns, xbrli):
         self.log.write_to_log("start reading contexts...")
         self.units = {}
-        
+
         for elem in root.findall("./"+xbrli+"unit"):
             name = elem.attrib["id"].lower().strip()
             div = list(elem.iter(xbrli+"divide"))
@@ -254,44 +254,44 @@ class XBRLFile:
                     self.units[name] = "shares"
                 if m.endswith("pure"):
                     self.units[name] = "pure"
-    
+
     def compare_dates(d1, d2):
-        d1 = dt.datetime(int(d1.split('-')[0]), 
+        d1 = dt.datetime(int(d1.split('-')[0]),
                          int(d1.split('-')[1]), int(d1.split('-')[2]))
-        d2 = dt.datetime(int(d2.split('-')[0]), 
+        d2 = dt.datetime(int(d2.split('-')[0]),
                          int(d2.split('-')[1]), int(d2.split('-')[2]))
         if abs((d1-d2).days) <= 10:
             return True
         return False
-        
+
     def read_contexts_section(self, root, ns, xbrli):
         self.log.write_to_log("start reading contexts...")
         self.contexts = {}
         other = {}
-        #find dates for context filtering        
-        fin = dt.date(int(self.ddate[0:4]), int(self.ddate[5:7]), int(self.ddate[8:10]))        
-        
-        #read full year contexts without segments        
+        #find dates for context filtering
+        fin = dt.date(int(self.ddate[0:4]), int(self.ddate[5:7]), int(self.ddate[8:10]))
+
+        #read full year contexts without segments
         duration = 0
         st = None
         c_name = ""
-        for elem in root.findall("./"+xbrli+"context"):            
+        for elem in root.findall("./"+xbrli+"context"):
             if len(list(elem.iter(xbrli+"segment"))) > 0:
                 continue
-                        
-            period = elem.find(xbrli+"period")            
+
+            period = elem.find(xbrli+"period")
             if len(list(period)) == 1:
                 instant = period.find(xbrli+"instant")
                 if instant is None:
                     continue
-                d = period[0].text.strip()                
+                d = period[0].text.strip()
                 if XBRLFile.compare_dates(d, self.ddate):
                     self.contexts[elem.attrib["id"]] = [d]
             else:
                 startDate = period.find(xbrli+"startDate")
                 if startDate is None:
                     continue
-                
+
                 d1 = period[0].text.strip()
                 d2 = period[1].text.strip()
                 other[elem.attrib["id"]] = [d1,d2]
@@ -316,120 +316,49 @@ class XBRLFile:
                     self.contexts[name] = [str(d1),str(d2)]
         else:
             self.log.write_to_log("  entity contexts not found")
-            
+
         if len(self.contexts) != 2:
             self.log.write_to_log("  missing contexts")
-            
+
         self.log.write_to_log("end reading contexts...ok")
-        
-        
+
+
     def read_facts_section(self, root, fact_tags, ns, prefixes):
         self.log.write_to_log("start reading facts section...")
-        self.facts.clear()               
-        
+        self.facts.clear()
+
         for elem in root.iter():
             for pref in prefixes:
                 if elem.tag.startswith("{"+pref):
                     source = elem.tag.strip().split("}")[0][1:]
                     f = Fact(elem, prefixes[source])
-                    
+
                     if f.name not in fact_tags:
                         continue
                     if f.uom not in self.units:
                         continue
                     f.uom = self.units[f.uom]
-                    
+
                     if f.name in self.facts:
                         self.facts[f.name].update(elem)
                     else:
                         if f.context in self.contexts:
                             self.facts[f.name] = f
         self.log.write_to_log("end reading facts section...ok")
-    
+
 class LogFile(object):
     def __init__(self, filename):
         self.log_file = open(filename, "w")
-        
+
     def write_to_log(self, s, end = os.linesep):
         self.log_file.write(s + end)
         self.log_file.flush()
-        
+
     def close(self):
         self.log_file.flush()
         self.log_file.close()
         del self.log_file
-        
-class XmlTreeTools(object):
-    def __init__(self):
-        self.root = None
-        self.ns = None
-        self.xbrli = ""
-        self.link = ""
-        self.empty = ""
-        
-    def read_xml_tree(self, xml_file):
-        events = ("start-ns", "start")
-        ns = {}
-        c = ET.iterparse(xml_file, events=events)
-        c = iter(c)
-        root = None
-        #parse namespace names
-        for event, elem in c:
-            if event == "start-ns":
-                ns[elem[1]] = elem[0].lower()
-            if event == "start" and root == None: 
-                root = elem
-        
-#        links = set()
-#        for e in root.iter():
-#            for attr in e.attrib:
-#                vals = attr.split('{')
-#                if len(vals) == 1:
-#                    continue
-#                links.add(vals[1].split('}')[0])
-#            vals = e.tag.split('{')
-#            if len(vals) == 1:
-#                continue
-#            links.add(vals[1].split('}')[0])
-#                
-#        
-#        ns = dict([(ns[k], k) for k in links])
-        blank = [(v,k) for (k,v) in ns.items() if v == '']
-        nss = {}
-        if len(blank) >= 2:            
-            for k,v in ns.items():
-               if v == '':
-                   if k == "http://www.xbrl.org/2003/instance":
-                       nss[v] = k
-                   else:
-                       nss[k.split('/')[-1]] = k
-               else:
-                   nss[v] = k
-        else:
-            nss = dict([(v,k) for k,v in ns.items()])
-        ns = nss
-        self.root = root
-        self.ns = ns
-        
-        if "xbrli" in ns: 
-            self.xbrli = "{"+ns["xbrli"]+"}"
-        elif "" in ns:
-            self.xbrli = "{"+ns[""]+"}"
-    
-        if "link" in ns:
-            self.link = "{" +ns["link"]+ "}"
-        elif "" in ns:
-            self.link = "{" +ns[""]+ "}"
-            
-        if "xlink" in ns:
-            self.xlink = "{"+ns["xlink"]+"}"
-        elif "" in ns:
-            self.xlink = "{" +ns[""]+ "}"
-        if "" in ns:
-            self.empty = "{"+ns[""]+"}"
-        elif "link" in ns:
-            self.empty = "{"+ns["link"]+"}"
-    
+
 class Node(object):
     """Represent node in calculation tree
     name - us_gaap or custom name
@@ -444,61 +373,61 @@ class Node(object):
         self.children = {}
         self.parent = None
         self.value = None
-        
+
     def enum_children(node):
         for _, c in node.children.items():
             for n in Node.enum_children(c[0]):
                 yield n
         yield node
-        
+
     def print_children(self, spaces):
         """print children with structure"""
         for _, c in self.children.items():
             print(spaces, c[0].name, c[1], c[0].value)
             c[0].print_children(spaces+" ")
-            
+
     def calculate(self, facts, calc_log):
         self.value = None
         for _, c in self.children.items():
             c[0].calculate(facts, calc_log)
             if c[0].value is not None:
                 self.value = (0.0 if self.value is None else self.value) + (c[0].value)*c[1]
-        
+
         if self.name not in facts:
             return
-        
+
         if len(self.children) == 0 or self.value is None:
             self.value = facts[self.name].value
-        
+
         if self.value != facts[self.name].value:
             difference = facts[self.name].value - self.value
             calc_log.write("{0}\t{1}\t{2}\t{3}\n".format(self.name, self.value, facts[self.name].value, difference))
-            
+
             expected = {}
             for _, f in facts.items():
                 if f.value == difference:
                     expected[f.name] = f.value
             if len(expected)>0:
                 calc_log.write("expected: {0}\n".format(expected))
-    
+
     def json(self):
         retval = {"name":self.name, "tag":self.tag, "source":self.source, "weight": 0.0, "children": None}
         if len(self.children) == 0:
             return retval
         retval["children"] = {}
-        for name, c in self.children.items():            
+        for name, c in self.children.items():
             retval["children"][name] = c[0].json()
             retval["children"][name]["weight"] = c[1]
-            
-        return retval    
-        
+
+        return retval
+
 class Chapter(object):
     """Represents chapter in terms of financial report
     role_uri - RoleURI from xsd file
     chap_id - id from xsd file
     chapter - chapter type, from whitch part of report it comes. "sta" - Statement, "doc" - document and so on
     label - as it represent in final report
-    nodes - {node_id:[Node, weight]}, represent all tags using in calc scheme, node_id - is a "label" for node in "loc" tag in cal, pre or lab file 
+    nodes - {node_id:[Node, weight]}, represent all tags using in calc scheme, node_id - is a "label" for node in "loc" tag in cal, pre or lab file
     nodes_pre - {node_id: Node} same as nodes
     """
     def __init__(self, role_uri, chap_id, chapter, label):
@@ -507,22 +436,22 @@ class Chapter(object):
         self.chapter = chapter
         self.label = label
         self.nodes = {}
-        self.nodes_pre = {}    
+        self.nodes_pre = {}
     def read_cal(self, calcLink, empty, xlink):
         """reads chapter content from cal file"""
         nodes_ids = {}
-        
+
         for loc in calcLink.iter(empty+"loc"):
             loc_id = loc.attrib[xlink+"label"].strip()
             href = loc.attrib[xlink+"href"].strip()
             href = href.split("#")[-1]
             source = href.split("_")[0].lower()
-            
+
             tag = href.split("_")[-1]
             n = Node(tag, source)
             nodes_ids[loc_id] = n.name
             self.nodes[n.name] = n
-        
+
         #find all calculation arcs
         for calcArc in calcLink.iter(empty+"calculationArc"):
             p_id = calcArc.attrib[xlink+"from"].strip()
@@ -530,42 +459,42 @@ class Chapter(object):
             c_name = nodes_ids[c_id]
             p_name = nodes_ids[p_id]
             weight = float(calcArc.attrib["weight"])
-            
+
             self.nodes[p_name].children[c_name] = [self.nodes[c_name], weight]
             self.nodes[c_name].parent = self.nodes[p_name]
-            
+
     def read_pre(self, preLink, empty, xlink):
         """reads chapter content from pre file, reads chapters which comes from Statement section of report"""
         if self.chapter != "sta":
             return
-        
+
         nodes_ids = {}
-        
+
         for loc in preLink.iter(empty+"loc"):
             loc_id = loc.attrib[xlink+"label"].strip()
             href = loc.attrib[xlink+"href"].strip()
             href = href.split("#")[-1]
-            source = href.split("_")[0].lower()            
+            source = href.split("_")[0].lower()
             tag = href.split("_")[-1]
-            
+
             if tag.endswith("Abstract"):
-                continue            
+                continue
             if loc_id in nodes_ids:
                 continue
-            
+
             n = Node(tag, source)
             if n.name in self.nodes:
                 continue
-            
+
             nodes_ids[loc_id] = n.name
             self.nodes_pre[n.name] = n
-    
+
     def get_pre_tags(self):
-        """Returns set of tags shown in Statements sections of report, 
+        """Returns set of tags shown in Statements sections of report,
         tags stored as "us-gaap:TagName", "custom:CustomTagName" """
-        
+
         tags = set()
-        
+
         for name, node in self.nodes_pre.items():
             if name not in self.nodes:
                 tags.add(node.name)
@@ -573,7 +502,7 @@ class Chapter(object):
                 for n in Node.enum_children(node):
                     tags.add(n.name)
         return tags
-    
+
     def get_cal_tags(self):
         """Returns set of tags shown in calculation scheme
         """
@@ -583,13 +512,13 @@ class Chapter(object):
                 for c in Node.enum_children(node):
                     tags.add(c.name)
         return tags
-                
+
     def print_self(self):
         if self.chapter != "sta":
             return
         if len(self.nodes) == 0 and len(self.nodes_pre) == 0:
             return
-        
+
         print("chapter:", self.label)
         for _, node in self.nodes.items():
             if node.parent is None:
@@ -597,45 +526,45 @@ class Chapter(object):
                 node.print_children("  ")
         for _, node in self.nodes_pre.items():
             print(" "+ node.name, node.value, "Presentation")
-            
+
     def check_cal_scheme(self, facts, calc_log):
         if self.chapter != "sta":
             return
-        
+
         for _, n in self.nodes.items():
             if n.parent is None:
                 n.calculate(facts, calc_log)
-                
+
     def update_pre_values(self, facts):
         for name, f in facts.items():
             if name not in self.nodes_pre:
                 continue
             self.nodes_pre[name].value = f.value
-        
+
         deleted = []
         for name in self.nodes_pre.keys():
             if self.nodes_pre[name].value == None:
                 deleted.append(name)
         for name in deleted:
             self.nodes_pre.pop(name)
-    
+
     def json(self):
         if self.chapter != "sta" or len(self.nodes) == 0:
             return None
-        
+
         retval = {}
         for name, n in self.nodes.items():
             if n.parent is None:
                 retval[name] = n.json()
 #        for name, n in self.nodes_pre.items():
 #            retval[name] = n.json()
-            
+
         return retval
-                    
+
 class XSDFile(object):
     def __init__(self, log):
         self.log = log
-        
+
     def read(self, xsd_file):
         try:
             chapters = {}
@@ -649,18 +578,18 @@ class XSDFile(object):
             det - notes details - matchDetail
             '''
             matchStatement = re.compile('.* +\- +Statement +\- .*')
-            matchDisclosure = re.compile('.* +\- +Disclosure +\- +.*') 
+            matchDisclosure = re.compile('.* +\- +Disclosure +\- +.*')
             matchDocument = re.compile('.* +\- +Document +\- +.*')
             matchParenthetical = re.compile('.*\-.+-.*Paren.+')
             matchPolicy = re.compile('.*\(.*Polic.*\).*')
             matchTable = re.compile('.*\(Table.*\).*')
             matchDetail = re.compile('.*\(Detail.*\).*')
-            
+
             tools = XmlTreeTools()
             tools.read_xml_tree(xsd_file)
             root = tools.root
             link = tools.link
-                
+
             for role in root.iter(link+"roleType"):
                 rol_def = role.find(link+"definition")
                 chapter = ""
@@ -682,33 +611,33 @@ class XSDFile(object):
                         chapter = "not"
                 role_uri = role.attrib["roleURI"]
                 label = rol_def.text.split(" - ")[-1].strip()
-                chapters[role_uri] = Chapter(role_uri, role.attrib["id"], chapter, label)        
-            
+                chapters[role_uri] = Chapter(role_uri, role.attrib["id"], chapter, label)
+
             self.log.write_to_log("end reading xsd scheme, status ok")
             return chapters
         except:
             return None
-        
+
 class CALFile(object):
     def __init__(self, log):
         self.log = log
-    
+
     def read(self, cal_filename, chapters):
         self.log.write_to_log("start reading calculation scheme...")
-        
+
         tools = XmlTreeTools()
         tools.read_xml_tree(cal_filename)
-        
+
         xlink, empty = tools.xlink, tools.empty
         root = tools.root
-        
+
         for calcLink in root.iter(empty+"calculationLink"):
             role_uri = calcLink.attrib[xlink+"role"].strip()
             chapters[role_uri].read_cal(calcLink, empty, xlink)
-            
-        #self.__organize(chapters)            
+
+        #self.__organize(chapters)
         self.log.write_to_log("end reading calculation scheme...ok")
-    
+
     def __organize(self, chapters):
         for c, chapter in chapters.items():
             if chapter.chapter != "sta":
@@ -732,7 +661,7 @@ class CALFile(object):
                     continue
                 if c1==c:
                     continue
-                
+
                 for n, node in chapter.nodes.items():
                     if len(node.children) != 0:
                         continue
@@ -741,41 +670,41 @@ class CALFile(object):
                             continue
                         if node1.name == node.name:
                             node.children = node1.children.copy()
-            
-            
+
+
 class PREFile(object):
     def __init__(self, log):
         self.log = log
-        
+
     def read(self, pre_filename, chapters):
         self.log.write_to_log("start reading presentation scheme...")
-        
+
         tools = XmlTreeTools()
         tools.read_xml_tree(pre_filename)
         xlink, empty = tools.xlink, tools.empty
         root = tools.root
-                
+
         for preLink in root.iter(empty+"presentationLink"):
             role_uri = preLink.attrib[xlink+"role"].strip()
             chapters[role_uri].read_pre(preLink, empty, xlink)
-            
+
         self.log.write_to_log("end reading presentation scheme...ok")
-        
-   
+
+
 class Fact(object):
     def __init__(self, elem, source):
         self.tag, self.context, self.value, self.uom, self.decimals, _  = Fact.read(elem)
         self.source = source.lower()
         self.name = source+":"+self.tag
-        
-    def read(elem):        
+
+    def read(elem):
         context = elem.attrib["contextRef"].strip()
-                
+
         uom = ""
         if "unitRef" in elem.attrib:
             uom = elem.attrib["unitRef"].strip().lower()
-        
-        
+
+
         decimals = ""
         if "decimals" in elem.attrib:
             decimals = elem.attrib["decimals"].strip()
@@ -783,7 +712,7 @@ class Fact(object):
             decimals = 0
         else:
             decimals = abs(int(decimals))
-        
+
         if elem.text is None:
             value = 0
         else:
@@ -791,28 +720,28 @@ class Fact(object):
                 value = float(elem.text.strip())
             except ValueError:
                 value = 0
-                
+
         #check overflow of mysql decimal(24,4)
         if abs(value) > 10**19:
             value = 0
-            
+
         name = elem.tag.strip().split("}")[-1]
         prefix = elem.tag.strip().split("}")[0][1:]
-        
+
         return name, context, value, uom, decimals, prefix
-    
+
     def update(self, elem):
         name, context, value, uom, decimals, prefix = Fact.read(elem)
         if context != self.context:
             return
-        
+
         if decimals < self.decimals:
             self.value = value
-        
+
 
 #log = LogFile("outputs/l.txt")
 #r = XBRLFile(log)
-#r.read("z:/sec/2014/02/0000849213-0000849213-14-000010.zip", 
+#r.read("z:/sec/2014/02/0000849213-0000849213-14-000010.zip",
 #       "pcl-20131231.xml")
 #
 #log.close()
