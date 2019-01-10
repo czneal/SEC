@@ -713,13 +713,13 @@ class Context(object):
                 self.id = e.attrib['id']
             if 'instant' == name:
                 self.instant = True
-                self.edate = xbrl.str2date(e.text)
+                self.edate = xbrl.str2date(e.text.strip()[0:10])
             if 'startdate' == name:
                 self.instant = False
-                self.sdate = xbrl.str2date(e.text)
+                self.sdate = xbrl.str2date(e.text.strip()[0:10])
             if 'enddate' == name:
                 self.instant = False
-                self.edate = xbrl.str2date(e.text)
+                self.edate = xbrl.str2date(e.text.strip()[0:10])
             if 'explicitmember' == name:
                 if self.dim is None:
                     self.dim = []
@@ -729,12 +729,12 @@ class Context(object):
                             .replace(':', '_'))
 
 
-log = LogFile("outputs/log.txt")
-err = LogFile("outputs/err.txt")
-warn = LogFile("outputs/warn.txt")
+log = LogFile("outputs/log.txt", append=False)
+err = LogFile("outputs/err.txt", append=False)
+warn = LogFile("outputs/warn.txt", append=False)
 r = XBRLFile(log, warn, err)
 
-file = ('d:/sec/2014/02/0001568427-0000939798-14-000010.zip','' ,'')
+file = ('d:/sec/2015/03/0000893847-0001571049-15-002519.zip','' ,'')
 
 r.read('z'+file[0][1:], None)
 
