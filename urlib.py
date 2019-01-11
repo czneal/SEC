@@ -4,6 +4,8 @@ Created on Tue Dec 18 13:28:01 2018
 
 @author: Asus
 """
+import urllib
+import sys
 
 def DownloadFile(url_text, filename, log):
     tryout = 3

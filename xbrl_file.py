@@ -40,16 +40,21 @@ class XBRLZipPacket(object):
             return False
 
         files = z_file.namelist()
-        files = [f.replace('.xml','') for f in files if f.endswith('.xml')]
-        files = set([f.split('_')[0] for f in files])
-        self.xbrl_filename = files.pop() + '.xml'
+        files = [f for f in files if f.endswith('.xml') or f.endswith('.xsd')]
 
         try:
-            self.xbrl_file = z_file.open(self.xbrl_filename)
-            self.xsd_file = z_file.open(self.xbrl_filename[0:-3] + "xsd")
-            self.cal_file = z_file.open(self.xbrl_filename[0:-4]+"_cal.xml")
-            self.pre_file = z_file.open(self.xbrl_filename[0:-4]+"_pre.xml")
-            self.lab_file = z_file.open(self.xbrl_filename[0:-4]+"_lab.xml")
+            for name in files:
+                if name.endswith('.xsd'):
+                    self.xsd_file = z_file.open(name)
+                elif name.endswith('_cal.xml'):
+                    self.cal_file = z_file.open(name)
+                elif name.endswith('_pre.xml'):
+                    self.pre_file = z_file.open(name)
+                elif name.endswith('_lab.xml'):
+                    self.lab_file = z_file.open(name)
+                elif name.find('_') == -1:
+                    self.xbrl_file = z_file.open(name)
+                    self.xbrl_filename = name
         except:
             if self.xbrl_file is None:
                 err.write("missing xbrl file in zip file" + os.linesep)

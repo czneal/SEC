@@ -29,6 +29,7 @@ def fetch_urlfile(url_text, log=None):
     if not good_read:
         if log:
             log.write("Couldn't download file %s" % url_text)
+        return None
 
 
     return io.BytesIO(body)
