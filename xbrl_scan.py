@@ -201,6 +201,9 @@ def scan_period(year, month, log, warn, err, sec_dir=Settings.root_dir(), cik_fi
     return True
 
 def update_current_month(y=None, m=None):
+    err = None
+    warn = None
+    log = None
     try:
         if y is None or m is None:
             y = dt.date.today().year
@@ -215,12 +218,21 @@ def update_current_month(y=None, m=None):
         warn = log_file.LogFile(Settings.root_dir() + "xbrl_warn.txt")
         log = log_file.LogFile(Settings.root_dir() + "xbrl_log.txt")
         scan_period(y, m, log, warn, err)
+
+
     except:
-        err.write_tb(sys.exc_info())
+        if err is None:
+            raise
+        else:
+            err.write_tb(sys.exc_info())
     finally:
-        log.close()
-        err.close()
-        warn.close()
+        if not log is None:
+            log.close()
+        if not err is None:
+            err.close()
+        if not warn is None:
+            warn.close()
+
 
 def update_parameteres_in_database():
     for year in range(2011, 2019):

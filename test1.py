@@ -11,6 +11,7 @@ import zipfile
 import os
 from settings import Settings
 import sys
+import xbrl_scan
 
 
 def fetch_report_files(filename):
@@ -115,4 +116,5 @@ def check_zip_files(y, m):
 
 for y in range(2017, 2018):
     for m in range(2, 3):
-        check_zip_files(y, m)
+        #check_zip_files(y, m)
+        xbrl_scan.update_current_month(y, m)

@@ -728,15 +728,15 @@ class Context(object):
                 self.dim.append(e.attrib['dimension']
                             .replace(':', '_'))
 
-
-log = LogFile("outputs/log.txt", append=False)
-err = LogFile("outputs/err.txt", append=False)
-warn = LogFile("outputs/warn.txt", append=False)
-r = XBRLFile(log, warn, err)
-
-file = ('d:/sec/2015/03/0000893847-0001571049-15-002519.zip','' ,'')
-
-r.read('z'+file[0][1:], None)
+#
+#log = LogFile("outputs/log.txt", append=False)
+#err = LogFile("outputs/err.txt", append=False)
+#warn = LogFile("outputs/warn.txt", append=False)
+#r = XBRLFile(log, warn, err)
+#
+#file = ('d:/sec/2015/03/0000893847-0001571049-15-002519.zip','' ,'')
+#
+#r.read('z'+file[0][1:], None)
 
 
 #
