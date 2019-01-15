@@ -30,6 +30,7 @@ class LogFile(object):
             self.log_file.flush()
 
     def write2(self, label, info):
+        info = info.replce('\r', '')
         for line in info.split('\n'):
             self.write("{0}\t{1}".format(label, line))
 
