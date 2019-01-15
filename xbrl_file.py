@@ -29,15 +29,19 @@ class XBRLZipPacket(object):
         self.xsd_file = None
         self.cal_file = None
         self.pre_file = None
+        self.lab_file = None
 
-    def open_packet(self, err):
+    def open_packet(self):
+        message = io.StringIO()
         z_file = None
         try:
             z_file = zipfile.ZipFile(self.zip_filename)
         except:
-            err.write("bad zip file: " + self.zip_filename + os.linesep)
+            message.write("bad zip file: " + self.zip_filename + os.linesep)
         if z_file == None:
-            return False
+            message.flush()
+            message.seek(0)
+            return False, message.read()
 
         files = z_file.namelist()
         files = [f for f in files if f.endswith('.xml') or f.endswith('.xsd')]
@@ -52,25 +56,29 @@ class XBRLZipPacket(object):
                     self.pre_file = z_file.open(name)
                 elif name.endswith('_lab.xml'):
                     self.lab_file = z_file.open(name)
-                elif name.find('_') == -1:
+                elif (not name.endswith('_def.xml') and
+                      not name.endswith('_ref.xml')):
                     self.xbrl_file = z_file.open(name)
                     self.xbrl_filename = name
         except:
             if self.xbrl_file is None:
-                err.write("missing xbrl file in zip file" + os.linesep)
+                message.write("missing xbrl file in zip file" + os.linesep)
             elif self.xsd_file is None:
-                err.write("missing xsd file in zip file" + os.linesep)
+                message.write("missing xsd file in zip file" + os.linesep)
             elif self.cal_file is None:
-                err.write("missing cal file in zip file" + os.linesep)
+                message.write("missing cal file in zip file" + os.linesep)
             elif self.pre_file is None:
-                err.write("missing pre file in zip file" + os.linesep)
+                message.write("missing pre file in zip file" + os.linesep)
             elif self.lab_file is None:
-                err.write("missing lab file in zip file" + os.linesep)
+                message.write("missing lab file in zip file" + os.linesep)
             else:
-                err.write("error while readin zip archive" + os.linesep)
-            return False
+                message.write("error while reading zip archive" + os.linesep)
 
-        return True
+            message.flush()
+            message.seek(0)
+            return False, message.read()
+
+        return True, ''
 
 class XBRLFile:
     def __init__(self, log_file = None):

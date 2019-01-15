@@ -13,7 +13,7 @@ import pandas as pd
 from settings import Settings
 
 def OpenConnection(host=Settings.host()):
-    hosts = {"server":"server", "remote":"95.31.1.243","localhost":"localhost"}
+    hosts = {"server":"192.168.88.113", "remote":"95.31.1.243","localhost":"localhost"}
 
     return mysql.connector.connect(user="app", password="Burkina!7faso",
                               host=hosts[host], database="reports",
@@ -98,9 +98,16 @@ class Table(object):
         header = list(df_with_none.columns)
         for field in self.fields:
             if field not in header:
-                return
+                return False
 
-        cur.executemany(self.insert_command, df_with_none.to_dict('records'))
+        if df.shape[0] <= self.buffer_size:
+            cur.executemany(self.insert_command, df_with_none.to_dict('records'))
+        else:
+            for i in range(0, int(df.shape[0]/self.buffer_size) + 1):
+                cur.executemany(self.insert_command,
+                                df_with_none.iloc[i*self.buffer_size:(i+1)*self.buffer_size]
+                                            .to_dict('records'))
+        return True
 
 class get_procedure(object):
 

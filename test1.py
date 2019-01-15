@@ -114,7 +114,18 @@ def check_zip_files(y, m):
             if not check_zip_file(dirpath + '/' + filename):
                 print('check fail for:{0}'.format(dirpath + '/' + filename))
 
-for y in range(2017, 2018):
-    for m in range(2, 3):
-        #check_zip_files(y, m)
-        xbrl_scan.update_current_month(y, m)
+#for y in range(2017, 2018):
+#    for m in range(2, 3):
+#        #check_zip_files(y, m)
+#        xbrl_scan.update_current_month(y, m)
+
+import traceback
+import io
+try:
+    a = 1/0
+except:
+    ios = io.StringIO()
+    traceback.print_tb(sys.exc_info()[2], file=ios)
+    ios.seek(0)
+    b = ios.read()
+    b = b.split('\n')

@@ -11,12 +11,7 @@ import database_operations as do
 from urltools import fetch_urlfile
 import urllib
 
-def read_xsd_elements(xsd_filename):
-    if urllib.parse.urlparse(xsd_filename).scheme.lower() in {'http','https'}:
-        xsd_filename = fetch_urlfile(xsd_filename)
-
-    tree = XmlTreeTools()
-    tree.read_xml_tree(xsd_filename)
+def read_xsd_elements_xmltree(tree):
     root = tree.root
     data = []
     for elem in root.findall(tree.xsd+"element"):
@@ -55,6 +50,19 @@ def read_xsd_elements(xsd_filename):
 
     return df
 
+def read_xsd_elements(xsd_filename):
+    if xsd_filename is None:
+        return None
+
+    if (type(xsd_filename) == str and
+        urllib.parse.urlparse(xsd_filename).scheme.lower() in {'http','https'}):
+        xsd_filename = fetch_urlfile(xsd_filename)
+
+    tree = XmlTreeTools()
+    tree.read_xml_tree(xsd_filename)
+
+    return read_xsd_elements_xmltree(tree)
+
 def extract_attrib(elem, attrib):
     row = [None for e in attrib]
     for i, a in enumerate(attrib):
@@ -63,8 +71,11 @@ def extract_attrib(elem, attrib):
     return row
 
 def read_documentation(xml_filename):
+    if xml_filename is None:
+        return None
 
-    if urllib.parse.urlparse(xml_filename).scheme.lower() in {'http','https'}:
+    if (type(xml_filename) == str and
+        urllib.parse.urlparse(xml_filename).scheme.lower() in {'http','https'}):
         xml_filename = fetch_urlfile(xml_filename)
 
     tree = XmlTreeTools()
@@ -82,7 +93,10 @@ def read_documentation(xml_filename):
             row = extract_attrib(elem, ['id', tree.xlink+'label', tree.xlink+'role',
                                         tree.xml + 'lang'])
             row[2] = row[2].split('/')[-1]
-            row.append(elem.text.strip())
+            if elem.text is None:
+                row.append('')
+            else:
+                row.append(elem.text.strip())
             lab.append(row)
         if elem.tag.lower() == tree.link + 'labelarc':
             loclab.append(extract_attrib(elem, [tree.xlink + 'from', tree.xlink + 'to']))
@@ -124,9 +138,9 @@ def load_gaap_taxonomy(xsd_filename, doc_filename, lab_filename):
         if con:
             con.close()
 
-xsd = 'http://xbrl.fasb.org/us-gaap/2016/elts/us-gaap-2016-01-31.xsd'
-
-df = read_xsd_elements('Test/us-gaap-2017-01-31/elts/us-gaap-2017-01-31.xsd')
+#xsd = 'http://xbrl.fasb.org/us-gaap/2016/elts/us-gaap-2016-01-31.xsd'
+#
+#df = read_xsd_elements('Test/us-gaap-2017-01-31/elts/us-gaap-2017-01-31.xsd')
 
 #lab = read_documentation('Test/acf-20161231_lab.xml')
 

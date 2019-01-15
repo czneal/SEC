@@ -13,11 +13,10 @@ import io
 import sys
 import pandas as pd
 import numpy as np
-import database_operations as do
-from settings import Settings
 import classificators as cl
 from log_file import LogFile
 from xbrl_chapter import Chapter
+import descr_types as doctype
 
 class XBRLFile:
     def __init__(self, log_file = None, log_warn=None, log_err=None):
@@ -41,6 +40,8 @@ class XBRLFile:
         self.file_date = None
         self.facts_df = None
         self.cntx_df = None
+        self.lab = None
+        self.xsd = None
 
     def read(self, zip_filename, file_date=None):
         self.__setup_members()
@@ -60,18 +61,17 @@ class XBRLFile:
 
             self.log.write2(self.cik_adsh, "open zip archive: " + zip_filename)
             packet = xbrl.XBRLZipPacket(zip_filename, None)
-            strio = io.StringIO()
-            if not packet.open_packet(strio):
-                self.err.write2(self.cik_adsh, 'error while reading zip archive')
-                strio.flush()
-                strio.seek(0)
-                self.err.write2(self.cik_adsh, strio.read())
+            status, message = packet.open_packet()
+            if not status:
+                self.err.write2(self.cik_adsh, message)
                 return False
 
             self.chapters = self.read_xsd(packet.xsd_file)
             self.read_cal(packet.cal_file, self.chapters)
             self.read_pre(packet.pre_file, self.chapters)
-            self.read_labels(packet.lab_file, packet.xsd_file)
+            self.read_labels(packet.lab_file)
+            if not self.organize():
+                self.warn.write2(self.cik_adsh, 'too many chapters')
 
             tools = xbrl.XmlTreeTools()
             tools.read_xml_tree(packet.xbrl_file)
@@ -511,6 +511,8 @@ class XBRLFile:
             root = tools.root
             link = tools.link
 
+            self.xsd = doctype.read_xsd_elements_xmltree(tools)
+
             for role in root.iter(link+"roleType"):
                 rol_def = role.find(link+"definition")
                 chapter = ""
@@ -543,6 +545,10 @@ class XBRLFile:
     def read_cal(self, cal_filename, chapters):
         self.log.write2(self.cik_adsh, "start reading calculation scheme...")
 
+        if cal_filename is None:
+            self.warn.write2(self.cik_adsh, 'there is no calculation scheme')
+            return
+
         tools = xbrl.XmlTreeTools()
         tools.read_xml_tree(cal_filename)
 
@@ -569,34 +575,42 @@ class XBRLFile:
 
         self.log.write2(self.cik_adsh, "end reading presentation scheme...ok")
 
-    def read_labels(self, lab_filename, xsd_filename):
+    def read_labels(self, lab_filename):
         self.log.write2(self.cik_adsh, 'start reading labels and documentation...')
+        self.lab = doctype.read_documentation(lab_filename)
         self.log.write2(self.cik_adsh, 'end reading labels and documentation...ok')
 
-    def organize(self, chapters):
-        for c, chapter in chapters.items():
-            if chapter.chapter != "sta":
+    def chapters_count(self):
+        counts = {'bs':0, 'cf':0, 'is':0}
+        for _, chapter in self.chapters.items():
+            if chapter.chapter != 'sta':
+                continue
+            if len(chapter.nodes) == 0:
+                continue
+
+            if self.ms.match_bs(chapter.label):
+                counts['bs'] += 1
+            if self.ms.match_is(chapter.label):
+                counts['is'] += 1
+            if self.ms.match_cf(chapter.label):
+                counts['cf'] += 1
+
+        if (counts['bs'] > 1 or counts['is'] > 2 or counts['cf'] > 1):
+            return False
+
+        return True
+
+    def organize(self):
+        if not self.chapters_count():
+            return False
+
+        for c, chapter in self.chapters.items():
+            if chapter.chapter != 'sta' or not self.ms.match(c):
                 continue
 #            global organize
-#            for c1, chapter1 in chapters.items():
-#                if c1==c:
-#                    continue
-#                for n, node in chapter.nodes.items():
-#                    if len(node.children) != 0:
-#                        continue
-#                    for m, node1 in chapter1.nodes.items():
-#                        if len(node1.children) == 0:
-#                            continue
-#                        if node1.name == node.name:
-#                            node.children = node1.children.copy()
-
-#           local organize
-            for c1, chapter1 in chapters.items():
-                if chapter1.chapter != "sta":
-                    continue
+            for c1, chapter1 in self.chapters.items():
                 if c1==c:
                     continue
-
                 for n, node in chapter.nodes.items():
                     if len(node.children) != 0:
                         continue
@@ -605,6 +619,23 @@ class XBRLFile:
                             continue
                         if node1.name == node.name:
                             node.children = node1.children.copy()
+
+#           local organize
+#            for c1, chapter1 in chapters.items():
+#                if chapter1.chapter != "sta":
+#                    continue
+#                if c1==c:
+#                    continue
+#
+#                for n, node in chapter.nodes.items():
+#                    if len(node.children) != 0:
+#                        continue
+#                    for m, node1 in chapter1.nodes.items():
+#                        if len(node1.children) == 0:
+#                            continue
+#                        if node1.name == node.name:
+#                            node.children = node1.children.copy()
+        return True
 
 class Fact(object):
     def __init__(self, elem, source):
@@ -728,92 +759,14 @@ class Context(object):
                 self.dim.append(e.attrib['dimension']
                             .replace(':', '_'))
 
-#
+
 #log = LogFile("outputs/log.txt", append=False)
 #err = LogFile("outputs/err.txt", append=False)
 #warn = LogFile("outputs/warn.txt", append=False)
 #r = XBRLFile(log, warn, err)
 #
-#file = ('d:/sec/2015/03/0000893847-0001571049-15-002519.zip','' ,'')
+#file = ('z:/sec/2018/07/0001679273-0001558370-18-005726.zip','' ,'')
 #
 #r.read('z'+file[0][1:], None)
 
-
-#
-#data = []
-#gt = ContextsGroundTruth('outputs/ground_contexts.csv')
-#for (adsh, filename, cntx) in gt.iterate():
-#    r.read('z' + filename[1:], None)
-#    r.make_contexts_facts()
-#    r.find_instant_context()
-#    r.find_noninstant_context('is')
-#    r.find_noninstant_context('cf')
-#    check = True
-#    for k,v in cntx.items():
-#        if k in r.cntx and v != r.cntx[k]:
-#            check = False
-#        if k not in r.cntx:
-#            check = False
-#    if not check:
-#        data.append([adsh, filename, json.dumps(r.cntx)])
-#
-#err = pd.DataFrame(data, columns=['adsh', 'filename','cntx'])
-#err.to_csv('outputs/ground_err.csv')
-#log.close()
-
-#data = []
-#gt = ContextsGroundTruth('outputs/ground_contexts.csv')
-#
-#try:
-#    con = do.OpenConnection()
-#    cur = con.cursor(dictionary=True)
-#    cur.execute('select adsh, cik, file_link, file_date, contexts from reports ' +
-#                ' where fin_year between {0} and {1}'
-#                .format(Settings.years()[0], Settings.years()[1]) +
-#                Settings.select_limit())
-#
-#    for index, row in enumerate(cur.fetchall()):
-#        print('\rProcessed with:{0}...'.format(index+1), end='')
-#        if not r.read('z'+row['file_link'][1:], row['file_date']):
-#            print(row['file_link'],'bad file')
-#            continue
-#
-#        r.make_contexts_facts(18)
-#        r.find_instant_context()
-#        r.find_noninstant_context('is')
-#        r.find_noninstant_context('cf')
-#        cntx = gt.get_contexts(row['adsh'])
-#        if cntx is None:
-#            cntx = {'bs':None, 'is':None, 'cf':None}
-#            contexts = json.loads(row['contexts'])
-#            for k, v in contexts.items():
-#                if len(v) == 1:
-#                    cntx['bs'] = k
-#                else:
-#                    cntx['is'] = k
-#                    cntx['cf'] = k
-#        check = True
-#        for k,v in cntx.items():
-#            if k in r.cntx and v != r.cntx[k]:
-#                check = False
-#            if k not in r.cntx:
-#                check = False
-#        rep = [row['adsh'], row['cik'], row['file_link'], check,
-#               cntx['bs'], cntx['is'], cntx['cf'],
-#               r.cntx['bs'], r.cntx['is'], r.cntx['cf']]
-#        data.append(rep)
-#
-#    print('ok')
-#    df = pd.DataFrame(data, columns=['adsh', 'cik', 'file_link', 'check',
-#                                     'bs', 'is', 'cf',
-#                                     'n_bs', 'n_is', 'n_cf'])
-#
-#
-#finally:
-#    con.close()
-#    log.close()
-#
-#url = "https://www.sec.gov/cgi-bin/viewer?action=view&cik={0}&accession_number={1}&xbrl_type=v#"
-#df["url"] = df.apply(lambda x: url.format(x["cik"], x['adsh']), axis=1)
-#df.to_excel('outputs/contexts.xlsx')
 
