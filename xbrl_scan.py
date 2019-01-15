@@ -255,8 +255,8 @@ def update_current_month(y=None, m=None):
 
 
 def update_parameteres_in_database():
-    for year in range(2013, 2019):
-        for month in range(1,13):
+    for year in range(2018, 2019):
+        for month in range(5,6):
             update_current_month(year, month)
 
 #update_current_month(2018,7)
