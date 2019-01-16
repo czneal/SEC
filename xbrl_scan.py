@@ -206,7 +206,10 @@ def scan_period(year, month, log, warn, err, sec_dir=Settings.root_dir(), cik_fi
                            "structure":report.structure_dumps(),
                            "trusted":report.trusted},
                              cur)
-            write_mgnums(report, mgnums, adsh, cur)
+            if report.facts_df.shape[0] == 0:
+                warn.write2(report.cik_adsh, 'no facts parsed in file {0}'.format(z_filename))
+            else:
+                write_mgnums(report, mgnums, adsh, cur)
 
             docum.write_df(report.lab, cur)
             mgtags.write_df(report.xsd, cur)
@@ -215,7 +218,7 @@ def scan_period(year, month, log, warn, err, sec_dir=Settings.root_dir(), cik_fi
         print("\r" + "Processed with {0} of {1}".format(n_files_processed+1, n_total_files))
 
     except:
-        err.write_tb(sys.exc_info())
+        err.write_tb2(report.cik_adsh, sys.exc_info())
         con.close()
 
     return True
@@ -255,9 +258,9 @@ def update_current_month(y=None, m=None):
 
 
 def update_parameteres_in_database():
-    for year in range(2018, 2019):
-        for month in range(5,6):
+    for year in range(2013, 2019):
+        for month in range(1,13):
             update_current_month(year, month)
 
-#update_current_month(2018,7)
+#update_current_month(2018,4)
 update_parameteres_in_database()
