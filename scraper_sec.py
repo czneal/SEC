@@ -168,7 +168,7 @@ def ItemFilesDownload(item, target_dir, temp_dir, ns, overwrite, check,
 
     if check or overwrite:
         if not repair_zip(zip_filename, log):
-            err.write('zip file unrepairable: {0}'.format(zip_filename))
+            log.write('zip file unrepairable: {0}'.format(zip_filename))
             return False
 
     return True
@@ -223,7 +223,7 @@ def update_current_month(y=None, m=None):
 
         log = log_file.LogFile(Settings.root_dir() + "scraper_log.txt", append=True)
         err_log = log_file.LogFile(Settings.root_dir() + "scraper_err_log.txt", append=True)
-        download_one_month(m,y,log,err_log)
+        download_one_month(y, m, log, err_log)
         log.close()
         err_log.close()
     except:
@@ -264,7 +264,7 @@ total_scan()
 #err = log_file.LogFile(Settings.output_dir() + 'err.log', append=False)
 #log = log_file.LogFile(Settings.output_dir() + 'log.log', append=False)
 #
-#download_one_month(2013, 3, log, err)
+#download_one_month(2013, 3)
 #
 #err.close()
 #log.close()
