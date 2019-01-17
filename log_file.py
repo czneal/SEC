@@ -18,9 +18,9 @@ class LogFile(object):
                 self.log_file = open(filename, "a")
             else:
                 self.log_file = open(filename, "w")
-        if timestamp:
-            self.write("session timestamp {0}".format(dt.date.today()))
 
+        if timestamp and self.log_file is not None:
+            self.write("session timestamp {0}".format(dt.datetime.now()))
 
     def write(self, info, end=os.linesep):
         if self.log_file is None:
@@ -42,7 +42,10 @@ class LogFile(object):
     def write_tb(self, excinfo):
         self.write(str(excinfo[0]))
         self.write(str(excinfo[1]))
-        traceback.print_tb(excinfo[2], file=self.log_file)
+        if self.log_file:
+            traceback.print_tb(excinfo[2], file=self.log_file)
+        else:
+            traceback.print_tb(excinfo[2])
 
     def write_tb2(self, label, excinfo):
         strio = io.StringIO()
