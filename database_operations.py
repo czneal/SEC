@@ -92,6 +92,9 @@ class Table(object):
             self.data.clear()
 
     def write_df(self, df, cur):
+        if df is None or df.shape[0] == 0:
+            return False
+
         df_with_none = df.where((pd.notnull(df)), None)
         df_with_none = df_with_none.reset_index()
 

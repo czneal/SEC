@@ -259,7 +259,6 @@ def total_scan():
         for m in range(1, 13):
             update_current_month(y, m)
 
-total_scan()
 
 #err = log_file.LogFile(Settings.output_dir() + 'err.log', append=False)
 #log = log_file.LogFile(Settings.output_dir() + 'log.log', append=False)

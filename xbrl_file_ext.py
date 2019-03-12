@@ -78,9 +78,9 @@ class XBRLFile:
 
             root, ns = tools.root, tools.ns
             prefixes = {}
-            self.fact_tags = self.used_tags()
-            for t in self.fact_tags:
-                prefix = t.split(":")[0]
+            self.fact_tags = self.used_tags(only_sta=False)
+            p = set([t.split(':')[0] for t in self.fact_tags])
+            for prefix in p:
                 if prefix in ns:
                     prefixes[ns[prefix]] = prefix
 
@@ -111,8 +111,6 @@ class XBRLFile:
                 self.err.write2(self.cik_adsh, self.calc_log)
             else:
                 self.trusted = True
-
-            self.fact_tags = self.used_tags()
 
             self.log.write2(self.cik_adsh, 'start find contexts...')
             self.make_contexts_facts(18)
@@ -312,7 +310,7 @@ class XBRLFile:
                 check = True
 
         if not check:
-            self.err.write2(self.cik_adsh, "Period and fy inconsistence can not be solved")
+            self.warn.write2(self.cik_adsh, "period and fy inconsistence can not be solved")
         return check
 
     def fey_dist(self, ddate):
@@ -417,67 +415,78 @@ class XBRLFile:
 
         return
 
-    def find_noninstant_context(self, sheet, tolerance_days=8):
-        markers = set()
-        dims = set([None])
-        members = set([None])
+    def find_noninstant_context(self, tolerance_days=8):
+        def add_to_dict(d, sheet, what):
+            if sheet in d:
+                d[sheet].append(what)
+            else:
+                d[sheet] = what
+
         for _, chapter in self.chapters.items():
-            if sheet == 'is' and not self.ms.match_is(chapter.label):
+            sheet = ''
+            if self.ms.match_is(chapter.label):
+                sheet = 'is'
+            if self.ms.match_is(chapter.label):
+                sheet = 'cf'
+            if sheet == '':
                 continue
-            if sheet == 'cf' and not self.ms.match_cf(chapter.label):
-                continue
+
+            markers = set()
+            dims = set([None])
+            members = set([None])
+
             markers.update(chapter.get_pre_tags())
             markers.update(chapter.get_cal_tags())
             dims.update(chapter.get_dimentions())
             members.update(chapter.get_members())
 
-        facts = self.facts_df[self.facts_df['dim'].isin(dims) &
-                              self.facts_df['member'].isin(members) &
-                              (self.facts_df['instant'] == False) &
-                              self.facts_df['tag'].isin(markers)]
+            facts = self.facts_df[self.facts_df['dim'].isin(dims) &
+                                  self.facts_df['member'].isin(members) &
+                                  (self.facts_df['instant'] == False) &
+                                  self.facts_df['tag'].isin(markers)]
 
-        edate = self.ddate
-        sdate = edate - dt.timedelta(days=365.56)
+            edate = self.ddate
+            sdate = edate - dt.timedelta(days=365.56)
 
-        tolerance = dt.timedelta(days = tolerance_days)
+            tolerance = dt.timedelta(days = tolerance_days)
 
-        f = facts[(np.abs(facts['edate'] - edate) <= tolerance) &
-                  (np.abs(facts['sdate'] - sdate) <= tolerance)]
+            f = facts[(np.abs(facts['edate'] - edate) <= tolerance) &
+                      (np.abs(facts['sdate'] - sdate) <= tolerance)]
 
-        cntx_grp = self.noninstant_prep(f)
-        if cntx_grp.shape[0] == 1:
-            self.cntx[sheet] = cntx_grp.iloc[0]['context']
-        elif cntx_grp.shape[0] > 1:
-            filtered = cntx_grp[cntx_grp['dim'].isnull()]
-            if filtered.shape[0] == 1:
-                self.cntx[sheet] = filtered.iloc[0]['context']
-            elif filtered.shape[0] > 1:
-                self.cntx[sheet + '_err'] = filtered['context'].tolist()
-            else:
-                filtered = cntx_grp[cntx_grp['member'].str.contains('parentcompany', case=False)]
+            cntx_grp = self.noninstant_prep(f)
+            if cntx_grp.shape[0] == 1:
+                self.cntx[sheet] = cntx_grp.iloc[0]['context']
+            elif cntx_grp.shape[0] > 1:
+                filtered = cntx_grp[cntx_grp['dim'].isnull()]
                 if filtered.shape[0] == 1:
                     self.cntx[sheet] = filtered.iloc[0]['context']
                 elif filtered.shape[0] > 1:
                     self.cntx[sheet + '_err'] = filtered['context'].tolist()
                 else:
-                    filtered = cntx_grp[cntx_grp['member'].str.contains('successor', case=False)]
+                    filtered = cntx_grp[cntx_grp['member'].str.contains('parentcompany', case=False)]
                     if filtered.shape[0] == 1:
                         self.cntx[sheet] = filtered.iloc[0]['context']
                     elif filtered.shape[0] > 1:
                         self.cntx[sheet + '_err'] = filtered['context'].tolist()
                     else:
-                        self.cntx[sheet + '_sum'] = cntx_grp['context'].tolist()
-        else:
-            #merge contexts by date or find short periods
-            f = facts[(np.abs(facts['edate'] - edate) <= tolerance) |
-                      (np.abs(facts['sdate'] - sdate) <= tolerance)]
-            cntx_grp = self.noninstant_prep(f)
-            if cntx_grp.shape[0] == 1:
-                self.cntx[sheet] = cntx_grp.iloc[0]['context']
-            elif cntx_grp.shape[0] == 0:
-                self.cntx[sheet] = None
+                        filtered = cntx_grp[cntx_grp['member'].str.contains('successor', case=False)]
+                        if filtered.shape[0] == 1:
+                            self.cntx[sheet] = filtered.iloc[0]['context']
+                        elif filtered.shape[0] > 1:
+                            self.cntx[sheet + '_err'] = filtered['context'].tolist()
+                        else:
+                            self.cntx[sheet + '_sum'] = cntx_grp['context'].tolist()
             else:
-                self.warn.write2(self.cik_adsh, 'should be implemented')
+                #merge contexts by date or find short periods
+                f = facts[(np.abs(facts['edate'] - edate) <= tolerance) |
+                          (np.abs(facts['sdate'] - sdate) <= tolerance)]
+                cntx_grp = self.noninstant_prep(f)
+                if cntx_grp.shape[0] == 1:
+                    self.cntx[sheet] = cntx_grp.iloc[0]['context']
+                elif cntx_grp.shape[0] == 0:
+                    self.cntx[sheet] = None
+                else:
+                    self.warn.write2(self.cik_adsh, 'should be implemented')
 
 
     def noninstant_prep(self, f):
@@ -557,7 +566,10 @@ class XBRLFile:
 
         for calcLink in root.iter(empty+"calculationLink"):
             role_uri = calcLink.attrib[xlink+"role"].strip()
-            chapters[role_uri].read_cal(calcLink, empty, xlink)
+            if role_uri in chapters:
+                chapters[role_uri].read_cal(calcLink, empty, xlink)
+            else:
+                self.warn.write2(self.cik_adsh, 'role_uri: {0} not in chapters (read_cal)'.format(role_uri))
 
         self.log.write2(self.cik_adsh, "end reading calculation scheme...ok")
 
@@ -571,13 +583,22 @@ class XBRLFile:
 
         for preLink in root.iter(empty+"presentationLink"):
             role_uri = preLink.attrib[xlink+"role"].strip()
-            chapters[role_uri].read_pre(preLink, empty, xlink)
+            if role_uri in chapters:
+                chapters[role_uri].read_pre(preLink, empty, xlink)
+            else:
+                self.warn.write2(self.cik_adsh, 'role_uri: {0} not in chapters (read_pre)'.format(role_uri))
 
         self.log.write2(self.cik_adsh, "end reading presentation scheme...ok")
 
     def read_labels(self, lab_filename):
         self.log.write2(self.cik_adsh, 'start reading labels and documentation...')
-        self.lab = doctype.read_documentation(lab_filename)
+
+        try:
+            self.lab = doctype.read_documentation(lab_filename)
+            self.lab = self.lab[self.lab['xsd_id'].isin(self.xsd['xsd_id'])]
+        except:
+            self.warn.write(self.cik_adsh, 'lab file could not be read')
+
         self.log.write2(self.cik_adsh, 'end reading labels and documentation...ok')
 
     def chapters_count(self):
@@ -605,12 +626,15 @@ class XBRLFile:
             return False
 
         for c, chapter in self.chapters.items():
-            if chapter.chapter != 'sta' or not self.ms.match(c):
+            if chapter.chapter != 'sta' or not self.ms.match(chapter.label):
                 continue
 #            global organize
             for c1, chapter1 in self.chapters.items():
                 if c1==c:
                     continue
+                if chapter1.chapter == 'sta':
+                    continue
+
                 for n, node in chapter.nodes.items():
                     if len(node.children) != 0:
                         continue
@@ -647,6 +671,9 @@ class Fact(object):
         return [self.name, self.value, self.uom, self.context]
 
     def read(elem):
+        if 'contextRef' not in elem.attrib:
+            return '', '', None, '', 0, ''
+
         context = elem.attrib["contextRef"].strip()
 
         uom = ""
@@ -760,13 +787,31 @@ class Context(object):
                             .replace(':', '_'))
 
 
-#log = LogFile("outputs/log.txt", append=False)
-#err = LogFile("outputs/err.txt", append=False)
-#warn = LogFile("outputs/warn.txt", append=False)
-#r = XBRLFile(log, warn, err)
-#
-#file = ('z:/sec/2018/07/0001679273-0001558370-18-005726.zip','' ,'')
-#
-#r.read('z'+file[0][1:], None)
+log = LogFile("outputs/log.txt", append=False)
+err = LogFile("outputs/err.txt", append=False)
+warn = LogFile("outputs/warn.txt", append=False)
+r = XBRLFile(log, warn, err)
+
+files = ['d:/sec/2018/02/0001043604-0001043604-18-000011.zip', #contextRef not in fact attrib
+        'd:/sec/2013/03/0001449488-0001449488-13-000018.zip', #role_uri not in chapters
+        'd:/sec/2014/08/0000754811-0000754811-14-000086.zip', #labels
+        'd:/sec/2015/01/0000317889-0001437749-15-000640.zip', #cicles in structure
+        'd:/sec/2013/03/0000886136-0001144204-13-015502.zip', #cicles in structure
+        'd:/sec/2016/02/0000317889-0001437749-16-026192.zip', #cicles in structure
+        'd:/sec/2016/03/0000317889-0001437749-16-026192.zip', #cicles in structure
+        'd:/sec/2016/06/0000890491-0001193125-16-630221.zip', #cicles in structure
+        'd:/sec/2017/04/0001541354-0001493152-17-004516.zip', #cicles in structure
+        'd:/sec/2013/03/0001393066-0001193125-13-087936.zip', #is problem
+        'd:/sec/2013/06/0000014693-0000014693-13-000038.zip' #lab problem
+        ]
+
+for file in files[-2:-1]:
+    r.read('z'+file[1:], None)
+    print(len(r.chapters), r.facts_df.shape, r.lab.shape, r.cntx)
+
+log.close()
+err.close()
+warn.close()
+
 
 
