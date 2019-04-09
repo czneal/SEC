@@ -175,7 +175,7 @@ class IndicatorStatic(IndicatorProcedural):
         if params.shape[0] != 0:
             result = self.proc.run_it(params.loc[fy], fy)
 
-        n = params.stack().reset_index().rename(columns={'tag':'sname', 0:'value'})
+        n = params.stack(dropna=False).reset_index().rename(columns={'tag':'sname', 0:'value'})
         n['weight'] = 1.0
         n['ord'] = n.index
         n['offs'] = ''
@@ -213,7 +213,7 @@ class IndicatorDynamic(IndicatorProcedural):
         if n.shape[0] != 0:
             result = self.proc.run_it(n, fy)
 
-        n = n.set_index('fy').stack().reset_index().rename(columns={'tag':'sname', 0:'value'})
+        n = n.set_index('fy').stack(dropna=False).reset_index().rename(columns={'tag':'sname', 0:'value'})
         n['weight'] = 1.0
         n['ord'] = n.index
         n['offs'] = ''

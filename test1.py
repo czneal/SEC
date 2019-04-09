@@ -24,16 +24,20 @@ try:
     print('read newest reports...', end = '')
     con = do.OpenConnection()
     cur = con.cursor(dictionary=True)
-    cur.execute('delete from mgreporttable; delete from mgparamstype1;', multi=True)
+    
+    cur.execute('delete from mgreporttable;')
+    cur.execute('delete from mgparamstype1;')
+    con.commit()
+    
     cur.execute(q.select_newest_reports, {'fy':2017})
     reports = pd.DataFrame(cur.fetchall(), columns=['adsh', 'cik', 'fy', 'file_date', 'form'])
     con = con.close()
     con = None
     print('ok')
     
-    first = 10
-    cik_filter = -1
-    for cik in reports['cik'].unique()[10:10+first]:
+    
+    cik_filter = 1373761
+    for cik in reports['cik'].unique():
         if cik != cik_filter and cik_filter != -1:
             continue
         
