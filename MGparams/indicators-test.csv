@@ -1,0 +1,13 @@
+indicator_name	class_id	class_model
+mg_cash_operating_activites	1	cashflow_st_cashtype_pch_v2019-03-13.h5
+mg_cash_investing_activites	2	cashflow_st_cashtype_pch_v2019-03-13.h5
+mg_cash_financing_activities	3	cashflow_st_cashtype_pch_v2019-03-13.h5
+mg_cash_acquired_realestate	1	cashflow_st_multiclass_pch_v2019-03-14.h5
+mg_cash_payments_fixed_assets	2	cashflow_st_multiclass_pch_v2019-03-14.h5
+mg_cash_payments_other_capital	3	cashflow_st_multiclass_pch_v2019-03-14.h5
+mg_cash_acquired_businesses	4	cashflow_st_multiclass_pch_v2019-03-14.h5
+mg_cash_dividends_common	5	cashflow_st_multiclass_pch_v2019-03-14.h5
+mg_cash_dividends_preferred	6	cashflow_st_multiclass_pch_v2019-03-14.h5
+mg_cash_buybacks	7	cashflow_st_multiclass_pch_v2019-03-14.h5
+mg_cash_nonrecurring	8	cashflow_st_multiclass_pch_v2019-03-14.h5
+mg_cash_dividends_minority	9	cashflow_st_multiclass_pch_v2019-03-14.h5

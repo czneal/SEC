@@ -1,0 +1,4 @@
+class_model	pc	max_len	start_chapter	start_tag	parent_class	parent_class_id
+cashflow_st_cashtype_pch_v2019-03-13.h5	pc	60	cf		all_gaap_tags_binary_v2019-03-13.h5	1
+cashflow_st_multiclass_pch_v2019-03-14.h5	pc	60	cf		all_gaap_tags_binary_v2019-03-13.h5	1
+all_gaap_tags_binary_v2019-03-13.h5	c	60	cf			

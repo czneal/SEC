@@ -18,6 +18,13 @@ from log_file import LogFile
 from xbrl_chapter import Chapter
 import descr_types as doctype
 
+
+def add_to_dict(d, sheet, what):
+    if sheet in d:
+        d[sheet].append(what)
+    else:
+        d[sheet] = [what]
+
 class XBRLFile:
     def __init__(self, log_file = None, log_warn=None, log_err=None):
         self.log = log_file
@@ -114,9 +121,8 @@ class XBRLFile:
 
             self.log.write2(self.cik_adsh, 'start find contexts...')
             self.make_contexts_facts(18)
-            self.find_instant_context(8)
-            self.find_noninstant_context('is', 8)
-            self.find_noninstant_context('cf', 8)
+            self.find_instant_context(tolerance_days = 8)
+            self.find_noninstant_context(tolerance_days = 8)
             self.log.write2(self.cik_adsh, 'end find contexts...ok')
 
             if 'bs_err' in self.cntx:
@@ -367,7 +373,7 @@ class XBRLFile:
         edate = dates.index.max()
         if pd.isnull(edate):
             #this means that there is no apropriate sections in reports
-            self.cntx['bs'] = None
+            self.cntx['bs'] = [None]
             self.ddate = xbrl.str2date(self.ddate)
             return
 
@@ -385,12 +391,12 @@ class XBRLFile:
         cntx_grp = self.cntx_df[self.cntx_df['context'].isin(cntx_grp.index)]
 
         if cntx_grp.shape[0] == 1:
-            self.cntx['bs'] = cntx_grp.iloc[0]['context']
+            add_to_dict(self.cntx, 'bs', cntx_grp.iloc[0]['context'])
             return
 
         filtered = cntx_grp[cntx_grp['dim'].isnull()]
         if filtered.shape[0] == 1:
-            self.cntx['bs'] = filtered.iloc[0]['context']
+            add_to_dict(self.cntx, 'bs', filtered.iloc[0]['context'])
             return
         if filtered.shape[0] > 1:
             self.cntx['bs_err'] = filtered['context'].tolist()
@@ -399,7 +405,7 @@ class XBRLFile:
         #filtered.shape[0] == 0:
         filtered = cntx_grp[cntx_grp['member'].str.contains('successor', case=False)]
         if filtered.shape[0] == 1:
-            self.cntx['bs'] = filtered.iloc[0]['context']
+            add_to_dict(self.cntx, 'bs', filtered.iloc[0]['context'])
             return
         if filtered.shape[0] > 1:
             self.cntx['bs_err'] = filtered['context'].tolist()
@@ -407,7 +413,7 @@ class XBRLFile:
         #filtered.shape[0] == 0:
         filtered = cntx_grp[cntx_grp['member'].str.contains('parentcompany', case=False)]
         if filtered.shape[0] == 1:
-            self.cntx['bs'] = filtered.iloc[0]['context']
+            add_to_dict(self.cntx, 'bs', filtered.iloc[0]['context'])
         if filtered.shape[0] > 1:
             self.cntx['bs_err'] = filtered['context'].tolist()
         if filtered.shape[0] == 0:
@@ -416,17 +422,11 @@ class XBRLFile:
         return
 
     def find_noninstant_context(self, tolerance_days=8):
-        def add_to_dict(d, sheet, what):
-            if sheet in d:
-                d[sheet].append(what)
-            else:
-                d[sheet] = what
-
         for _, chapter in self.chapters.items():
             sheet = ''
             if self.ms.match_is(chapter.label):
                 sheet = 'is'
-            if self.ms.match_is(chapter.label):
+            if self.ms.match_cf(chapter.label):
                 sheet = 'cf'
             if sheet == '':
                 continue
@@ -455,36 +455,36 @@ class XBRLFile:
 
             cntx_grp = self.noninstant_prep(f)
             if cntx_grp.shape[0] == 1:
-                self.cntx[sheet] = cntx_grp.iloc[0]['context']
+                add_to_dict(self.cntx, sheet, cntx_grp.iloc[0]['context'])
             elif cntx_grp.shape[0] > 1:
                 filtered = cntx_grp[cntx_grp['dim'].isnull()]
                 if filtered.shape[0] == 1:
-                    self.cntx[sheet] = filtered.iloc[0]['context']
+                    add_to_dict(self.cntx, sheet, filtered.iloc[0]['context'])
                 elif filtered.shape[0] > 1:
-                    self.cntx[sheet + '_err'] = filtered['context'].tolist()
+                    self.cntx[sheet+'_err'] = filtered['context'].tolist()
                 else:
                     filtered = cntx_grp[cntx_grp['member'].str.contains('parentcompany', case=False)]
                     if filtered.shape[0] == 1:
-                        self.cntx[sheet] = filtered.iloc[0]['context']
+                        add_to_dict(self.cntx, sheet, filtered.iloc[0]['context'])
                     elif filtered.shape[0] > 1:
-                        self.cntx[sheet + '_err'] = filtered['context'].tolist()
+                        self.cntx[sheet+'_err'] = filtered['context'].tolist()
                     else:
                         filtered = cntx_grp[cntx_grp['member'].str.contains('successor', case=False)]
                         if filtered.shape[0] == 1:
-                            self.cntx[sheet] = filtered.iloc[0]['context']
+                            add_to_dict(self.cntx, sheet, filtered.iloc[0]['context'])
                         elif filtered.shape[0] > 1:
-                            self.cntx[sheet + '_err'] = filtered['context'].tolist()
+                            self.cntx[sheet+'_err'] = filtered['context'].tolist()
                         else:
-                            self.cntx[sheet + '_sum'] = cntx_grp['context'].tolist()
+                            self.cntx[sheet+'_sum'] = cntx_grp['context'].tolist()
             else:
                 #merge contexts by date or find short periods
                 f = facts[(np.abs(facts['edate'] - edate) <= tolerance) |
                           (np.abs(facts['sdate'] - sdate) <= tolerance)]
                 cntx_grp = self.noninstant_prep(f)
                 if cntx_grp.shape[0] == 1:
-                    self.cntx[sheet] = cntx_grp.iloc[0]['context']
+                    add_to_dict(self.cntx, sheet, cntx_grp.iloc[0]['context'])
                 elif cntx_grp.shape[0] == 0:
-                    self.cntx[sheet] = None
+                    add_to_dict(self.cntx, sheet, None)
                 else:
                     self.warn.write2(self.cik_adsh, 'should be implemented')
 
@@ -802,10 +802,11 @@ files = ['d:/sec/2018/02/0001043604-0001043604-18-000011.zip', #contextRef not i
         'd:/sec/2016/06/0000890491-0001193125-16-630221.zip', #cicles in structure
         'd:/sec/2017/04/0001541354-0001493152-17-004516.zip', #cicles in structure
         'd:/sec/2013/03/0001393066-0001193125-13-087936.zip', #is problem
-        'd:/sec/2013/06/0000014693-0000014693-13-000038.zip' #lab problem
+        'd:/sec/2013/06/0000014693-0000014693-13-000038.zip', #lab problem
+        'd:/sec/2018/02/0000076605-0000076605-18-000045.zip' #bs:null
         ]
 
-for file in files[-2:-1]:
+for file in files[0:]:
     r.read('z'+file[1:], None)
     print(len(r.chapters), r.facts_df.shape, r.lab.shape, r.cntx)
 

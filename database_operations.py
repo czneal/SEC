@@ -5,7 +5,6 @@ Created on Mon Oct 16 11:14:23 2017
 @author: Asus
 """
 
-import json
 import mysql.connector
 import sys
 import traceback
@@ -54,18 +53,14 @@ class Table(object):
         con.commit()
 
     def __insert_command(self):
-        insert = "insert into " + self.table_name + "("
-        values = ""
-        for f in self.fields:
-            insert += f + ","
-            values += "%(" + f + ")s,"
+        insert = """insert into {0} ({1}) values({2}) on duplicate key update {3}"""
+        columns = ','.join(''+f+'' for f in self.fields)
+        values = ','.join(['%('+f+')s' for f in self.fields])
+        on_dupl = ','.join([''+f+'=values('+f+')' for f in self.fields.difference(self.primary_keys)])
 
-        insert = insert[:-1] + ")\n values (" + values[:-1] + ")\n"
-        insert += "on duplicate key update\n"
-        for f in self.fields.difference(self.primary_keys):
-            insert += f+"=values(" + f + "),"
+        insert = insert.format(self.table_name, columns, values, on_dupl)
 
-        return insert[:-1]
+        return insert
 
     def write(self, values, cur):
         if type(values) == type(dict()):
@@ -98,43 +93,23 @@ class Table(object):
         df_with_none = df.where((pd.notnull(df)), None)
         df_with_none = df_with_none.reset_index()
 
+
         header = list(df_with_none.columns)
         for field in self.fields:
             if field not in header:
                 return False
 
+        #df_with_none.rename('`{}`'.format, axis='columns', inplace=True)
+
         if df.shape[0] <= self.buffer_size:
             cur.executemany(self.insert_command, df_with_none.to_dict('records'))
         else:
             for i in range(0, int(df.shape[0]/self.buffer_size) + 1):
-                cur.executemany(self.insert_command,
-                                df_with_none.iloc[i*self.buffer_size:(i+1)*self.buffer_size]
+                cmd = self.insert_command
+                bf = (df_with_none.iloc[i*self.buffer_size:(i+1)*self.buffer_size]
                                             .to_dict('records'))
+                cur.executemany(cmd, bf)
         return True
-
-class get_procedure(object):
-
-   def run_it(self, tag):
-
-       conn = OpenConnection()
-       cursor = conn.cursor(dictionary=True)
-       cursor.execute("""select * from mgparams where tag = %s""",(tag,))
-       row = cursor.fetchone()
-       params = json.loads(str(row["dependencies"]))
-       procs = str(row["script"])
-
-       i = 1
-       for k in params:
-           params[k] = i*1000
-           i += 1
-
-       procs_as_function = """def calculate(params):
-           """+procs+"""
-           return result"""
-       exec(procs_as_function)
-       retval = locals()["calculate"](params)
-
-       return retval
 
 def print_error():
     print(sys.exc_info())
@@ -183,7 +158,7 @@ def read_report_structures(adshs):
 
 def read_report_nums(adsh):
     try:
-        con = OpenConnection("localhost")
+        con = OpenConnection()
         cur = con.cursor(dictionary=True)
         cur.execute("select concat(version,':',tag) as tag, value from mgnums where adsh = (%s)",(adsh,))
         df = pd.DataFrame(cur.fetchall(), columns=["tag","value"]).set_index("tag")
@@ -191,3 +166,22 @@ def read_report_nums(adsh):
     finally:
         con.close()
     return df.sort_index()
+
+def read_reports_nums(adshs):
+    con = None
+    df = None
+    try:
+        con = OpenConnection()
+        cur = con.cursor(dictionary=True)
+        data = []
+        for adsh in adshs:
+            cur.execute("select concat(version,':',tag) as tag, value, fy, adsh from mgnums where adsh = (%s)",(adsh,))
+            data.extend(cur.fetchall())
+
+        df = pd.DataFrame(data, columns=['adsh', 'fy', 'tag','value'])
+        df["value"] = df["value"].astype('float')
+        df.sort_values('fy', ascending=False, inplace=True)
+    finally:
+        if con:
+            con.close()
+    return df

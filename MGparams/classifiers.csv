@@ -1,0 +1,9 @@
+class_model	pc	max_len	start_chapter	start_tag	parent_class	parent_class_id
+liabilities_class_pch_v2019-03-13.h5	pc	40	bs	us-gaap:LiabilitiesAndStockholdersEquity		
+liabilities_curr_noncurr_v2019-03-13.h5	pc	40	bs	us-gaap:LiabilitiesAndStockholdersEquity	liabilities_class_pch_v2019-03-13.h5	1
+assets_multiclass_pch_v2019-03-13.h5	pc	40	bs	us-gaap:Assets		
+assets_curr_noncurr_pch_v2019-03-13.h5	pc	40	bs	us-gaap:Assets		
+income_st_multiclass_pch_v2019-03-13.h5	pc	60	is			
+cashflow_st_cashtype_pch_v2019-03-13.h5	pc	60	cf		all_gaap_tags_binary_v2019-03-13.h5	1
+cashflow_st_multiclass_pch_v2019-03-14.h5	pc	60	cf		all_gaap_tags_binary_v2019-03-13.h5	1
+all_gaap_tags_binary_v2019-03-13.h5	c	60	cf			
