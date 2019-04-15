@@ -11,11 +11,14 @@ import indicators as ind
 import indicators2dba as i2d
 import pandas as pd
 import json
+import log_file as log
+import settings as gs
+import sys
 
 con = None
 try:
     print('init models and indicators...', end='')
-    #cl_pool = cl.ClassifierPool()
+    cl_pool = cl.ClassifierPool()
     ind_pool = ind.IndicatorPool(cl_pool)
     i2d.write_mg_descr(ind_pool)
     ind.indicator_scripts()    
@@ -35,37 +38,48 @@ try:
     con = None
     print('ok')
     
-    
-    cik_filter = 1373761
-    for cik in reports['cik'].unique():
+    out = log.LogFile(filename = gs.Settings.output_dir() + '/calc_log.log', append=False)
+    err = log.LogFile(filename = gs.Settings.output_dir() + '/calc_log_err.log', append=False)
+    cik_filter = -1
+    total = len(reports['cik'].unique())
+    for index, cik in enumerate(reports['cik'].unique()):
         if cik != cik_filter and cik_filter != -1:
             continue
         
-        print('calculate cik: {0}'.format(cik))
-        print('read nums...', end='')
-        adshs = reports[reports['cik'] == cik]['adsh'].unique()
-        nums = do.read_reports_nums(adshs)
-        fy_structure = {}
-        data = []
-        for adsh in adshs:
-            fy = int(nums[nums['adsh'] == adsh].iloc[0]['fy'])
-            fy_structure[fy] = [json.loads(do.read_report_structures([adsh]).loc[adsh]['structure']),
-                                adsh]
-            data.append({'adsh':adsh, 'fy':fy, 'tag':'us-gaap:mg_tax_rate', 'value':0.2})
-
-        nums = nums.append(data, ignore_index=True)
-        print('ok')
-
-        print('calc...', end='')
-        df, dep = ind_pool.calc(nums, fy_structure)
-        print('ok')
-
-        print('write...', end='')        
-        i2d.write_gaap_descr(list(dep[dep['sname'].str.find(':')!=-1]['sname'].unique()))
-        
-        i2d.write_params(dep)
-        i2d.write_report(df, cik, fy_structure[max(fy_structure)][1])
-        print('ok')    
+        print('cik: {0}'.format(cik), "{0} of {1}".format(index+1, total))
+        try:
+            out.write2(cik, 'read nums')
+            adshs = reports[reports['cik'] == cik]['adsh'].unique()
+            nums = do.read_reports_nums(adshs)
+            if nums.shape[0] == 0:
+                err.write2(cik, 'fail to read nums')                
+                continue
+            
+            fy_structure = {}
+            data = []
+            for adsh in adshs:
+                fy = int(nums[nums['adsh'] == adsh].iloc[0]['fy'])
+                fy_structure[fy] = [json.loads(do.read_report_structures([adsh]).loc[adsh]['structure']),
+                                    adsh]
+                data.append({'adsh':adsh, 'fy':fy, 'tag':'us-gaap:mg_tax_rate', 'value':0.2})
+    
+            nums = nums.append(data, ignore_index=True)            
+    
+            out.write2(cik, 'calculate')
+            df, dep = ind_pool.calc(nums, fy_structure)
+            
+    
+            out.write2(cik, 'write to database')
+            i2d.write_gaap_descr(list(dep[dep['sname'].str.find(':')!=-1]['sname'].unique()))
+            
+            i2d.write_params(dep)
+            i2d.write_report(df, cik, fy_structure[max(fy_structure)][1])
+            
+        except:
+            err.write_tb2(cik, sys.exc_info())
+            
+    out.close()
+    err.close()            
 except:
     raise
 finally:
