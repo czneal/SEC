@@ -52,11 +52,15 @@ class Table(object):
         cur.execute("truncate table " + self.table_name)
         con.commit()
 
-    def __insert_command(self):
+    def __insert_command(self, fields=None):
+        if fields is None:
+            fields = self.fields
+        else:
+            fields = self.fields.intersection(fields)
         insert = """insert into {0} ({1}) values({2}) on duplicate key update {3}"""
-        columns = ','.join(''+f+'' for f in self.fields)
-        values = ','.join(['%('+f+')s' for f in self.fields])
-        on_dupl = ','.join([''+f+'=values('+f+')' for f in self.fields.difference(self.primary_keys)])
+        columns = ','.join(''+f+'' for f in fields)
+        values = ','.join(['%('+f+')s' for f in fields])
+        on_dupl = ','.join([''+f+'=values('+f+')' for f in fields.difference(self.primary_keys)])
 
         insert = insert.format(self.table_name, columns, values, on_dupl)
 
@@ -75,7 +79,7 @@ class Table(object):
 
             for f in self.not_null_fields:
                 if row[f] is None:
-                    return
+                    return False
 
         self.data.extend(values)
         if len(self.data) >= self.buffer_size:
@@ -95,22 +99,69 @@ class Table(object):
 
 
         header = list(df_with_none.columns)
-        for field in self.fields:
+        for field in self.not_null_fields.union(self.primary_keys):
             if field not in header:
                 return False
 
         #df_with_none.rename('`{}`'.format, axis='columns', inplace=True)
 
         if df.shape[0] <= self.buffer_size:
-            cur.executemany(self.insert_command, df_with_none.to_dict('records'))
+            cur.executemany(self.__insert_command(header), 
+                            df_with_none.to_dict('records'))
         else:
             for i in range(0, int(df.shape[0]/self.buffer_size) + 1):
-                cmd = self.insert_command
+                cmd = self.__insert_command(header)
                 bf = (df_with_none.iloc[i*self.buffer_size:(i+1)*self.buffer_size]
                                             .to_dict('records'))
                 cur.executemany(cmd, bf)
         return True
 
+class ReportWriter(object):
+    def __init__(self, con):
+        self.cntx_tbl = Table('raw_contexts', con)
+        self.nums_tbl = Table('raw_nums', con)
+        self.reps_tbl = Table('raw_reps', con)
+            
+    def write_raw_contexts(self, r, cur):
+        df = r.cntx_df
+        df['cik'] = r.rss['cik']
+        df['adsh'] = r.rss['adsh']
+        self.cntx_tbl.write_df(df, cur)
+    
+    def write_raw_facts(self, r, cur):
+        df = r.facts_df
+        df['cik'] = r.rss['cik']
+        df['adsh'] = r.rss['adsh']
+        self.nums_tbl.write_df(df, cur)
+    
+    def write_raw_report(self, r, cur):
+        data = {'adsh':r.rss['adsh'],
+                'cik':r.rss['cik'],
+                'file_date':r.rss['file_date'],
+                'file_link':r.file_link,
+                'period_rss': r.rss['period'],
+                'fy_rss': r.rss['fy'],
+                'fye_rss': r.rss['fye'],
+                'period_x': r.ddate,
+                'fy_x': r.fy,
+                'fye_x': r.fye,
+                'structure': r.structure_dumps()}
+        if 'edate' in r.true_dates:
+            data['period'] = r.true_dates['edate']
+        else:
+            data['period'] = None
+        if 'fy' in r.true_dates:
+            data['fy'] = r.true_dates['fy']
+        else:
+            data['fy'] = None
+        if 'fye' in r.true_dates:
+            data['fye'] = r.true_dates['fye']
+        else:
+            data['fye'] = None
+        
+        self.reps_tbl.write(data, cur)
+        self.reps_tbl.flush(cur)
+    
 def print_error():
     print(sys.exc_info())
     traceback.print_tb(sys.exc_info()[2])

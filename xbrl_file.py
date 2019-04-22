@@ -50,14 +50,14 @@ class XBRLZipPacket(object):
             for name in files:
                 if name.endswith('.xsd'):
                     self.xsd_file = z_file.open(name)
-                elif name.endswith('_cal.xml'):
+                elif name.endswith('cal.xml'):
                     self.cal_file = z_file.open(name)
-                elif name.endswith('_pre.xml'):
+                elif name.endswith('pre.xml'):
                     self.pre_file = z_file.open(name)
-                elif name.endswith('_lab.xml'):
+                elif name.endswith('lab.xml'):
                     self.lab_file = z_file.open(name)
-                elif (not name.endswith('_def.xml') and
-                      not name.endswith('_ref.xml')):
+                elif (not name.endswith('def.xml') and
+                      not name.endswith('ref.xml')):
                     self.xbrl_file = z_file.open(name)
                     self.xbrl_filename = name
         except:

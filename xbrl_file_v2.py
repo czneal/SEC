@@ -17,16 +17,16 @@ import classificators as cl
 from log_file import LogFile
 from xbrl_chapter import Chapter
 import descr_types as doctype
-
+import utils
 
 def add_to_dict(d, sheet, what):
     if sheet in d:
         d[sheet].append(what)
     else:
         d[sheet] = [what]
-
+        
 class XBRLFile:
-    def __init__(self, log_file = None, log_warn=None, log_err=None):
+    def __init__(self, log_file = LogFile(), log_err=LogFile(), log_warn=LogFile()):
         self.log = log_file
         self.err = log_err
         self.warn = log_warn
@@ -34,6 +34,9 @@ class XBRLFile:
         self.__setup_members()
 
     def __setup_members(self):
+        self.rss_data = None
+        self.true_dates = None
+        self.file_link = ''
         self.facts = {}
         self.contexts = None
         self.chapters = None
@@ -44,28 +47,21 @@ class XBRLFile:
         self.ddate = None
         self.cik_adsh = None
         self.ms = cl.MainSheets()
-        self.file_date = None
         self.facts_df = None
         self.cntx_df = None
         self.lab = None
         self.xsd = None
+        self.period_len = 365
 
-    def read(self, zip_filename, file_date=None):
+    def read(self, zip_filename, rss):        
         self.__setup_members()
+        self.rss = rss
+        self.file_link = zip_filename
+        
         try:
             #unpack zip file and get cal_filename, xbrl_filename, pre_filename, xsd_filename
-            self.cik_adsh = (zip_filename
-                         .split('/')[-1]
-                         .split('.')[0])
-            #only for tests
-            if file_date is None:
-                name = zip_filename.split('/')
-                self.file_date = dt.date(int(name[2]), int(name[3]), 1)
-                self.file_date = self.file_date - dt.timedelta(days=15)
-            else:
-                self.file_date = file_date
-            #end only for tests
-
+            self.cik_adsh = str(rss['cik']).zfill(10) + '-' + rss['adsh']
+            
             self.log.write2(self.cik_adsh, "open zip archive: " + zip_filename)
             packet = xbrl.XBRLZipPacket(zip_filename, None)
             status, message = packet.open_packet()
@@ -76,7 +72,8 @@ class XBRLFile:
             self.chapters = self.read_xsd(packet.xsd_file)
             self.read_cal(packet.cal_file, self.chapters)
             self.read_pre(packet.pre_file, self.chapters)
-            self.read_labels(packet.lab_file)
+#            self.read_labels(packet.lab_file)
+            
             if not self.organize():
                 self.warn.write2(self.cik_adsh, 'too many chapters')
 
@@ -92,51 +89,49 @@ class XBRLFile:
                     prefixes[ns[prefix]] = prefix
 
             self.read_dei_section(root, ns)
-            if self.fy == 0 or self.ddate == "" or self.fye == "":
-                self.err.write2(self.cik_adsh, 'dei section is not full')
-                return False
+            if self.fy is None or self.ddate is None or self.fye is None:
+                self.err.write2(self.cik_adsh, 'dei section is not full')                
 
-            if self.check_period_fy(root, ns, tools.xbrli) == False:
-                self.err.write2(self.cik_adsh, 'ddate and fy inconsistance')
-                return False
-
+           
             self.read_contexts_section(root, ns, tools.xbrli)
             self.read_units_section(root, ns, tools.xbrli)
             self.read_facts_section(root, self.fact_tags, ns, prefixes)
 
-            calc_log = io.StringIO()
-            for _, c in self.chapters.items():
-                c.check_cal_scheme(self.facts, calc_log)
-                #c.update_pre_values(self.facts)
-            calc_log.flush()
-            calc_log.seek(0)
-            self.calc_log = calc_log.read()
-
-            if self.calc_log != "":
-                self.trusted = False
-                self.err.write2(self.cik_adsh, "calculation error!")
-                self.err.write2(self.cik_adsh, self.calc_log)
-            else:
-                self.trusted = True
+#            calc_log = io.StringIO()
+#            for _, c in self.chapters.items():
+#                c.check_cal_scheme(self.facts, calc_log)
+#                #c.update_pre_values(self.facts)
+#            calc_log.flush()
+#            calc_log.seek(0)
+#            self.calc_log = calc_log.read()
+#
+#            if self.calc_log != "":
+#                self.trusted = False
+#                self.err.write2(self.cik_adsh, "calculation error!")
+#                self.err.write2(self.cik_adsh, self.calc_log)
+#            else:
+#                self.trusted = True
 
             self.log.write2(self.cik_adsh, 'start find contexts...')
-            self.make_contexts_facts(18)
-            self.find_instant_context(tolerance_days = 8)
-            self.find_noninstant_context(tolerance_days = 8)
+            self.true_dates = self.period_fy_fye(d_tolerance = 8)
+            self.make_contexts_facts(8)
             self.log.write2(self.cik_adsh, 'end find contexts...ok')
-
-            if 'bs_err' in self.cntx:
-                self.err.write2(self.cik_adsh, 'bs_err:' + str(self.cntx['bs_err']))
-            if 'is_err' in self.cntx:
-                self.err.write2(self.cik_adsh, 'is_err:' + str(self.cntx['is_err']))
-            if 'cf_err' in self.cntx:
-                self.err.write2(self.cik_adsh, 'cf_err:' + str(self.cntx['cf_err']))
-            if 'bs_sum' in self.cntx:
-                self.err.write2(self.cik_adsh, 'bs_sum:' + str(self.cntx['bs_sum']))
-            if 'is_sum' in self.cntx:
-                self.err.write2(self.cik_adsh, 'is_sum:' + str(self.cntx['is_sum']))
-            if 'cf_sum' in self.cntx:
-                self.err.write2(self.cik_adsh, 'cf_sum:' + str(self.cntx['cf_sum']))
+#            self.find_instant_context(tolerance_days = 8)
+#            self.find_noninstant_context(tolerance_days = 8)
+#            self.log.write2(self.cik_adsh, 'end find contexts...ok')
+#
+#            if 'bs_err' in self.cntx:
+#                self.err.write2(self.cik_adsh, 'bs_err:' + str(self.cntx['bs_err']))
+#            if 'is_err' in self.cntx:
+#                self.err.write2(self.cik_adsh, 'is_err:' + str(self.cntx['is_err']))
+#            if 'cf_err' in self.cntx:
+#                self.err.write2(self.cik_adsh, 'cf_err:' + str(self.cntx['cf_err']))
+#            if 'bs_sum' in self.cntx:
+#                self.err.write2(self.cik_adsh, 'bs_sum:' + str(self.cntx['bs_sum']))
+#            if 'is_sum' in self.cntx:
+#                self.err.write2(self.cik_adsh, 'is_sum:' + str(self.cntx['is_sum']))
+#            if 'cf_sum' in self.cntx:
+#                self.err.write2(self.cik_adsh, 'cf_sum:' + str(self.cntx['cf_sum']))
         except:
             self.err.write2(self.cik_adsh, "unexpected error while reading:"+zip_filename)
             self.err.write_tb2(self.cik_adsh, sys.exc_info())
@@ -144,14 +139,26 @@ class XBRLFile:
 
         return True
 
-    def used_tags(self, only_sta=True):
+    def used_tags(self, only_sta):
         fact_tags = set()
         for _, c in self.chapters.items():
             fact_tags.update(c.get_cal_tags(only_sta))
             fact_tags.update(c.get_pre_tags(only_sta))
         return fact_tags
+    
+    def get_cal_tags(self, only_sta):
+        fact_tags = set()
+        for _, c in self.chapters.items():
+            fact_tags.update(c.get_cal_tags(only_sta))
+        return fact_tags
+    
+    def get_pre_tags(self, only_sta):
+        fact_tags = set()
+        for _, c in self.chapters.items():
+            fact_tags.update(c.get_pre_tags(only_sta))
+        return fact_tags
 
-    def get_dimentions(self, only_sta=True):
+    def get_dimentions(self, only_sta):
         dim = set()
         dim.add(None)
         for _, c in self.chapters.items():
@@ -159,7 +166,7 @@ class XBRLFile:
                 dim.update(c.get_dimentions(only_sta))
         return dim
 
-    def get_dim_members(self, only_sta=True):
+    def get_members(self, only_sta):
         member = set()
         member.add(None)
         for _, c in self.chapters.items():
@@ -186,11 +193,10 @@ class XBRLFile:
         else:
             self.err.write2(self.cik_adsh, "dei:CurrentFiscalYearEndDate not found")
 
-        self.ddate = ""
+        self.ddate = None
         node = root.find("./dei:DocumentPeriodEndDate", ns)
         if node is not None:
-            self.ddate = node.text.strip()
-            self.ddate_context = node.attrib["contextRef"].strip()
+            self.ddate = utils.str2date(node.text.strip())
         else:
             self.err.write2(self.cik_adsh, "dei:DocumentPeriodEndDate not found")
 
@@ -200,15 +206,15 @@ class XBRLFile:
             self.isin = node.text.upper().strip()
             if len(self.isin)>12: self.isin = None
 
-        self.fy = 0
+        self.fy = None
         node = root.find("./dei:DocumentFiscalYearFocus", ns)
         if node is not None:
             try:
                 self.fy = int(node.text.strip())
             except ValueError:
-                self.fy = 0
+                self.fy = None
             if self.fy < 2000 or self.fy > 2100:
-                self.fy = dt.date.today().year
+                self.fy = None
         else:
             self.err.write2(self.cik_adsh, "dei:DocumentFiscalYearFocus not found")
 
@@ -249,8 +255,7 @@ class XBRLFile:
         self.contexts = {}
         for elem in root.findall("./"+xbrli+"context"):
             cntx = Context(elem.iter())
-            if cntx.dim is not None and len(cntx.dim)>1:
-                continue
+            
             self.contexts[cntx.id] = cntx
 
         self.log.write2(self.cik_adsh, "end reading contexts...ok")
@@ -328,24 +333,82 @@ class XBRLFile:
         if m == 2 and d == 29:
             d = 28
         return abs((ddate-dt.date(y,m,d)).days)
+    
+    def period_fy_fye(self, d_tolerance):
+        rss = self.rss
+        true_dates = {}
+        if (self.ddate is not None and 
+                rss['period'] is not None and
+                abs(self.ddate - rss['period']).days <= d_tolerance):
+            true_dates['edate'] = self.ddate
+        if self.fy == rss['fy'] and self.fy is not None:
+            true_dates['fy'] = self.fy
+        if self.fye == rss['fye'] and self.fye is not None:
+            true_dates['fye'] = self.fye
+        if len(true_dates) == 3:
+            return true_dates
+        
+        if 'edate' not in true_dates:            
+            period_rss_fy = None
+            period_r_fy = None
+            if rss['fy'] is not None and rss['fye'] is not None:
+                period_rss_fy = utils.correct_date(rss['fy'], 
+                                                   int(rss['fye'][0:2]), 
+                                                   int(rss['fye'][2:4]))
+            if self.fy is not None and self.fye is not None:
+                period_r_fy = utils.correct_date(self.fy, 
+                                                 int(self.fye[0:2]), 
+                                                 int(self.fye[2:4]))
+                
+            a = []
+            if self.ddate is not None: a.append(self.ddate)
+            if period_r_fy is not None: a.append(period_r_fy)
+            if rss['period'] is not None: a.append(rss['period'])
+            if period_rss_fy is not None: a.append(period_rss_fy)
+            a = sorted(a)
+            if len(a)<2:
+                return true_dates
+            v = []
+            for i in range(len(a)-1):
+                if abs((a[i+1] - a[i]).days) <= d_tolerance: 
+                    v.append(1)
+                else:
+                    v.append(0)
+            if sum(v)<1:
+                return true_dates
+            if sum(v)>=3:
+                true_dates['edate'] = a[2]
+                return true_dates
+            
+            if len(v) == 3 and v[0] == v[2] and v[0] == 1 and v[1] == 0:
+                return true_dates
+            for i, e in enumerate(v):
+                if e == 1: true_dates['edate'] = a[i]
+            
+        return true_dates
 
-    def make_contexts_facts(self, day_tolerance=8):
+    def make_contexts_facts(self, day_tolerance):        
+        edate = None
+        if 'edate' in self.true_dates:
+            edate = self.true_dates['edate']
         contexts = pd.DataFrame(data = [e.aslist() for (n, e) in self.contexts.items()],
                         columns = ['context', 'instant', 'sdate', 'edate',
                                    'dim', 'member'])
-        contexts['edist'] = contexts['edate'].apply(self.fey_dist)
-        contexts['sdist'] = contexts['sdate'].apply(self.fey_dist)
-        contexts = contexts[((contexts['edist']<=day_tolerance) |
-                            (contexts['sdist']<=day_tolerance)) &
-                            (contexts['edate']<=self.file_date)]
-
-
+        if edate is not None:
+            contexts = contexts[abs(contexts['edate']-edate) <= 
+                                dt.timedelta(days=day_tolerance)]
+            
+        contexts = contexts[contexts['dim'].isin(self.get_dimentions(only_sta=True))
+                            & contexts['member'].isin(self.get_members(only_sta=True))]
+            
         facts = pd.DataFrame(data = [fact.aslist() for ((f, c), fact) in self.facts.items()],
                              columns=['tag', 'value', 'uom', 'context'])
-
+        f = facts[facts['tag'].isin(self.get_pre_tags(only_sta=True))]
+        contexts = contexts[contexts['context'].isin(f['context'].unique())]
+        
         facts = (facts.merge(contexts, 'inner', left_on='context', right_on='context')
                       .sort_values(['tag','dim','member']))
-
+        
         self.cntx_df = contexts
         self.facts_df = facts
 
@@ -601,7 +664,7 @@ class XBRLFile:
 
         self.log.write2(self.cik_adsh, 'end reading labels and documentation...ok')
 
-    def chapters_count(self):
+    def chapters_counts(self):
         counts = {'bs':0, 'cf':0, 'is':0}
         for _, chapter in self.chapters.items():
             if chapter.chapter != 'sta':
@@ -659,6 +722,26 @@ class XBRLFile:
 #                            continue
 #                        if node1.name == node.name:
 #                            node.children = node1.children.copy()
+        return True
+    
+    def chapters_count(self):
+        counts = {'bs':0, 'cf':0, 'is':0}
+        for _, chapter in self.chapters.items():
+            if chapter.chapter != 'sta':
+                continue
+            if len(chapter.nodes) == 0:
+                continue
+
+            if self.ms.match_bs(chapter.label):
+                counts['bs'] += 1
+            if self.ms.match_is(chapter.label):
+                counts['is'] += 1
+            if self.ms.match_cf(chapter.label):
+                counts['cf'] += 1
+
+        if (counts['bs'] > 1 or counts['is'] > 2 or counts['cf'] > 1):
+            return False
+
         return True
 
 class Fact(object):
@@ -736,7 +819,7 @@ class ContextsGroundTruth(object):
 
 
 class Context(object):
-    attr = ['id', 'instant', 'sdate', 'edate', 'axis', 'dim']
+    attr = ['id', 'instant', 'sdate', 'edate', 'dim', 'member']
     def __init__(self, elems):
         self.instant = None
         self.sdate = None
@@ -747,22 +830,21 @@ class Context(object):
 
         self.read(elems)
 
-    def __str__(self):
+    def __str__(self):        
         return ("(id:{0}, instant:{1}, startDate:{2}, endDate: {3}, axis:{4}, dimension:{5})"
                 .format(self.id, self.instant, self.sdate, self.edate,
                         self.dim, self.member))
 
-    def aslist(self):
+    def aslist(self):        
         if self.member is None:
-            x = [self.id, self.instant,
+            return [self.id, self.instant,
                       self.sdate, self.edate,
                       None, None]
-        else:
-            x = [self.id, self.instant,
+        else:            
+            return [self.id, self.instant,
                           self.sdate, self.edate,
                           self.dim[0], self.member[0]]
-        return x
-
+        
 
     def read(self, elems):
         for e in elems:
@@ -785,6 +867,3 @@ class Context(object):
                 self.member.append(e.text.strip().replace(':','_'))
                 self.dim.append(e.attrib['dimension']
                             .replace(':', '_'))
-
-
-

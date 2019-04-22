@@ -38,7 +38,7 @@ class Chapter(object):
             source = href.split("_")[0].lower()
 
             tag = href.split("_")[-1]
-            n = Node(tag, source)
+            n = Node(tag, source, in_cal=True)
             nodes_ids[loc_id] = n.name
             self.nodes[n.name] = n
 
@@ -82,42 +82,41 @@ class Chapter(object):
             if loc_id in nodes_ids:
                 continue
 
-            n = Node(tag, source)
+            n = Node(tag, source, in_pre=True)
             if n.name in self.nodes:
+                self.nodes[n.name].in_pre = True
                 continue
 
             nodes_ids[loc_id] = n.name
             self.nodes_pre[n.name] = n
 
-    def get_dimentions(self, only_sta = True):
+    def get_dimentions(self, only_sta):
         if only_sta and self.chapter != 'sta':
             return set()
 
         return self.dim
 
-    def get_members(self, only_sta = True):
+    def get_members(self, only_sta):
         if only_sta and self.chapter != 'sta':
             return set()
 
         return self.member
 
-    def get_pre_tags(self, only_sta=True):
+    def get_pre_tags(self, only_sta):
         """Returns set of tags shown in presentation file,
         tags stored as "us-gaap:TagName", "custom:CustomTagName"
         """
-
         if only_sta and self.chapter != 'sta':
             return set()
 
         tags = set()
-
-        for name, node in self.nodes_pre.items():
-            if name not in self.nodes:
+        for _, node in list(self.nodes_pre.items()) + list(self.nodes.items()):
+            if node.in_pre:
                 tags.add(node.name)
 
         return tags
 
-    def get_cal_tags(self, only_sta=True):
+    def get_cal_tags(self, only_sta):
         """Returns set of tags shown in calculation file
         tags stored as "us-gaap:TagName", "custom:CustomTagName"
         """
@@ -125,8 +124,10 @@ class Chapter(object):
             return set()
 
         tags = set()
-        for name, node in self.nodes.items():
-            tags.add(node.name)
+        for _, node in list(self.nodes_pre.items()) + list(self.nodes.items()):
+            if node.in_cal:
+                tags.add(node.name)
+                
         return tags
 
     def print_self(self, only_sta=True):
@@ -179,18 +180,20 @@ class Chapter(object):
 
 class Node(object):
     """Represent node in calculation tree
-    name - us_gaap or custom name
+    name - us-gaap or custom name
     source - whether it coms from us_gaap, or custom
     children - node children
     parent - node parent, after using __organize() function in CALFile has no meaning
     """
-    def __init__(self, tag, source):
-        self.name = source+":"+tag
-        self.tag = tag
+    def __init__(self, tag, source, in_cal=False, in_pre=False):
         self.source = source.lower()
+        self.name = self.source+":"+tag
+        self.tag = tag        
         self.children = {}
         self.parent = None
         self.value = None
+        self.in_cal = in_cal
+        self.in_pre = in_pre
 
     def enum_children(node):
         for _, c in node.children.items():

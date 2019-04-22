@@ -6,7 +6,15 @@ Created on Mon Sep 10 15:07:08 2018
 """
 
 import scraper_sec
+from settings import Settings
+from log_file import LogFile
 
-scraper_sec.download_one_month(2019,1)
-scraper_sec.download_one_month(2019,2)
-scraper_sec.download_one_month(2019,3)
+log = LogFile(Settings.root_dir() + 'sec_dwn.log')
+err = LogFile(Settings.root_dir() + 'sec_dwn.err')
+for y in range(2014, 2015):
+	for m in range(4,5):
+		print('year:{0}, month{1}'.format(y, m))
+		scraper_sec.download_one_month(y, m, log=log, err_log=err)
+
+log.close()
+log.close()

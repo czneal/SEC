@@ -6,6 +6,7 @@ Created on Wed Dec 12 17:41:00 2018
 """
 
 import xml.etree.ElementTree as ET
+from lxml import etree
 
 class XmlTreeTools(object):
     def __init__(self):
@@ -18,6 +19,40 @@ class XmlTreeTools(object):
         self.xsd = ""
         self.xml = ''
 
+    def read_xml_tree_v0(self, xml_file):
+        tree = etree.parse(xml_file)
+        self.root = tree.getroot()
+        ns = self.root.nsmap
+        
+        if "xbrli" in ns:
+            self.xbrli = "{"+ns["xbrli"]+"}"
+        elif "" in ns:
+            self.xbrli = "{"+ns[""]+"}"
+
+        if "link" in ns:
+            self.link = "{" +ns["link"]+ "}"
+        elif "" in ns:
+            self.link = "{" +ns[""]+ "}"
+
+        if "xlink" in ns:
+            self.xlink = "{"+ns["xlink"]+"}"
+        elif "" in ns:
+            self.xlink = "{" +ns[""]+ "}"
+        if "" in ns:
+            self.empty = "{"+ns[""]+"}"
+        elif "link" in ns:
+            self.empty = "{"+ns["link"]+"}"
+        if 'xsd' in ns:
+            self.xsd = '{'+ns['xsd']+'}'
+        elif 'xs' in ns:
+            self.xsd = '{'+ns['xs']+'}'
+        if 'xml' in ns:
+            self.xml = '{'+ns['xml']+'}'
+        else:
+            self.xml = '{http://www.w3.org/XML/1998/namespace}'
+        
+        self.ns = ns
+        
     def read_xml_tree(self, xml_file):
         events = ("start-ns", "start")
         ns = {}
