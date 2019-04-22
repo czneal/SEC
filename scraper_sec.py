@@ -16,6 +16,7 @@ import log_file
 from settings import Settings
 import urltools
 from bs4 import BeautifulSoup
+from utils import ProgressBar
 
 def download_xbrlrss(year, month, part_dir, log=log_file.LogFile()):
     root_link = "https://www.sec.gov/Archives/edgar/monthly/"
@@ -201,10 +202,14 @@ def download_one_month(y, m, log=log_file.LogFile(), err_log=log_file.LogFile())
         tree.read_xml_tree(rss_filename)
         root = tree.root
 
-        items = root.iter("item")
+        items = list(root.iter("item"))
+        pb = ProgressBar()
+        pb.start(total = len(items))
         for item in items:
             ItemFilesDownload(item, part_dir, temp_dir, tree.ns,
                               overwrite = False, check=True, log=log)
+            pb.measure()
+            print('\r' + pb.message(), end='')
 
     except:
         err_log.write("Something went wrong!")

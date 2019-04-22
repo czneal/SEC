@@ -22,7 +22,7 @@ class LogFile(object):
         if timestamp and self.log_file is not None:
             self.write("session timestamp {0}".format(dt.datetime.now()))
 
-    def write(self, info, end=os.linesep):
+    def write(self, info, end='\n'):
         if self.log_file is None:
             print(info, end = end)
         else:
@@ -38,6 +38,7 @@ class LogFile(object):
         if self.log_file is not None:
             self.log_file.close()
             del self.log_file
+            self.log_file = None
 
     def write_tb(self, excinfo):
         self.write(str(excinfo[0]))
