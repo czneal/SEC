@@ -5,7 +5,8 @@ Created on Tue Dec 18 13:28:01 2018
 @author: Asus
 """
 import sys
-import urllib
+import urllib3
+import certifi
 import io
 
 def fetch_urlfile(url_text, filename = None, log=None, tryout = 3):
@@ -23,10 +24,10 @@ def fetch_urlfile(url_text, filename = None, log=None, tryout = 3):
 
     while tryout>0:
         try:
-            req = urllib.request.Request(url_text)
-            url = urllib.request.urlopen(req)
-            body = url.read()
-            url.close()
+            http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED',
+                                       ca_certs=certifi.where())
+            req = http.request('GET', url_text)            
+            body = req.data            
             good_read = True
             break
         except:
