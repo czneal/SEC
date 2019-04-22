@@ -190,7 +190,7 @@ if f.shape[0]>=2:
 #mg_r_cash_buybacks_yld, dynamic, 1
 params = {"mg_r_cash_buybacks":-1}
 
-result = params['mg_r_cash_buybacks'].sum()
+result = -params['mg_r_cash_buybacks'].sum()
 if pd.notna(params['mg_r_cash_buybacks']).sum() == 0:
      result = np.nan
 
@@ -208,7 +208,7 @@ else:
 #mg_r_dividents_yld, dynamic, 1
 params = {"mg_r_cash_dividends_common":-1}
 
-result = params['mg_r_cash_dividends_common'].sum()
+result = -params['mg_r_cash_dividends_common'].sum()
 if pd.notna(params['mg_r_cash_dividends_common']).sum() == 0:
      result = np.nan
 

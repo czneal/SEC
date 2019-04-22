@@ -18,7 +18,8 @@ import sys
 con = None
 try:
     print('init models and indicators...', end='')
-    cl_pool = cl.ClassifierPool()
+    if 'cl_pool' not in locals():
+        cl_pool = cl.ClassifierPool()
     ind_pool = ind.IndicatorPool(cl_pool)
     i2d.write_mg_descr(ind_pool)
     ind.indicator_scripts()    
@@ -28,8 +29,8 @@ try:
     con = do.OpenConnection()
     cur = con.cursor(dictionary=True)
     
-    cur.execute('delete from mgreporttable;')
-    cur.execute('delete from mgparamstype1;')
+    cur.execute('truncate table mgreporttable;')
+    cur.execute('truncate table mgparamstype1;')
     con.commit()
     
     cur.execute(q.select_newest_reports, {'fy':2017})
@@ -41,15 +42,18 @@ try:
     out = log.LogFile(filename = gs.Settings.output_dir() + '/calc_log.log', append=False)
     err = log.LogFile(filename = gs.Settings.output_dir() + '/calc_log_err.log', append=False)
     cik_filter = -1
-    total = len(reports['cik'].unique())
-    for index, cik in enumerate(reports['cik'].unique()):
+    ciks = reports[reports['fy'] == 2017]['cik'].unique()
+    total = len(ciks)
+    for index, cik in enumerate(ciks):
         if cik != cik_filter and cik_filter != -1:
             continue
         
         print('cik: {0}'.format(cik), "{0} of {1}".format(index+1, total))
         try:
+            r = reports[reports['cik'] == cik]            
+                        
             out.write2(cik, 'read nums')
-            adshs = reports[reports['cik'] == cik]['adsh'].unique()
+            adshs = r['adsh'].unique()
             nums = do.read_reports_nums(adshs)
             if nums.shape[0] == 0:
                 err.write2(cik, 'fail to read nums')                
