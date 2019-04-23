@@ -73,9 +73,7 @@ class XBRLZipPacket(object):
             message.write("missing pre file in zip file" + os.linesep)
         elif self.lab_file is None:
             message.write("missing lab file in zip file" + os.linesep)
-        else:
-            message.write("error while reading zip archive" + os.linesep)
-
+        
         message.flush()
         message.seek(0)
         message = message.read()
