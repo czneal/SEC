@@ -61,24 +61,28 @@ class XBRLZipPacket(object):
                     self.xbrl_file = z_file.open(name)
                     self.xbrl_filename = name
         except:
-            if self.xbrl_file is None:
-                message.write("missing xbrl file in zip file" + os.linesep)
-            elif self.xsd_file is None:
-                message.write("missing xsd file in zip file" + os.linesep)
-            elif self.cal_file is None:
-                message.write("missing cal file in zip file" + os.linesep)
-            elif self.pre_file is None:
-                message.write("missing pre file in zip file" + os.linesep)
-            elif self.lab_file is None:
-                message.write("missing lab file in zip file" + os.linesep)
-            else:
-                message.write("error while reading zip archive" + os.linesep)
+            pass
+        
+        if self.xbrl_file is None:
+            message.write("missing xbrl file in zip file" + os.linesep)
+        elif self.xsd_file is None:
+            message.write("missing xsd file in zip file" + os.linesep)
+        elif self.cal_file is None:
+            message.write("missing cal file in zip file" + os.linesep)
+        elif self.pre_file is None:
+            message.write("missing pre file in zip file" + os.linesep)
+        elif self.lab_file is None:
+            message.write("missing lab file in zip file" + os.linesep)
+        else:
+            message.write("error while reading zip archive" + os.linesep)
 
-            message.flush()
-            message.seek(0)
-            return False, message.read()
-
-        return True, ''
+        message.flush()
+        message.seek(0)
+        message = message.read()
+        if message == '':
+            return True, ''
+        else:
+            return False, message
 
 class XBRLFile:
     def __init__(self, log_file = None):

@@ -130,8 +130,8 @@ warn = LogFile(Settings.output_dir() + 'read.warn', append=False)
 rep = xf.XBRLFile(log, err, warn)
 
 
-for y in range(2013,2014):
-    for m in range(1, 2):              
+for y in range(2013,2015):
+    for m in range(1, 13):              
         parent_dir = Settings.root_dir()+str(y)+"/"+str(m).zfill(2)+'/'
         rss_filename = "rss-" + str(y)+"-"+str(m).zfill(2) + ".xml"
         if not os.path.exists(parent_dir + rss_filename):
@@ -144,13 +144,14 @@ for y in range(2013,2014):
         pb = ProgressBar()
         pb.start(len(records))
         
-        adsh_stop = False
+        adsh_stop = True
         for rss_data in records:
-            if rss_data['adsh'] != '0001193125-13-031766' and adsh_stop:
+            if rss_data['adsh'] != '0001144204-13-051352' and adsh_stop:
                 continue                      
-            rep.read(parent_dir + str(rss_data['cik']).zfill(10) + 
+            if not rep.read(parent_dir + str(rss_data['cik']).zfill(10) + 
                    '-' + rss_data['adsh'] + '.zip',
-                   rss_data)            
+                   rss_data):
+                continue
                 
             try:
                 con = do.OpenConnection()
