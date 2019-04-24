@@ -74,6 +74,11 @@ def enumerate_chapter_tags(structure, chap_id = None):
             for tag_name, tag_data in chapter_data.items():
                 yield (chapter, tag_name, tag_data["weight"], tag_data)
 
+def enumerate_chapters(structure, chapter):
+    for ch, chapter_data in structure.items():
+        if ch is None or cl.ChapterClassificator.match(ch) == chapter:
+            yield (ch, chapter_data)
+
 #old ones  
 def enumerate_tags(structure, tag = None):
     root = None
