@@ -210,6 +210,7 @@ def download_one_month(y, m, log=log_file.LogFile(), err_log=log_file.LogFile())
                               overwrite = False, check=True, log=log)
             pb.measure()
             print('\r' + pb.message(), end='')
+        print()
 
     except:
         err_log.write("Something went wrong!")
