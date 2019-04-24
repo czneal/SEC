@@ -751,7 +751,7 @@ class Fact(object):
         self.name = source+":"+self.tag
 
     def aslist(self):
-        return [self.name, self.value, self.uom, self.context]
+        return [self.name, self.value, self.uom, self.context[0:512]]
 
     def read(elem):
         if 'contextRef' not in elem.attrib:
@@ -841,7 +841,7 @@ class Context(object):
                       self.sdate, self.edate,
                       None, None]
         else:            
-            return [self.id, self.instant,
+            return [self.id[0:512], self.instant,
                           self.sdate, self.edate,
                           self.dim[0], self.member[0]]
         

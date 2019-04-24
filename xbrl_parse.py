@@ -123,15 +123,43 @@ def read_dei_section(filename, err = LogFile()):
         err.write_tb2(filename, sys.exc_info())
     return data
 
+def update_formtype():
+    try:
+        con = do.OpenConnection()        
+        cur = con.cursor(dictionary=True)
+        rss = FilingRSS()
+        update = "update raw_reps set form_type =%(form_type)s where adsh=%(adsh)s"
+        for y in range(201,2020):
+            for m in range(1, 13):              
+                parent_dir = Settings.root_dir()+str(y)+"/"+str(m).zfill(2)+'/'
+                rss_filename = "rss-" + str(y)+"-"+str(m).zfill(2) + ".xml"
+                if not os.path.exists(parent_dir + rss_filename):
+                    continue
+                
+                print('year:{0}, month:{1}'.format(y, m))
+                rss.open_file(parent_dir + rss_filename)
+                records = rss.filing_records()
+                cur.executemany(update, records)
+                
+        con.commit()
+    except:
+        raise
+    finally:
+        if 'con' in locals() and con is not None: con.close()
+        
+#update_formtype()
+
+        
+        
 f = FilingRSS()
-log = LogFile(Settings.output_dir() + 'read.log', append=False)
-err = LogFile(Settings.output_dir() + 'read.err', append=False)
-warn = LogFile(Settings.output_dir() + 'read.warn', append=False)
+log = LogFile(Settings.output_dir() + 'read.log', append=True)
+err = LogFile(Settings.output_dir() + 'read.err', append=True)
+warn = LogFile(Settings.output_dir() + 'read.warn', append=True)
 rep = xf.XBRLFile(log, err, warn)
 
 
-for y in range(2013,2015):
-    for m in range(1, 13):              
+for y in range(2014,2015):
+    for m in range(5, 6):              
         parent_dir = Settings.root_dir()+str(y)+"/"+str(m).zfill(2)+'/'
         rss_filename = "rss-" + str(y)+"-"+str(m).zfill(2) + ".xml"
         if not os.path.exists(parent_dir + rss_filename):
@@ -144,9 +172,9 @@ for y in range(2013,2015):
         pb = ProgressBar()
         pb.start(len(records))
         
-        adsh_stop = False
+        adsh_stop = True
         for rss_data in records:
-            if rss_data['adsh'] != '0001144204-13-051352' and adsh_stop:
+            if rss_data['adsh'] != '0001570937-14-000004' and adsh_stop:
                 continue                      
             if not rep.read(parent_dir + str(rss_data['cik']).zfill(10) + 
                    '-' + rss_data['adsh'] + '.zip',
