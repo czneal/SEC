@@ -378,11 +378,11 @@ class XBRLFile:
                                             int(true_dates['fye'][2:4]))
             a = [period_r_fy, period_rss_fy, period_fy, rss['period'], self.ddate]
             a = [e for e in a if e is not None]
-            a = sorted(a)            
+            
             v = {}
             for e in a:
                 if e in v: v[e] += 1
-                else: v[e] = 0
+                else: v[e] = 1
             v = sorted(v.items(), key=lambda x: x[1], reverse=True)
             if len(v)>1 and v[0][1]>=3:
                 true_dates['period'] = v[0][0]
