@@ -37,6 +37,12 @@ def correct_date(y, m, d):
     if d > last: d = last
     return dt.date(y,m,d)
 
+def periodend(fy, m, d):
+    if m <= 6: 
+        return correct_date(fy + 1, m, d) 
+    else:
+        return correct_date(fy, m, d) 
+
 def str2date(datestr):
     try:
         datestr = datestr.replace('-','').replace('/','')

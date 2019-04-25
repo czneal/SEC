@@ -145,7 +145,9 @@ class ReportWriter(object):
                 'period_x': r.ddate,
                 'fy_x': r.fy,
                 'fye_x': r.fye,
-                'structure': r.structure_dumps()}
+                'structure': r.structure_dumps(),
+                'form_type':r.rss['form_type'],
+                'taxonomy':r.rss['us-gaap']}
         if 'edate' in r.true_dates:
             data['period'] = r.true_dates['edate']
         else:

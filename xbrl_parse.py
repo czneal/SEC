@@ -172,7 +172,7 @@ for y in range(2014,2015):
         pb = ProgressBar()
         pb.start(len(records))
         
-        adsh_stop = True
+        adsh_stop = False
         for rss_data in records:
             if rss_data['adsh'] != '0001570937-14-000004' and adsh_stop:
                 continue                      

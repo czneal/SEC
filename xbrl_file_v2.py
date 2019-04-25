@@ -87,6 +87,11 @@ class XBRLFile:
             for prefix in p:
                 if prefix in ns:
                     prefixes[ns[prefix]] = prefix
+                    
+            if 'us-gaap' in ns:
+                self.rss['us-gaap'] = ns['us-gaap'].split('/')[-1][0:4]
+            else:
+                self.rss['us-gaap'] = None
 
             self.read_dei_section(root, ns)
             if self.fy is None or self.ddate is None or self.fye is None:
@@ -348,42 +353,39 @@ class XBRLFile:
         if len(true_dates) == 3:
             return true_dates
         
+        if 'fy' not in true_dates:
+            fy = int(self.rss['us-gaap'])
+            if rss['fy'] is not None and fy == rss['fy']: 
+                true_dates['fy'] = fy
+            if self.fy == fy: 
+                true_dates['fy'] = fy
+        
         if 'edate' not in true_dates:            
             period_rss_fy = None
             period_r_fy = None
+            period_fy = None
             if rss['fy'] is not None and rss['fye'] is not None:
-                period_rss_fy = utils.correct_date(rss['fy'], 
+                period_rss_fy = utils.periodend(rss['fy'], 
                                                    int(rss['fye'][0:2]), 
                                                    int(rss['fye'][2:4]))
             if self.fy is not None and self.fye is not None:
-                period_r_fy = utils.correct_date(self.fy, 
+                period_r_fy = utils.periodend(self.fy, 
                                                  int(self.fye[0:2]), 
                                                  int(self.fye[2:4]))
-                
-            a = []
-            if self.ddate is not None: a.append(self.ddate)
-            if period_r_fy is not None: a.append(period_r_fy)
-            if rss['period'] is not None: a.append(rss['period'])
-            if period_rss_fy is not None: a.append(period_rss_fy)
-            a = sorted(a)
-            if len(a)<2:
-                return true_dates
-            v = []
-            for i in range(len(a)-1):
-                if abs((a[i+1] - a[i]).days) <= d_tolerance: 
-                    v.append(1)
-                else:
-                    v.append(0)
-            if sum(v)<1:
-                return true_dates
-            if sum(v)>=3:
-                true_dates['edate'] = a[2]
-                return true_dates
-            
-            if len(v) == 3 and v[0] == v[2] and v[0] == 1 and v[1] == 0:
-                return true_dates
-            for i, e in enumerate(v):
-                if e == 1: true_dates['edate'] = a[i]
+            if 'fy' in true_dates and 'fye' in true_dates:
+                period_fy = utils.periodend(true_dates['fy'],
+                                            int(true_dates['fye'][0:2]),
+                                            int(true_dates['fye'][2:4]))
+            a = [period_r_fy, period_rss_fy, period_fy, rss['period'], self.ddate]
+            a = [e for e in a if e is not None]
+            a = sorted(a)            
+            v = {}
+            for e in a:
+                if e in v: v[e] += 1
+                else: v[e] = 0
+            v = sorted(v.items(), key=lambda x: x[1], reverse=True)
+            if len(v)>1 and v[0][1]>=3:
+                true_dates['period'] = v[0][0]
             
         return true_dates
 
