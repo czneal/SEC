@@ -102,6 +102,11 @@ class XBRLFile:
             self.read_units_section(root, ns, tools.xbrli)
             self.read_facts_section(root, self.fact_tags, ns, prefixes)
 
+            dei_context = XBRLFile.read_dei_section_contexts(root, ns)
+            if dei_context in self.contexts:
+                self.dei_edate = self.contexts[dei_context].edate
+            else:
+                self.dei_edate = None
 #            calc_log = io.StringIO()
 #            for _, c in self.chapters.items():
 #                c.check_cal_scheme(self.facts, calc_log)
@@ -224,6 +229,26 @@ class XBRLFile:
             self.err.write2(self.cik_adsh, "dei:DocumentFiscalYearFocus not found")
 
         self.log.write2(self.cik_adsh, "end reading dei section...ok")
+        
+    def read_dei_section_contexts(root, ns):
+        if 'dei' not in ns:
+            return ''
+        
+        dei = '{%s}' % ns['dei']
+        dei_contexts = {}
+        for elem in root.iter():
+            if elem.tag.startswith(dei):
+                if 'contextRef' in elem.attrib:
+                    if elem.attrib['contextRef'] not in dei_contexts:
+                        dei_contexts[elem.attrib['contextRef']] = 1
+                    else:
+                        dei_contexts[elem.attrib['contextRef']] += 1
+                        
+        dei_contexts = sorted(dei_contexts.items(), key=lambda x: x[1], reverse=True)
+        if len(dei_contexts) == 0:
+            return ''
+                    
+        return dei_contexts[0][0]
 
     def read_units_section(self, root, ns, xbrli):
         self.log.write2(self.cik_adsh, "start reading units section...")

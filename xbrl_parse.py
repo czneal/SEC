@@ -158,8 +158,12 @@ warn = LogFile(Settings.output_dir() + 'read.warn', append=True)
 rep = xf.XBRLFile(log, err, warn)
 
 
-for y in range(2014,2015):
-    for m in range(5, 6):              
+years = [2017]
+months = range(1,13) 
+#months = [3]
+
+for y in years:
+    for m in months:
         parent_dir = Settings.root_dir()+str(y)+"/"+str(m).zfill(2)+'/'
         rss_filename = "rss-" + str(y)+"-"+str(m).zfill(2) + ".xml"
         if not os.path.exists(parent_dir + rss_filename):
@@ -174,7 +178,7 @@ for y in range(2014,2015):
         
         adsh_stop = False
         for rss_data in records:
-            if rss_data['adsh'] != '0001570937-14-000004' and adsh_stop:
+            if rss_data['adsh'] != '0001644406-17-000024' and adsh_stop:
                 continue                      
             if not rep.read(parent_dir + str(rss_data['cik']).zfill(10) + 
                    '-' + rss_data['adsh'] + '.zip',

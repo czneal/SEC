@@ -7,7 +7,7 @@ Created on Thu Apr 12 16:45:52 2018
 import re
 import numpy as np
 import database_operations as do
-import tree_operations as to
+import structure.tree_operations as to
 import json
 import pandas as pd
 from settings import Settings

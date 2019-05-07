@@ -6,11 +6,13 @@ Created on Mon Sep 10 15:30:31 2018
 """
 
 import json
+import os
 
 class Settings(object):
     def __open():
         try:
-            f = open("global.settings")
+            wd = os.path.split(__file__)[0]
+            f = open(wd + '/global.settings')
             settings = json.loads(f.read())
             f.close()
         except:
