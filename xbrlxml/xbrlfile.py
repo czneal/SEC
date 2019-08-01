@@ -110,6 +110,7 @@ class XbrlFile(object) :
         
         if failed raise XbrlException()
         """
+        
         period = None
         period_dei, period_rss = None, None
         

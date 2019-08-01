@@ -26,7 +26,7 @@ def read(records, repeat, slice_, log_dir, append_log=False):
             logs.set_header([record['cik'], record['adsh'], filename])
             repeat.set_state(record, filename)
             
-            if not miner.feed(record, filename):
+            if miner.feed(record, filename):
                 mysql_writer.write(cur, record, miner)
                 con.commit()
             
@@ -71,7 +71,7 @@ if __name__ == '__main__':
 #                      defi = '../test/gen-20121231_def.xml', 
 #                      calc = '../test/gen-20121231_cal.xml')
     filesenum = CustomEnumerator('outputs/customrss.csv')
-    read(filesenum.filing_records(), 'outputs/repeatrss.csv', slice(0, 30), 'outputs/')
+    read(filesenum.filing_records(), 'outputs/repeatrss.csv', slice(0, 3), 'outputs/')
     
 #    multiproc_read()
     
