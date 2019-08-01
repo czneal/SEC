@@ -9,8 +9,10 @@ import os
 import traceback
 import datetime as dt
 import io
-import warnings
 import sys
+import json
+
+from algos.xbrljson import ForDBJsonEncoder
 
 class LogFile(object):
     def __init__(self, filename=None, append=True, timestamp=True):
@@ -59,23 +61,51 @@ class LogFile(object):
             self.log_file.close()
             del self.log_file
             self.log_file = None
+            
+class Logs():
+    def __init__(self, log_dir: str, append_log=False, name='log'):
+        self.__err = LogFile(log_dir + name + '.err', append_log)
+        self.__log = LogFile(log_dir + name + '.log', append_log)
+        self.__warn = LogFile(log_dir + name + '.warn', append_log)
+        self.header = []
         
-#remove after correction
-
-    def write2(self, label, info):
-        self.writemany(label, info=info)
-        warnings.warn('function LogFile::write2() will be removed, use writemany()')
-
-
-    def write_tb(self, excinfo):
-        self.writemany(info = LogFile.tb2str(excinfo))
-        warnings.warn('function LogFile::write_tb() will be removed, use writetb()')
+    def set_header(self, header):
+        self.header = [h for h in header]
+        
+    def warning(self, message):
+        self.__warn.writemany(*(self.header), info = str(message))
     
+    def error(self, message):
+        self.__err.writemany(*(self.header), info = str(message))
+    def traceback(self):
+        self.__err.writetb(*(self.header), excinfo = sys.exc_info())
     
-    def write_tb2(self, label, excinfo):
-        self.writemany(label, info = LogFile.tb2str(excinfo))
-        warnings.warn('function LogFile::write_tb2() will be removed, use writetb()')
-
+    def log(self, message):
+        self.__log.writemany(*(self.header), info = str(message))
+        
+    def close(self):
+        self.__err.close()
+        self.__log.close()
+        self.__warn.close()
+        
+class RepeatFile():
+    def __init__(self, filename):
+        self.__file = open(filename, 'w')
+        self.record = None
+        self.zip_filename = None
+        
+    def set_state(self, record, zip_filename):
+        self.record = json.dumps(record, 
+                                 cls=ForDBJsonEncoder)
+        self.zip_filename = zip_filename
+        
+    def repeat(self):
+        self.__file.write('{0}\t{1}\n'.format(self.record,
+                                              self.zip_filename))
+        
+    def close(self):
+        self.__file.close()
+        
 if __name__ == '__main__':
     
     log = LogFile('outputs/test.log')

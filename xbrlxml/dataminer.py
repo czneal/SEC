@@ -1,16 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
-import json
-import sys
 from abc import ABCMeta, abstractmethod
 
 from xbrlxml.xbrlfile import XbrlFile
 from xbrlxml.selectors import ChapterChooser, ContextChooser, ChapterExtender
 from xbrlxml.xbrlzip import XBRLZipPacket
 from xbrlxml.xbrlexceptions import XbrlException
-from log_file import LogFile
-from algos.xbrljson import ForDBJsonEncoder
+from log_file import Logs, RepeatFile
 
 class TextBlocks(object):
     def __init__(self):
@@ -33,17 +30,15 @@ class TextBlocks(object):
         df.to_csv(filename)
         
 class DataMiner(metaclass=ABCMeta):
-    def __init__(self, log_dir, repeat_filename, append_log=False):
+    def __init__(self, logs: Logs, repeat: RepeatFile):
         self.xbrlfile = XbrlFile()
         self.xbrlzip = XBRLZipPacket()
         self.sheets = ChapterChooser(self.xbrlfile)
         self.cntx = ContextChooser(self.xbrlfile)
         self.extender = ChapterExtender(self.xbrlfile)
         
-        self.__err = LogFile(log_dir + 'log.err', append=append_log)
-        self.__warn = LogFile(log_dir + 'log.warn', append=append_log)
-        self.__log = LogFile(log_dir + 'log.log', append=append_log)
-        self.repeat = open(repeat_filename, 'w')
+        self._logs = logs
+        self._repeat = repeat
         
         self.cik = None
         self.adsh = None
@@ -55,12 +50,12 @@ class DataMiner(metaclass=ABCMeta):
         self.sheets.choose()
         for sheet in ['is', 'bs', 'cf']:
             if sheet not in self.sheets.mschapters:
-                self.warning('"{0}" not found'.format(sheet))
+                self._logs.warning('"{0}" not found'.format(sheet))
     
     def _extend_calc(self):        
         for roleuri in self.sheets.mschapters.values():
             warnings = self.extender.find_extentions(roleuri)
-            [self.warning(w) for w in warnings]
+            [self._logs.warning(w) for w in warnings]
             self.extender.extend()
             self.extentions.extend(self.extender.extentions)
             
@@ -68,7 +63,7 @@ class DataMiner(metaclass=ABCMeta):
         for sheet, roleuri in self.sheets.mschapters.items():
             context = self.cntx.choose(roleuri)
             if context is None:
-                self.warning('for "{0}": {1} context not found'.format(
+                self._logs.warning('for "{0}": {1} context not found'.format(
                         sheet, roleuri))
             self.extentions.append({'roleuri': roleuri,
                                     'context': context})
@@ -117,7 +112,7 @@ class DataMiner(metaclass=ABCMeta):
         try:
             self.xbrlzip.open_packet(zip_filename)
         except XbrlException as e:
-            self.error(e)
+            self._logs.error(e)
             return
         
         try:
@@ -126,43 +121,19 @@ class DataMiner(metaclass=ABCMeta):
             self.do_job()            
             good = True
             
-            self.log('has been read')            
+            self._logs.log('has been read')            
         except XbrlException as e:
-            self.error(e)                          
+            self._logs.error(e)                    
         except:
-            self.traceback()
+            self._logs.traceback()
         finally:
             for line in self.xbrlfile.errlog:
-                self.error(line)
+                self._logs.error(line)
             for line in self.xbrlfile.warnlog:
-                self.warning(line)
+                self._logs.warning(line)
             if not good:          
-                self.repeat.write(json.dumps(
-                                    record, 
-                                    cls=ForDBJsonEncoder))
-                self.repeat.write('\t' + self.zip_filename + '\n')
-                
-    def finish(self):
-        self.repeat.close()
-        self.__err.close()
-        self.__log.close()
-        self.__warn.close()
-            
-    def warning(self, message):
-        self.__warn.writemany(self.cik, self.adsh, self.zip_filename, 
-                          info = str(message))
-    
-    def error(self, message):
-        self.__err.writemany(self.cik, self.adsh, self.zip_filename, 
-                          info = str(message))
-    def traceback(self):
-        self.__err.writetb(self.cik, self.adsh, self.zip_filename, 
-                        excinfo = sys.exc_info())
-    
-    def log(self, message):
-        self.__log.writemany(self.cik, self.adsh, self.zip_filename, 
-                          info = str(message))
-
+                self._repeat.repeat()
+        
 class NumericDataMiner(DataMiner):
     def do_job(self):
         self.xbrlfile.read_units_facts_fn()

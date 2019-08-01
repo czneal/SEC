@@ -6,13 +6,16 @@ import mysqlio.basicio
 from xbrlxml.dataminer import NumericDataMiner
 from xbrlxml.xbrlrss import CustomEnumerator
 from mysqlio.xbrlfileio import ReportToDB
-
+from log_file import Logs, RepeatFile
        
-def read(records, repeat, slice_, log_dir, append_log = False):    
-    miner = NumericDataMiner(log_dir=log_dir,
-                             repeat_filename=repeat,
-                             append_log=append_log)
-    mysql_writer = ReportToDB()
+def read(records, repeat, slice_, log_dir, append_log=False):
+    logs = Logs(log_dir, append_log=append_log)
+    repeat = RepeatFile(repeat)
+    
+    miner = NumericDataMiner(logs=logs,
+                             repeat=repeat)
+    mysql_writer = ReportToDB(logs=logs,
+                              repeat=repeat)
     
     pb = utils.ProgressBar()
     pb.start(len(records))    
@@ -20,6 +23,9 @@ def read(records, repeat, slice_, log_dir, append_log = False):
     with mysqlio.basicio.OpenConnection() as con:
         cur = con.cursor(dictionary=True)
         for record, filename in records[slice_]:
+            logs.set_header([record['cik'], record['adsh'], filename])
+            repeat.set_state(record, filename)
+            
             miner.feed(record, filename)            
             mysql_writer.write(cur, record, miner)
             con.commit()
@@ -29,8 +35,9 @@ def read(records, repeat, slice_, log_dir, append_log = False):
         mysql_writer.flush(cur)
         con.commit()
         
-    print()    
-    miner.finish()
+    print()
+    logs.close()    
+    repeat.close()
     
 def multiproc_read():
     cpus = os.cpu_count() - 1
@@ -63,9 +70,9 @@ if __name__ == '__main__':
 #                      pres = '../test/gen-20121231_pre.xml', 
 #                      defi = '../test/gen-20121231_def.xml', 
 #                      calc = '../test/gen-20121231_cal.xml')
-#    filesenum = CustomEnumerator('outputs/customrss.csv')
-#    read(filesenum.filing_records(), 'outputs/repeatrss.csv', slice(0, 30), 'outputs/')
+    filesenum = CustomEnumerator('outputs/customrss.csv')
+    read(filesenum.filing_records(), 'outputs/repeatrss.csv', slice(0, 30), 'outputs/')
     
-    multiproc_read()
+#    multiproc_read()
     
     
