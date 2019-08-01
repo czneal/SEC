@@ -138,7 +138,7 @@ class CustomEnumerator(RecordsEnumerator):
 
 def makecustomrss() :
     with open('../outputs/customrss.csv', 'w') as f:
-        rss = SecEnumerator([2019], months=[m for m in range(1,13)])
+        rss = SecEnumerator([2018], months=[m for m in range(1,13)])
         for (record, filename) in rss.filing_records():            
             f.write(json.dumps(record, cls=ForDBJsonEncoder))
             f.write('\t' + filename + '\n')
