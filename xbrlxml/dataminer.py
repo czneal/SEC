@@ -113,7 +113,7 @@ class DataMiner(metaclass=ABCMeta):
             self.xbrlzip.open_packet(zip_filename)
         except XbrlException as e:
             self._logs.error(e)
-            return
+            return False
         
         try:
             good = False            
@@ -133,6 +133,7 @@ class DataMiner(metaclass=ABCMeta):
                 self._logs.warning(line)
             if not good:          
                 self._repeat.repeat()
+        return good
         
 class NumericDataMiner(DataMiner):
     def do_job(self):

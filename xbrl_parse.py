@@ -26,9 +26,9 @@ def read(records, repeat, slice_, log_dir, append_log=False):
             logs.set_header([record['cik'], record['adsh'], filename])
             repeat.set_state(record, filename)
             
-            miner.feed(record, filename)            
-            mysql_writer.write(cur, record, miner)
-            con.commit()
+            if not miner.feed(record, filename):
+                mysql_writer.write(cur, record, miner)
+                con.commit()
             
             pb.measure()
             print('\r' + pb.message(), end='')
