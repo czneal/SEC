@@ -7,6 +7,8 @@ Created on Tue Apr 16 17:58:11 2019
 
 import datetime as dt
 import calendar
+import re
+from lxml import etree
 
 class ProgressBar(object):
     def __init__(self):
@@ -30,8 +32,8 @@ class ProgressBar(object):
         s3 = str(self.one_step).split('.')[0]
         return 'processed {0} of {1}, time remains: {2}, time per step: {3}'.format(
                 self.n, self.total, s2, s3)
-        
-        
+
+       
 def correct_date(y, m, d):
     (_, last) = calendar.monthrange(y, m)
     if d > last: d = last
@@ -41,13 +43,71 @@ def periodend(fy, m, d):
     if m <= 6: 
         return correct_date(fy + 1, m, d) 
     else:
-        return correct_date(fy, m, d) 
+        return correct_date(fy, m, d)
+    
+def calculate_fy_fye(period: dt.date):
+    fye = str(period.month).zfill(2) + str(period.day).zfill(2)
+    if period.month > 6:
+        fy = period.year
+    else:
+        fy = period.year - 1
+    
+    return(fy, fye)
 
-def str2date(datestr):
-    try:
-        datestr = datestr.replace('-','').replace('/','')
-        return dt.date(int(datestr[0:4]), 
-                       int(datestr[4:6]), 
-                       int(datestr[6:8]))
-    except:
+def str2date(datestr, pattern='ymd'):
+    if isinstance(datestr, dt.date):
+        return datestr
+    if isinstance(datestr, dt.datetime):
+        return datestr
+    if datestr is None:
         return None
+    
+    assert isinstance(datestr, str)
+    patterns = [re.compile('.*\d{4}-\d{2}-\d{2}.*'),
+                re.compile('.*\d{4}/\d{2}/\d{2}.*'),
+                re.compile('.*\d{8}.*'),
+                re.compile('.*\d{2}/\d{2}/\d{4}.*')]
+    assert sum([p.match(datestr) is not None for p in patterns]) > 0
+    assert pattern in {'ymd', 'mdy'}
+    
+    retval = None
+    try:
+        for p in patterns:
+            dd = p.search(datestr)
+            if dd is not None:
+                break
+        
+        datestr = dd.group(0).replace('-','').replace('/','')
+        if pattern == 'ymd':
+            retval = dt.date(int(datestr[0:4]), 
+                           int(datestr[4:6]), 
+                           int(datestr[6:8]))
+        if pattern == 'mdy':
+            retval = dt.date(int(datestr[4:8]), 
+                           int(datestr[0:2]), 
+                           int(datestr[2:4]))
+    except:        
+        pass
+    
+    return retval
+
+def opensmallxmlfile(file):
+    root = None
+    try:
+        root = etree.parse(file).getroot()
+    except:
+        file.close()
+        
+    return root
+
+def openbigxmlfile(file):
+    root = None
+    try:
+        xmlparser = etree.XMLParser(recover=True)
+        tree = etree.parse(file, parser=xmlparser)
+        root = tree.getroot()
+    except:
+        file.close()
+        
+    return root
+    

@@ -1,0 +1,1140 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--XBRL Document Created with WebFilings-->
+<!-- -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.genon.com/20121231" xmlns:gen="http://www.genon.com/20121231" xmlns:link="http://www.xbrl.org/2003/linkbase" xmlns:nonnum="http://www.xbrl.org/dtr/type/non-numeric" xmlns:num="http://www.xbrl.org/dtr/type/numeric" xmlns:us-types="http://fasb.org/us-types/2012-01-31" xmlns:xbrldt="http://xbrl.org/2005/xbrldt" xmlns:xbrli="http://www.xbrl.org/2003/instance" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:import namespace="http://fasb.org/us-gaap/2012-01-31" schemaLocation="http://xbrl.fasb.org/us-gaap/2012/elts/us-gaap-2012-01-31.xsd" />
+  <xsd:import namespace="http://fasb.org/us-roles/2012-01-31" schemaLocation="http://xbrl.fasb.org/us-gaap/2012/elts/us-roles-2012-01-31.xsd" />
+  <xsd:import namespace="http://fasb.org/us-types/2012-01-31" schemaLocation="http://xbrl.fasb.org/us-gaap/2012/elts/us-types-2012-01-31.xsd" />
+  <xsd:import namespace="http://www.xbrl.org/2003/instance" schemaLocation="http://www.xbrl.org/2003/xbrl-instance-2003-12-31.xsd" />
+  <xsd:import namespace="http://www.xbrl.org/2003/linkbase" schemaLocation="http://www.xbrl.org/2003/xbrl-linkbase-2003-12-31.xsd" />
+  <xsd:import namespace="http://www.xbrl.org/2009/arcrole/fact-explanatoryFact" schemaLocation="http://www.xbrl.org/lrr/arcrole/factExplanatory-2009-12-16.xsd" />
+  <xsd:import namespace="http://www.xbrl.org/2009/role/negated" schemaLocation="http://www.xbrl.org/lrr/role/negated-2009-12-16.xsd" />
+  <xsd:import namespace="http://www.xbrl.org/2009/role/net" schemaLocation="http://www.xbrl.org/lrr/role/net-2009-12-16.xsd" />
+  <xsd:import namespace="http://www.xbrl.org/dtr/type/non-numeric" schemaLocation="http://www.xbrl.org/dtr/type/nonNumeric-2009-12-16.xsd" />
+  <xsd:import namespace="http://www.xbrl.org/dtr/type/numeric" schemaLocation="http://www.xbrl.org/dtr/type/numeric-2009-12-16.xsd" />
+  <xsd:import namespace="http://xbrl.org/2005/xbrldt" schemaLocation="http://www.xbrl.org/2005/xbrldt-2005.xsd" />
+  <xsd:import namespace="http://xbrl.sec.gov/country/2012-01-31" schemaLocation="http://xbrl.sec.gov/country/2012/country-2012-01-31.xsd" />
+  <xsd:import namespace="http://xbrl.sec.gov/currency/2012-01-31" schemaLocation="http://xbrl.sec.gov/currency/2012/currency-2012-01-31.xsd" />
+  <xsd:import namespace="http://xbrl.sec.gov/dei/2012-01-31" schemaLocation="http://xbrl.sec.gov/dei/2012/dei-2012-01-31.xsd" />
+  <xsd:import namespace="http://xbrl.sec.gov/exch/2012-01-31" schemaLocation="http://xbrl.sec.gov/exch/2012/exch-2012-01-31.xsd" />
+  <xsd:import namespace="http://xbrl.sec.gov/invest/2012-01-31" schemaLocation="http://xbrl.sec.gov/invest/2012/invest-2012-01-31.xsd" />
+  <xsd:import namespace="http://xbrl.sec.gov/naics/2011-01-31" schemaLocation="http://xbrl.sec.gov/naics/2011/naics-2011-01-31.xsd" />
+  <xsd:import namespace="http://xbrl.sec.gov/sic/2011-01-31" schemaLocation="http://xbrl.sec.gov/sic/2011/sic-2011-01-31.xsd" />
+  <xsd:import namespace="http://xbrl.sec.gov/stpr/2011-01-31" schemaLocation="http://xbrl.sec.gov/stpr/2011/stpr-2011-01-31.xsd" />
+  <xsd:annotation>
+    <xsd:appinfo>
+      <link:linkbaseRef xlink:arcrole="http://www.w3.org/1999/xlink/properties/linkbase" xlink:href="gen-20121231_cal.xml" xlink:role="http://www.xbrl.org/2003/role/calculationLinkbaseRef" xlink:type="simple" />
+      <link:linkbaseRef xlink:arcrole="http://www.w3.org/1999/xlink/properties/linkbase" xlink:href="gen-20121231_def.xml" xlink:role="http://www.xbrl.org/2003/role/definitionLinkbaseRef" xlink:type="simple" />
+      <link:linkbaseRef xlink:arcrole="http://www.w3.org/1999/xlink/properties/linkbase" xlink:href="gen-20121231_lab.xml" xlink:role="http://www.xbrl.org/2003/role/labelLinkbaseRef" xlink:type="simple" />
+      <link:linkbaseRef xlink:arcrole="http://www.w3.org/1999/xlink/properties/linkbase" xlink:href="gen-20121231_pre.xml" xlink:role="http://www.xbrl.org/2003/role/presentationLinkbaseRef" xlink:type="simple" />
+      <link:roleType id="AccountingForDerivativeInstrumentsAndHedgingActivities" roleURI="http://www.genon.com/role/AccountingForDerivativeInstrumentsAndHedgingActivities">
+        <link:definition>2106100 - Disclosure - Accounting for Derivative Instruments and Hedging Activities</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="AccountingForDerivativeInstrumentsAndHedgingActivitiesDetails" roleURI="http://www.genon.com/role/AccountingForDerivativeInstrumentsAndHedgingActivitiesDetails">
+        <link:definition>2406402 - Disclosure - Accounting for Derivative Instruments and Hedging Activities (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="AccountingForDerivativeInstrumentsAndHedgingActivitiesDetails2" roleURI="http://www.genon.com/role/AccountingForDerivativeInstrumentsAndHedgingActivitiesDetails2">
+        <link:definition>2406403 - Disclosure - Accounting for Derivative Instruments and Hedging Activities (Details 2)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="AccountingForDerivativeInstrumentsAndHedgingActivitiesTables" roleURI="http://www.genon.com/role/AccountingForDerivativeInstrumentsAndHedgingActivitiesTables">
+        <link:definition>2306301 - Disclosure - Accounting for Derivative Instruments and Hedging Activities (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="AssetRetirementObligations" roleURI="http://www.genon.com/role/AssetRetirementObligations">
+        <link:definition>2113100 - Disclosure - Asset Retirement Obligations</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="AssetRetirementObligationsDetails" roleURI="http://www.genon.com/role/AssetRetirementObligationsDetails">
+        <link:definition>2413402 - Disclosure - Asset Retirement Obligations (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="AssetRetirementObligationsTables" roleURI="http://www.genon.com/role/AssetRetirementObligationsTables">
+        <link:definition>2313301 - Disclosure - Asset Retirement Obligations (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BenefitPlansAndOtherPostretirementBenefits" roleURI="http://www.genon.com/role/BenefitPlansAndOtherPostretirementBenefits">
+        <link:definition>2114100 - Disclosure - Benefit Plans and Other Postretirement Benefits</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BenefitPlansAndOtherPostretirementBenefitsBenefitPlansAndOtherPostretirementBenefitsDisclosureNarrativeDetails" roleURI="http://www.genon.com/role/BenefitPlansAndOtherPostretirementBenefitsBenefitPlansAndOtherPostretirementBenefitsDisclosureNarrativeDetails">
+        <link:definition>2414402 - Disclosure - Benefit Plans and Other Postretirement Benefits Benefit Plans and Other Postretirement Benefits Disclosure (Narrative) (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BenefitPlansAndOtherPostretirementBenefitsDisclosureDetails1" roleURI="http://www.genon.com/role/BenefitPlansAndOtherPostretirementBenefitsDisclosureDetails1">
+        <link:definition>2414403 - Disclosure - Benefit Plans and Other Postretirement Benefits Disclosure  (Details 1)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BenefitPlansAndOtherPostretirementBenefitsDisclosureDetails2" roleURI="http://www.genon.com/role/BenefitPlansAndOtherPostretirementBenefitsDisclosureDetails2">
+        <link:definition>2414404 - Disclosure - Benefit Plans and Other Postretirement Benefits Disclosure  (Details 2)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BenefitPlansAndOtherPostretirementBenefitsDisclosureDetails3" roleURI="http://www.genon.com/role/BenefitPlansAndOtherPostretirementBenefitsDisclosureDetails3">
+        <link:definition>2414405 - Disclosure - Benefit Plans and Other Postretirement Benefits Disclosure  (Details 3)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BenefitPlansAndOtherPostretirementBenefitsDisclosureDetails4" roleURI="http://www.genon.com/role/BenefitPlansAndOtherPostretirementBenefitsDisclosureDetails4">
+        <link:definition>2414406 - Disclosure - Benefit Plans and Other Postretirement Benefits Disclosure (Details 4)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BenefitPlansAndOtherPostretirementBenefitsDisclosureDetails5" roleURI="http://www.genon.com/role/BenefitPlansAndOtherPostretirementBenefitsDisclosureDetails5">
+        <link:definition>2414407 - Disclosure - Benefit Plans and Other Postretirement Benefits Disclosure  (Details 5)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BenefitPlansAndOtherPostretirementBenefitsDisclosureDetails6" roleURI="http://www.genon.com/role/BenefitPlansAndOtherPostretirementBenefitsDisclosureDetails6">
+        <link:definition>2414408 - Disclosure - Benefit Plans and Other Postretirement Benefits Disclosure  (Details 6)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BenefitPlansAndOtherPostretirementBenefitsDisclosureDetails7" roleURI="http://www.genon.com/role/BenefitPlansAndOtherPostretirementBenefitsDisclosureDetails7">
+        <link:definition>2414409 - Disclosure - Benefit Plans and Other Postretirement Benefits Disclosure  (Details 7)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BenefitPlansAndOtherPostretirementBenefitsDisclosureTables" roleURI="http://www.genon.com/role/BenefitPlansAndOtherPostretirementBenefitsDisclosureTables">
+        <link:definition>2314301 - Disclosure - Benefit Plans and Other Postretirement Benefits Disclosure  (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="CapitalStructure" roleURI="http://www.genon.com/role/CapitalStructure">
+        <link:definition>2115100 - Disclosure - Capital Structure</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="CapitalStructureDetails" roleURI="http://www.genon.com/role/CapitalStructureDetails">
+        <link:definition>2415402 - Disclosure - Capital Structure (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="CapitalStructureTables" roleURI="http://www.genon.com/role/CapitalStructureTables">
+        <link:definition>2315301 - Disclosure - Capital Structure (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="CommitmentsAndContingencies" roleURI="http://www.genon.com/role/CommitmentsAndContingencies">
+        <link:definition>2121100 - Disclosure - Commitments and Contingencies</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="CommitmentsAndContingenciesDetails" roleURI="http://www.genon.com/role/CommitmentsAndContingenciesDetails">
+        <link:definition>2421402 - Disclosure - Commitments and Contingencies (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="CommitmentsAndContingenciesDetails2" roleURI="http://www.genon.com/role/CommitmentsAndContingenciesDetails2">
+        <link:definition>2421403 - Disclosure - Commitments and Contingencies (Details 2)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="CommitmentsAndContingenciesTables" roleURI="http://www.genon.com/role/CommitmentsAndContingenciesTables">
+        <link:definition>2321301 - Disclosure - Commitments and Contingencies (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ConsolidatedBalanceSheets" roleURI="http://www.genon.com/role/ConsolidatedBalanceSheets">
+        <link:definition>1003000 - Statement - CONSOLIDATED BALANCE SHEETS</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ConsolidatedBalanceSheetsParenthetical" roleURI="http://www.genon.com/role/ConsolidatedBalanceSheetsParenthetical">
+        <link:definition>1003501 - Statement - CONSOLIDATED BALANCE SHEETS (Parenthetical)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ConsolidatedStatementOfStockholdersEquityMembersEquity" roleURI="http://www.genon.com/role/ConsolidatedStatementOfStockholdersEquityMembersEquity">
+        <link:definition>1005000 - Statement - CONSOLIDATED STATEMENT OF STOCKHOLDERS' EQUITY / MEMBER'S EQUITY</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ConsolidatedStatementsOfCashFlows" roleURI="http://www.genon.com/role/ConsolidatedStatementsOfCashFlows">
+        <link:definition>1004000 - Statement - CONSOLIDATED STATEMENTS OF CASH FLOWS</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ConsolidatedStatementsOfComprehensiveLoss" roleURI="http://www.genon.com/role/ConsolidatedStatementsOfComprehensiveLoss">
+        <link:definition>1002000 - Statement - CONSOLIDATED STATEMENTS OF COMPREHENSIVE LOSS</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ConsolidatedStatementsOfComprehensiveLossCalc2" roleURI="http://www.genon.com/role/ConsolidatedStatementsOfComprehensiveLossCalc2">
+        <link:definition>1002000 - Statement - CONSOLIDATED STATEMENTS OF COMPREHENSIVE LOSS</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ConsolidatedStatementsOfComprehensiveLossParenthetical" roleURI="http://www.genon.com/role/ConsolidatedStatementsOfComprehensiveLossParenthetical">
+        <link:definition>1002501 - Statement - CONSOLIDATED STATEMENTS OF COMPREHENSIVE LOSS (Parenthetical)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ConsolidatedStatementsOfOperations" roleURI="http://www.genon.com/role/ConsolidatedStatementsOfOperations">
+        <link:definition>1001000 - Statement - CONSOLIDATED STATEMENTS OF OPERATIONS</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="DebtAndCapitalLeases" roleURI="http://www.genon.com/role/DebtAndCapitalLeases">
+        <link:definition>2112100 - Disclosure - Debt and Capital Leases</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="DebtAndCapitalLeasesDetails" roleURI="http://www.genon.com/role/DebtAndCapitalLeasesDetails">
+        <link:definition>2412402 - Disclosure - Debt and Capital Leases (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="DebtAndCapitalLeasesTables" roleURI="http://www.genon.com/role/DebtAndCapitalLeasesTables">
+        <link:definition>2312301 - Disclosure - Debt and Capital Leases (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="DocumentAndEntityInformation" roleURI="http://www.genon.com/role/DocumentAndEntityInformation">
+        <link:definition>0001000 - Document - Document and Entity Information</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EnvironmentalMatters" roleURI="http://www.genon.com/role/EnvironmentalMatters">
+        <link:definition>2123100 - Disclosure - Environmental Matters</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EnvironmentalMattersDetails" roleURI="http://www.genon.com/role/EnvironmentalMattersDetails">
+        <link:definition>2423401 - Disclosure - Environmental Matters (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="FairValueOfFinancialInstruments" roleURI="http://www.genon.com/role/FairValueOfFinancialInstruments">
+        <link:definition>2105100 - Disclosure - Fair Value of Financial Instruments</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="FairValueOfFinancialInstrumentsDetails" roleURI="http://www.genon.com/role/FairValueOfFinancialInstrumentsDetails">
+        <link:definition>2405402 - Disclosure - Fair Value of Financial Instruments (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="FairValueOfFinancialInstrumentsDetails2" roleURI="http://www.genon.com/role/FairValueOfFinancialInstrumentsDetails2">
+        <link:definition>2405403 - Disclosure - Fair Value of Financial Instruments (Details 2)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="FairValueOfFinancialInstrumentsDetails3" roleURI="http://www.genon.com/role/FairValueOfFinancialInstrumentsDetails3">
+        <link:definition>2405404 - Disclosure - Fair Value of Financial Instruments (Details 3)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="FairValueOfFinancialInstrumentsDetails4" roleURI="http://www.genon.com/role/FairValueOfFinancialInstrumentsDetails4">
+        <link:definition>2405405 - Disclosure - Fair Value of Financial Instruments (Details 4)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="FairValueOfFinancialInstrumentsTables" roleURI="http://www.genon.com/role/FairValueOfFinancialInstrumentsTables">
+        <link:definition>2305301 - Disclosure - Fair Value of Financial Instruments (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="Guarantees" roleURI="http://www.genon.com/role/Guarantees">
+        <link:definition>2124100 - Disclosure - Guarantees</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="GuaranteesDetails" roleURI="http://www.genon.com/role/GuaranteesDetails">
+        <link:definition>2424402 - Disclosure - Guarantees (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="GuaranteesTables" roleURI="http://www.genon.com/role/GuaranteesTables">
+        <link:definition>2324301 - Disclosure - Guarantees (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="Impairments" roleURI="http://www.genon.com/role/Impairments">
+        <link:definition>2111100 - Disclosure - Impairments</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ImpairmentsDetails" roleURI="http://www.genon.com/role/ImpairmentsDetails">
+        <link:definition>2411402 - Disclosure - Impairments (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ImpairmentsTables" roleURI="http://www.genon.com/role/ImpairmentsTables">
+        <link:definition>2311301 - Disclosure - Impairments (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="IncomeTaxes" roleURI="http://www.genon.com/role/IncomeTaxes">
+        <link:definition>2118100 - Disclosure - Income Taxes</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="IncomeTaxesDetails" roleURI="http://www.genon.com/role/IncomeTaxesDetails">
+        <link:definition>2418403 - Disclosure - Income Taxes (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="IncomeTaxesDetailsCalc2" roleURI="http://www.genon.com/role/IncomeTaxesDetailsCalc2">
+        <link:definition>2418403 - Disclosure - Income Taxes (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="IncomeTaxesNarrativeDetails" roleURI="http://www.genon.com/role/IncomeTaxesNarrativeDetails">
+        <link:definition>2418402 - Disclosure - Income Taxes (Narrative) (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="IncomeTaxesTables" roleURI="http://www.genon.com/role/IncomeTaxesTables">
+        <link:definition>2318301 - Disclosure - Income Taxes (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="IntangibleAssets" roleURI="http://www.genon.com/role/IntangibleAssets">
+        <link:definition>2110100 - Disclosure - Intangible Assets</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="IntangibleAssetsDetails" roleURI="http://www.genon.com/role/IntangibleAssetsDetails">
+        <link:definition>2410402 - Disclosure - Intangible Assets (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="IntangibleAssetsTables" roleURI="http://www.genon.com/role/IntangibleAssetsTables">
+        <link:definition>2310301 - Disclosure - Intangible Assets (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="Inventory" roleURI="http://www.genon.com/role/Inventory">
+        <link:definition>2107100 - Disclosure - Inventory</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="InventoryDetails" roleURI="http://www.genon.com/role/InventoryDetails">
+        <link:definition>2407402 - Disclosure - Inventory (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="InventoryTables" roleURI="http://www.genon.com/role/InventoryTables">
+        <link:definition>2307301 - Disclosure - Inventory (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="MirantrriMerger" roleURI="http://www.genon.com/role/MirantrriMerger">
+        <link:definition>2104100 - Disclosure - Mirant/RRI Merger</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="MirantrriMergerDetails" roleURI="http://www.genon.com/role/MirantrriMergerDetails">
+        <link:definition>2404402 - Disclosure - Mirant/RRI Merger (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="MirantrriMergerTables" roleURI="http://www.genon.com/role/MirantrriMergerTables">
+        <link:definition>2304301 - Disclosure - Mirant/RRI Merger (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="NatureOfBusiness" roleURI="http://www.genon.com/role/NatureOfBusiness">
+        <link:definition>2101100 - Disclosure - Nature of Business</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="NatureOfBusinessDetails" roleURI="http://www.genon.com/role/NatureOfBusinessDetails">
+        <link:definition>2401402 - Disclosure - Nature of Business (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="NatureOfBusinessTables" roleURI="http://www.genon.com/role/NatureOfBusinessTables">
+        <link:definition>2301301 - Disclosure - Nature of Business (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="NrgMerger" roleURI="http://www.genon.com/role/NrgMerger">
+        <link:definition>2103100 - Disclosure - NRG Merger</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="NrgMergerDetails" roleURI="http://www.genon.com/role/NrgMergerDetails">
+        <link:definition>2403402 - Disclosure - NRG Merger (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="NrgMergerTables" roleURI="http://www.genon.com/role/NrgMergerTables">
+        <link:definition>2303301 - Disclosure - NRG Merger (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="PropertyPlantAndEquipment" roleURI="http://www.genon.com/role/PropertyPlantAndEquipment">
+        <link:definition>2108100 - Disclosure - Property, Plant, and Equipment</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="PropertyPlantAndEquipmentDetails" roleURI="http://www.genon.com/role/PropertyPlantAndEquipmentDetails">
+        <link:definition>2408402 - Disclosure - Property, Plant, and Equipment (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="PropertyPlantAndEquipmentTables" roleURI="http://www.genon.com/role/PropertyPlantAndEquipmentTables">
+        <link:definition>2308301 - Disclosure - Property, Plant, and Equipment (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="RegulatoryMatters" roleURI="http://www.genon.com/role/RegulatoryMatters">
+        <link:definition>2122100 - Disclosure - Regulatory Matters</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="RegulatoryMattersRegulatoryMattersDetailsDetails" roleURI="http://www.genon.com/role/RegulatoryMattersRegulatoryMattersDetailsDetails">
+        <link:definition>2422401 - Disclosure - Regulatory Matters Regulatory Matters (Details) (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="RelatedPartyTransactions" roleURI="http://www.genon.com/role/RelatedPartyTransactions">
+        <link:definition>2120100 - Disclosure - Related Party Transactions</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="RelatedPartyTransactionsDetails" roleURI="http://www.genon.com/role/RelatedPartyTransactionsDetails">
+        <link:definition>2420402 - Disclosure - Related Party Transactions (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="RelatedPartyTransactionsTables" roleURI="http://www.genon.com/role/RelatedPartyTransactionsTables">
+        <link:definition>2320301 - Disclosure - Related Party Transactions (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="RetirementsMothballingOrLongTermProtectiveLayupOfGeneratingFacilities" roleURI="http://www.genon.com/role/RetirementsMothballingOrLongTermProtectiveLayupOfGeneratingFacilities">
+        <link:definition>2109100 - Disclosure - Retirements, Mothballing or Long-Term Protective Layup of Generating Facilities</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="RetirementsMothballingOrLongTermProtectiveLayupOfGeneratingFacilitiesDetails" roleURI="http://www.genon.com/role/RetirementsMothballingOrLongTermProtectiveLayupOfGeneratingFacilitiesDetails">
+        <link:definition>2409401 - Disclosure - Retirements, Mothballing or Long-Term Protective Layup of Generating Facilities (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ScheduleICondensedFinancialInformationOfParentCompanyOnlyDisclosure" roleURI="http://www.genon.com/role/ScheduleICondensedFinancialInformationOfParentCompanyOnlyDisclosure">
+        <link:definition>2134100 - Schedule - Schedule I Condensed Financial Information of Parent Company Only Disclosure</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ScheduleICondensedFinancialInformationOfParentCompanyOnlyDisclosureDetails2" roleURI="http://www.genon.com/role/ScheduleICondensedFinancialInformationOfParentCompanyOnlyDisclosureDetails2">
+        <link:definition>2434403 - Schedule - Schedule I Condensed Financial Information of Parent Company Only Disclosure (Details 2)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ScheduleICondensedFinancialInformationOfParentCompanyOnlyDisclosureDetails3" roleURI="http://www.genon.com/role/ScheduleICondensedFinancialInformationOfParentCompanyOnlyDisclosureDetails3">
+        <link:definition>2434404 - Schedule - Schedule I Condensed Financial Information of Parent Company Only Disclosure (Details 3)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ScheduleICondensedFinancialInformationOfParentCompanyOnlyDisclosureDetails4" roleURI="http://www.genon.com/role/ScheduleICondensedFinancialInformationOfParentCompanyOnlyDisclosureDetails4">
+        <link:definition>2434405 - Schedule - Schedule I Condensed Financial Information of Parent Company Only Disclosure (Details 4)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ScheduleICondensedFinancialInformationOfParentCompanyOnlyDisclosureScheduleICondensedFinancialInformationOfParentCompanyOnlyDisclosureDetails" roleURI="http://www.genon.com/role/ScheduleICondensedFinancialInformationOfParentCompanyOnlyDisclosureScheduleICondensedFinancialInformationOfParentCompanyOnlyDisclosureDetails">
+        <link:definition>2434402 - Schedule - Schedule I Condensed Financial Information of Parent Company Only Disclosure Schedule I Condensed Financial Information of Parent Company Only Disclosure (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ScheduleICondensedFinancialInformationOfParentCompanyOnlyDisclosureScheduleICondensedFinancialInformationOfParentCompanyOnlyDisclosuretables" roleURI="http://www.genon.com/role/ScheduleICondensedFinancialInformationOfParentCompanyOnlyDisclosureScheduleICondensedFinancialInformationOfParentCompanyOnlyDisclosuretables">
+        <link:definition>2334301 - Schedule - Schedule I Condensed Financial Information of Parent Company Only Disclosure Schedule I Condensed Financial Information of Parent Company Only Disclosure(Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ScheduleIiValuationAndQualifyingAccounts" roleURI="http://www.genon.com/role/ScheduleIiValuationAndQualifyingAccounts">
+        <link:definition>2135100 - Schedule - SCHEDULE II. VALUATION AND QUALIFYING ACCOUNTS</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ScheduleIiValuationAndQualifyingAccountsDetails" roleURI="http://www.genon.com/role/ScheduleIiValuationAndQualifyingAccountsDetails">
+        <link:definition>2435401 - Schedule - SCHEDULE II. VALUATION AND QUALIFYING ACCOUNTS (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="SegmentReporting" roleURI="http://www.genon.com/role/SegmentReporting">
+        <link:definition>2117100 - Disclosure - Segment Reporting</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="SegmentReportingSegmentReportingDetails" roleURI="http://www.genon.com/role/SegmentReportingSegmentReportingDetails">
+        <link:definition>2417402 - Disclosure - Segment Reporting Segment Reporting (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="SegmentReportingTables" roleURI="http://www.genon.com/role/SegmentReportingTables">
+        <link:definition>2317301 - Disclosure - Segment Reporting (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="StockBasedCompenationDisclosureDetails" roleURI="http://www.genon.com/role/StockBasedCompenationDisclosureDetails">
+        <link:definition>2419402 - Disclosure - Stock-Based Compenation Disclosure (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="StockBasedCompensation" roleURI="http://www.genon.com/role/StockBasedCompensation">
+        <link:definition>2119100 - Disclosure - Stock-Based Compensation</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="StockBasedCompensationStockBasedCompenationDisclosureDetails2" roleURI="http://www.genon.com/role/StockBasedCompensationStockBasedCompenationDisclosureDetails2">
+        <link:definition>2419403 - Disclosure - Stock-Based Compensation Stock-Based Compenation Disclosure (Details 2)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="StockBasedCompensationTables" roleURI="http://www.genon.com/role/StockBasedCompensationTables">
+        <link:definition>2319301 - Disclosure - Stock-Based Compensation (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="SummaryOfSignificantAccountingPolicies" roleURI="http://www.genon.com/role/SummaryOfSignificantAccountingPolicies">
+        <link:definition>2102100 - Disclosure - Summary of Significant Accounting Policies</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="SummaryOfSignificantAccountingPoliciesCapitalizedInterestTables" roleURI="http://www.genon.com/role/SummaryOfSignificantAccountingPoliciesCapitalizedInterestTables">
+        <link:definition>2302302 - Disclosure - Summary of Significant Accounting Policies Capitalized Interest (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="SummaryOfSignificantAccountingPoliciesDetails" roleURI="http://www.genon.com/role/SummaryOfSignificantAccountingPoliciesDetails">
+        <link:definition>2402403 - Disclosure - Summary of Significant Accounting Policies (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="SummaryOfSignificantAccountingPoliciesPolicies" roleURI="http://www.genon.com/role/SummaryOfSignificantAccountingPoliciesPolicies">
+        <link:definition>2202201 - Disclosure - Summary of Significant Accounting Policies (Policies)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+    </xsd:appinfo>
+  </xsd:annotation>
+  <xsd:element id="gen_AcceleratedVestingOfMirantsStockBasedCompensationAwardsIncludingStockOptionsAndRestrictedStockUnitsAsResultOfExchangeInControlTriggeredByMerger" name="AcceleratedVestingOfMirantsStockBasedCompensationAwardsIncludingStockOptionsAndRestrictedStockUnitsAsResultOfExchangeInControlTriggeredByMerger" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_AccretionOfDiscountOnPreferredStockInAffiliate" name="AccretionOfDiscountOnPreferredStockInAffiliate" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_AccruedExpensedMergerRelatedCosts" name="AccruedExpensedMergerRelatedCosts" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element id="gen_AccruedExpensesAndOtherCurrentLiabilities" name="AccruedExpensesAndOtherCurrentLiabilities" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_AccruedExpensesAndOtherCurrentLiabilitiesOperating" name="AccruedExpensesAndOtherCurrentLiabilitiesOperating" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_AcquiredContractsMember" name="AcquiredContractsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_AcquiredContractsOutOfMarketContractsMember" name="AcquiredContractsOutOfMarketContractsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_AcquisitionDateFairValueOfAccountsReceivable" name="AcquisitionDateFairValueOfAccountsReceivable" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_AcquisitionDateFairValueOfAssetsAbstract" name="AcquisitionDateFairValueOfAssetsAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_AcquisitionDateFairValueOfDeferredIncomeTaxAssets" name="AcquisitionDateFairValueOfDeferredIncomeTaxAssets" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element id="gen_AcquisitionDateFairValueOfDeferredIncomeTaxLiabilities" name="AcquisitionDateFairValueOfDeferredIncomeTaxLiabilities" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_AcquisitionDateFairValueOfDerivativeAssets" name="AcquisitionDateFairValueOfDerivativeAssets" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element id="gen_AcquisitionDateFairValueOfDerivativeLiabilities" name="AcquisitionDateFairValueOfDerivativeLiabilities" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_AcquisitionDateFairValueOfLeaseholdImprovements" name="AcquisitionDateFairValueOfLeaseholdImprovements" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element id="gen_AcquisitionDateFairValueOfLiabilities" name="AcquisitionDateFairValueOfLiabilities" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_AcquisitionDateFairValueOfLiaibilitiesAbstract" name="AcquisitionDateFairValueOfLiaibilitiesAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_AcquisitionDateFairValueOfLongTermDebtAndCapitalLeases" name="AcquisitionDateFairValueOfLongTermDebtAndCapitalLeases" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_AcquisitionDateFairValueOfNetAssets" name="AcquisitionDateFairValueOfNetAssets" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_AcquisitionDateFairValueOfOtherLiabilities" name="AcquisitionDateFairValueOfOtherLiabilities" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_AcquisitionDateFairValueOfOutOfMarketContractsAndLeases" name="AcquisitionDateFairValueOfOutOfMarketContractsAndLeases" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_AcquisitionDateFairValueOfPropertyPlantAndEquipment" name="AcquisitionDateFairValueOfPropertyPlantAndEquipment" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element id="gen_AcquisitionDateFairValueOfTotalAssets" name="AcquisitionDateFairValueOfTotalAssets" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element id="gen_AcquisitionDateFairValueOtherCurentAndNonCurrentAssets" name="AcquisitionDateFairValueOtherCurentAndNonCurrentAssets" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_ActionsPursuedByMcAssetRecoveryMember" name="ActionsPursuedByMcAssetRecoveryMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ActiveMember" name="ActiveMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_AdjustmentFairValueDebtNoncurrent" name="AdjustmentFairValueDebtNoncurrent" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_AdvanceSettlementOfOutOfMarketContractObligation" name="AdvanceSettlementOfOutOfMarketContractObligation" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_AlexandriaGeneratingFacilityMember" name="AlexandriaGeneratingFacilityMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_AllocatedCostOfOperationsMember" name="AllocatedCostOfOperationsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_AllocatedSellingGeneralAndAdministrativeMember" name="AllocatedSellingGeneralAndAdministrativeMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_AmortizationOfIntangiblesAndOutOfMarketContracts" name="AmortizationOfIntangiblesAndOutOfMarketContracts" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_AmountAccruedCivilPenaltyDue" name="AmountAccruedCivilPenaltyDue" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element id="gen_AmountCivilPenaltyAccruedForAllegedPastViolations" name="AmountCivilPenaltyAccruedForAllegedPastViolations" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_AmountCivilPenaltyAccruedForAllegedProspectiveViolations" name="AmountCivilPenaltyAccruedForAllegedProspectiveViolations" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_AmountOfCreditExposureToSignificantPortionOfAllCounterparties" name="AmountOfCreditExposureToSignificantPortionOfAllCounterparties" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_AmountOfLettersOfCreditTransferredToIntercompanyCreditAgreement" name="AmountOfLettersOfCreditTransferredToIntercompanyCreditAgreement" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_AmountOfNetCounterpartyCreditRiskExposureToCertainCounterparties" name="AmountOfNetCounterpartyCreditRiskExposureToCertainCounterparties" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_AmountOperationsMaintenanceExpenseReduced" name="AmountOperationsMaintenanceExpenseReduced" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element id="gen_AmountToDistribute" name="AmountToDistribute" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_AnnualLimitForReducingFederalNetOperatingLossesPerIrcCode" name="AnnualLimitForReducingFederalNetOperatingLossesPerIrcCode" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_AnotherRailroadMember" name="AnotherRailroadMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_AshDisposalFacilityClosuresAbstract" name="AshDisposalFacilityClosuresAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_AshDisposalFacilityClosuresMember" name="AshDisposalFacilityClosuresMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_AssetRetirementObligationLineItems" name="AssetRetirementObligationLineItems" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_AssetRetirementObligationTable" name="AssetRetirementObligationTable" nillable="true" substitutionGroup="xbrldt:hypercubeItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_AssetsInTrustToFundFutureBenefits" name="AssetsInTrustToFundFutureBenefits" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_AvonLakeFacilityMember" name="AvonLakeFacilityMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_BasisAmountForClaims" name="BasisAmountForClaims" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_BenefitPlansAndOtherPostretirementBenefitsDisclosureAbstract" name="BenefitPlansAndOtherPostretirementBenefitsDisclosureAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_BrandywineAbstract" name="BrandywineAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_BrandywineMember" name="BrandywineMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_BusinessAcquisitionClosingPriceOfCommonStock" name="BusinessAcquisitionClosingPriceOfCommonStock" nillable="true" substitutionGroup="xbrli:item" type="num:perShareItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_BusinessAcquisitionPercentageOfVotingInterestsToAcquireeShareholders" name="BusinessAcquisitionPercentageOfVotingInterestsToAcquireeShareholders" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_BusinessAcquisitionPurchasePriceAllocationLongTermDebt" name="BusinessAcquisitionPurchasePriceAllocationLongTermDebt" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_BusinessAcquisitionPurchasePriceAllocationOtherCurrentAssets" name="BusinessAcquisitionPurchasePriceAllocationOtherCurrentAssets" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element id="gen_CalculatedValueOfStockPurchasePrice" name="CalculatedValueOfStockPurchasePrice" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element id="gen_CapitalContributions" name="CapitalContributions" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element id="gen_CapitalContributionsToUnconsolidatedSubsidiaries" name="CapitalContributionsToUnconsolidatedSubsidiaries" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element id="gen_CapitalExpenditures" name="CapitalExpenditures" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_CapitalLeasesAbstract" name="CapitalLeasesAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CapitalStructureDisclosureAbstract" name="CapitalStructureDisclosureAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_CarryingValueOfAssetBeforeImpairment" name="CarryingValueOfAssetBeforeImpairment" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CashCollateralizedLettersOfCreditMember" name="CashCollateralizedLettersOfCreditMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CashProvidedUsedByChangesInOtherWorkingCapitalAbstract" name="CashProvidedUsedByChangesInOtherWorkingCapitalAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_CashRetainedByFormerParent" name="CashRetainedByFormerParent" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ChalkPointMember" name="ChalkPointMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ChangesInDerivatives" name="ChangesInDerivatives" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ChapterElevenProceedingsAbstract" name="ChapterElevenProceedingsAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ChapterElevenProceedingsMember" name="ChapterElevenProceedingsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CheswickMonarchMineNovAbstract" name="CheswickMonarchMineNovAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CheswickMonarchMineNovsMember" name="CheswickMonarchMineNovsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CitizenSuitMember" name="CitizenSuitMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CoalMember" name="CoalMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_CoalSupplierConcentrationRiskPolicyTextBlock" name="CoalSupplierConcentrationRiskPolicyTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_CoalTransportationConcentrationRiskPolicyTextBlock" name="CoalTransportationConcentrationRiskPolicyTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_CollateralHeldCashAndLettersOfCredit" name="CollateralHeldCashAndLettersOfCredit" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_CombinationsOfOtherEmployeeBenefitPlansAxis" name="CombinationsOfOtherEmployeeBenefitPlansAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CombinationsOfOtherEmployeeBenefitPlansDomain" name="CombinationsOfOtherEmployeeBenefitPlansDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CommercialSalesArrangementsMember" name="CommercialSalesArrangementsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CommitmentAndContingencyLineItems" name="CommitmentAndContingencyLineItems" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CommitmentAndContingencyTable" name="CommitmentAndContingencyTable" nillable="true" substitutionGroup="xbrldt:hypercubeItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CommodityContractCurrentMember" name="CommodityContractCurrentMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CommodityContractNonCurrentMember" name="CommodityContractNonCurrentMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_CommonStockCapitalSharesReservedConvertedIntoParentCoCommon" name="CommonStockCapitalSharesReservedConvertedIntoParentCoCommon" nillable="true" substitutionGroup="xbrli:item" type="xbrli:sharesItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_CommonStockCapitalSharesReservedForUnresolvedClaims" name="CommonStockCapitalSharesReservedForUnresolvedClaims" nillable="true" substitutionGroup="xbrli:item" type="xbrli:sharesItemType" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_CommonStockRollForward" name="CommonStockRollForward" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_CompanysObligationPenaltyAssessed" name="CompanysObligationPenaltyAssessed" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_ComponentsIncludedInAccumulatedOtherComprehensiveIncomeAssociatedWithDefinedBenefitPensionOrOtherPostretirementPlanAxis" name="ComponentsIncludedInAccumulatedOtherComprehensiveIncomeAssociatedWithDefinedBenefitPensionOrOtherPostretirementPlanAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ComponentsIncludedInAccumulatedOtherComprehensiveIncomeAssociatedWithDefinedBenefitPensionOrOtherPostretirementPlanDomain" name="ComponentsIncludedInAccumulatedOtherComprehensiveIncomeAssociatedWithDefinedBenefitPensionOrOtherPostretirementPlanDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ComponentsOfIntangibleAssetsSubjectToAmortizationAbstract" name="ComponentsOfIntangibleAssetsSubjectToAmortizationAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ConcentrationOfCreditRiskAbstract" name="ConcentrationOfCreditRiskAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CondensedConsolidatedBalanceSheetsParentheticalAbstract" name="CondensedConsolidatedBalanceSheetsParentheticalAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ConemaughAllegedCleanStreamsLawViolationsAbstract" name="ConemaughAllegedCleanStreamsLawViolationsAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ConemaughMember" name="ConemaughMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ConemaughSettlementMember" name="ConemaughSettlementMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ConsolidationAndBasisOfAccountingPolicyTextBlock" name="ConsolidationAndBasisOfAccountingPolicyTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ContraCostaMember" name="ContraCostaMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ConversionOfConvertibleNotesToCommonStock" name="ConversionOfConvertibleNotesToCommonStock" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_ConversionOfNotesPayableToEquity" name="ConversionOfNotesPayableToEquity" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_ConversionOfNotesReceivableToEquity" name="ConversionOfNotesReceivableToEquity" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_CostsUnderPurchaseCommitmentToDate" name="CostsUnderPurchaseCommitmentToDate" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CounterpartyCreditAbstract" name="CounterpartyCreditAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_CounterpartyCreditRiskExposurePercentageOfCreditRiskRollOff" name="CounterpartyCreditRiskExposurePercentageOfCreditRiskRollOff" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_CounterpartyCreditRiskExposurePercentageThreshold" name="CounterpartyCreditRiskExposurePercentageThreshold" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CounterpartyRiskByInstitutionAxis" name="CounterpartyRiskByInstitutionAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CounterpartyRiskByInstitutionDomain" name="CounterpartyRiskByInstitutionDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CounterpartyRiskByInvestmentGradeAxis" name="CounterpartyRiskByInvestmentGradeAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CounterpartyRiskByInvestmentGradeDomain" name="CounterpartyRiskByInvestmentGradeDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_CreditAgreementCovenantFailureToComplyAgreementsDefault" name="CreditAgreementCovenantFailureToComplyAgreementsDefault" nillable="true" substitutionGroup="xbrli:item" type="xbrli:durationItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_CreditAgreementCovenantFailureToComplyJudgementsDefault" name="CreditAgreementCovenantFailureToComplyJudgementsDefault" nillable="true" substitutionGroup="xbrli:item" type="xbrli:durationItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_CreditAgreementCovenantRestrictedPaymentsAmountAllowed" name="CreditAgreementCovenantRestrictedPaymentsAmountAllowed" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_CreditAgreementInterestPastDueCovenantRestriction" name="CreditAgreementInterestPastDueCovenantRestriction" nillable="true" substitutionGroup="xbrli:item" type="xbrli:durationItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CreditAgreementMember" name="CreditAgreementMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_CreditDerivativeMaximumNetExposurePercentage" name="CreditDerivativeMaximumNetExposurePercentage" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_CreditReserveForDerivativeContractAssetsMember" name="CreditReserveForDerivativeContractAssetsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CreditRiskRelatedContingentFeaturesAbstract" name="CreditRiskRelatedContingentFeaturesAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CsaprNitrogenOxidesEmissionsCreditsMember" name="CsaprNitrogenOxidesEmissionsCreditsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_CsaprSulfurDioxideEmissionsCreditsMember" name="CsaprSulfurDioxideEmissionsCreditsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_DaysToComply" name="DaysToComply" nillable="true" substitutionGroup="xbrli:item" type="xbrli:durationItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_DebtAndCapitalLeasesByRedemptionPeriodAxis" name="DebtAndCapitalLeasesByRedemptionPeriodAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_DebtAndCapitalLeasesByRedemptionPeriodDomain" name="DebtAndCapitalLeasesByRedemptionPeriodDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_DebtAndCapitalLeasesDisclosureAbstract" name="DebtAndCapitalLeasesDisclosureAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_DebtAndCapitalLeasesLineItems" name="DebtAndCapitalLeasesLineItems" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_DebtInstrumentBasisSpreadOnLiborRate" name="DebtInstrumentBasisSpreadOnLiborRate" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_DebtInstrumentIncreaseInBasisPointsForLiborRateLoans" name="DebtInstrumentIncreaseInBasisPointsForLiborRateLoans" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_DebtInstrumentIncreaseInBasisPointsForLiborRateLoansFrequency" name="DebtInstrumentIncreaseInBasisPointsForLiborRateLoansFrequency" nillable="true" substitutionGroup="xbrli:item" type="xbrli:durationItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_DeferredTaxAssetsFinancingArrangements" name="DeferredTaxAssetsFinancingArrangements" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element id="gen_DeferredTaxAssetsOutOfMarketContractsFairValueAdjustment" name="DeferredTaxAssetsOutOfMarketContractsFairValueAdjustment" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element id="gen_DeferredTaxAssetsPropertyIntangibleAssets" name="DeferredTaxAssetsPropertyIntangibleAssets" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_DefinedBenefitPensionPlansByTypeAxis" name="DefinedBenefitPensionPlansByTypeAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_DefinedBenefitPensionPlansByTypeDomain" name="DefinedBenefitPensionPlansByTypeDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_DefinedBenefitPlanAmountRecognizedInNetPeriodicPensionCostAndOtherComprehensiveIncome" name="DefinedBenefitPlanAmountRecognizedInNetPeriodicPensionCostAndOtherComprehensiveIncome" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_DefinedBenefitPlanAmountsRecognizedInOtherComprehensiveIncomeLossAccumulatedOtherComprehensiveIncomeLossRollForward" name="DefinedBenefitPlanAmountsRecognizedInOtherComprehensiveIncomeLossAccumulatedOtherComprehensiveIncomeLossRollForward" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_DefinedBenefitPlanHealthCareCostTrendRateAssumedForNextFiscalYearAgeSixtyFiveAfter" name="DefinedBenefitPlanHealthCareCostTrendRateAssumedForNextFiscalYearAgeSixtyFiveAfter" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_DefinedBenefitPlanHealthCareCostTrendRateAssumedForNextFiscalYearBeforeAgeSixtyFive" name="DefinedBenefitPlanHealthCareCostTrendRateAssumedForNextFiscalYearBeforeAgeSixtyFive" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_DefinedBenefitPlanOtherPostretirementBenefitPlanObligationsUltimateHealthCareCostTrendRate" name="DefinedBenefitPlanOtherPostretirementBenefitPlanObligationsUltimateHealthCareCostTrendRate" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_DefinedBenefitPlanPeriodForWhichDifferenceBetweenExpectedReturnAndActualReturnOnPlanAssetsToBeRecognized" name="DefinedBenefitPlanPeriodForWhichDifferenceBetweenExpectedReturnAndActualReturnOnPlanAssetsToBeRecognized" nillable="true" substitutionGroup="xbrli:item" type="us-types:durationStringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_DefinedBenefitPlanPlanAssetMeasuredAtFairValueAbstract" name="DefinedBenefitPlanPlanAssetMeasuredAtFairValueAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_DefinedContributionPlansDisclosuresDomain" name="DefinedContributionPlansDisclosuresDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_DefinedContributionsPlanFixedPercentageEmployeePayPerPeriodContributed" name="DefinedContributionsPlanFixedPercentageEmployeePayPerPeriodContributed" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_DefinedContributionsPlanMaximumPercentageEmployeePayPerPeriodDiscretionaryContributionAllowed" name="DefinedContributionsPlanMaximumPercentageEmployeePayPerPeriodDiscretionaryContributionAllowed" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_DefinedContributionsPlansDisclosuresAxis" name="DefinedContributionsPlansDisclosuresAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_DerivativeAssetFairValueDeterminedUsingValuationTechniquesPercentage" name="DerivativeAssetFairValueDeterminedUsingValuationTechniquesPercentage" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_DerivativeFairValueMeasurementsAbstract" name="DerivativeFairValueMeasurementsAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_DerivativeLiabilityFairValueDeterminedUsingValuationTechniquesPercentage" name="DerivativeLiabilityFairValueDeterminedUsingValuationTechniquesPercentage" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_DerivativeNetLiabilityPositionCollateralRequiredAdequateAssuranceClauses" name="DerivativeNetLiabilityPositionCollateralRequiredAdequateAssuranceClauses" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_DerivativeNetLiabilityPositionCollateralRequiredContractsWithCreditRatingContingentFeature" name="DerivativeNetLiabilityPositionCollateralRequiredContractsWithCreditRatingContingentFeature" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_DerivativeNetLiabilityPositionNoCounterpartyCollateralCall" name="DerivativeNetLiabilityPositionNoCounterpartyCollateralCall" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_DerivativeUnrealizedGainsOnOpenPositionsRelatedToTradingActivityNet" name="DerivativeUnrealizedGainsOnOpenPositionsRelatedToTradingActivityNet" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_DerivativesByUnderlyingAssetsAxis" name="DerivativesByUnderlyingAssetsAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_DevelopmentRightsMember" name="DevelopmentRightsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_DickersonAndMorgantownMember" name="DickersonAndMorgantownMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_DirectCostOfOperationsMember" name="DirectCostOfOperationsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_DistributionsToMembers" name="DistributionsToMembers" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_DocumentAndEntityInformationAbstract" name="DocumentAndEntityInformationAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_DomesticStocksMember" name="DomesticStocksMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_EastMember" name="EastMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_EffectOfOnePercentagePointIncreaseOrdecreaseOnServiceAndInterestCostComponents" name="EffectOfOnePercentagePointIncreaseOrdecreaseOnServiceAndInterestCostComponents" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_EffectsOfMergerAbstract" name="EffectsOfMergerAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ElectricGeneratingCapacityMegawatts" name="ElectricGeneratingCapacityMegawatts" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ElectricGeneratingCapacityMegawatts1" name="ElectricGeneratingCapacityMegawatts1" nillable="true" substitutionGroup="xbrli:item" type="num:powerItemType" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_ElramaMember" name="ElramaMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_EmissionAllowancesMember" name="EmissionAllowancesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_EmployeeSavingsFixedProfitSharingAndDiscretionaryProfitSharingMember" name="EmployeeSavingsFixedProfitSharingAndDiscretionaryProfitSharingMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_EnvironmentalCapitalExpendituresEstimated" name="EnvironmentalCapitalExpendituresEstimated" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_EnvironmentalMattersByNatureAxis" name="EnvironmentalMattersByNatureAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_EnvironmentalMattersByNatureDomain" name="EnvironmentalMattersByNatureDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_EnvironmentalMattersMember" name="EnvironmentalMattersMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_EquityInEarningsOfConsolidatedSubsidiaries" name="EquityInEarningsOfConsolidatedSubsidiaries" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element id="gen_ExcessMaterialsAndSuppliesInventoryReserve" name="ExcessMaterialsAndSuppliesInventoryReserve" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_ExcessMaterialsSuppliesInventoryReserve" name="ExcessMaterialsSuppliesInventoryReserve" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ExpectedRetirementsMothballsLongTermProtectiveLayupsAbstract" name="ExpectedRetirementsMothballsLongTermProtectiveLayupsAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ExternalCreditRatingNotRatedMember" name="ExternalCreditRatingNotRatedMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_FacilitiesAndEquipmentMember" name="FacilitiesAndEquipmentMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_FairValueAssetAndLiabilitiesMeasuredOnRecurringBasisUnobservableInputChangesByTypeAxis" name="FairValueAssetAndLiabilitiesMeasuredOnRecurringBasisUnobservableInputChangesByTypeAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_FairValueAssetAndLiabilitiesMeasuredOnRecurringBasisUnobservableInputChangesByTypesDomain" name="FairValueAssetAndLiabilitiesMeasuredOnRecurringBasisUnobservableInputChangesByTypesDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_FairValueAssetAndLiabilitiesMeasuredOnRecurringBasisUnobservableInputChangesLineItems" name="FairValueAssetAndLiabilitiesMeasuredOnRecurringBasisUnobservableInputChangesLineItems" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_FairValueAssetAndLiabilitiesMeasuredOnRecurringBasisUnobservableInputChangesTable" name="FairValueAssetAndLiabilitiesMeasuredOnRecurringBasisUnobservableInputChangesTable" nillable="true" substitutionGroup="xbrldt:hypercubeItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_FairValueAssetsAndLiabilitiesMeasuredOnRecurringBasisUnobservableInputReconciliationCalculationRollForward" name="FairValueAssetsAndLiabilitiesMeasuredOnRecurringBasisUnobservableInputReconciliationCalculationRollForward" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_FairValueAssetsMeasuredOnRecurringBasisGainLossIncludedInEarnings" name="FairValueAssetsMeasuredOnRecurringBasisGainLossIncludedInEarnings" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element id="gen_FairValueMeasurementWithUnobservableInputsReconciliationRecurringBasisAssetAndLiabilityGainLossIncludedInEarnings" name="FairValueMeasurementWithUnobservableInputsReconciliationRecurringBasisAssetAndLiabilityGainLossIncludedInEarnings" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_FairValueMeasurementWithUnobservableInputsReconciliationRecurringBasisAssetAndLiabilityPurchases" name="FairValueMeasurementWithUnobservableInputsReconciliationRecurringBasisAssetAndLiabilityPurchases" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_FairValueMeasurementWithUnobservableInputsReconciliationRecurringBasisAssetAndLiabilitySettlements" name="FairValueMeasurementWithUnobservableInputsReconciliationRecurringBasisAssetAndLiabilitySettlements" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element id="gen_FairValueMeasurementWithUnobservableInputsReconciliationRecurringBasisAssetAndLiabilityTransfersIntoLevel3" name="FairValueMeasurementWithUnobservableInputsReconciliationRecurringBasisAssetAndLiabilityTransfersIntoLevel3" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_FairValueMeasurementWithUnobservableInputsReconciliationRecurringBasisAssetAndLiabilityTransfersOutOfLevel3" name="FairValueMeasurementWithUnobservableInputsReconciliationRecurringBasisAssetAndLiabilityTransfersOutOfLevel3" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element id="gen_FairValueMeasurementWithUnobservableInputsReconciliationRecurringBasisAssetAndLiabilityValue" name="FairValueMeasurementWithUnobservableInputsReconciliationRecurringBasisAssetAndLiabilityValue" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_FairValueOfFinancialInstrumentsDisclosureAbstract" name="FairValueOfFinancialInstrumentsDisclosureAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_FinancialInstitutionsMember" name="FinancialInstitutionsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_FiniteLivedIntangibleAssetsPurchases" name="FiniteLivedIntangibleAssetsPurchases" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_FlyAshFacilitiesAxis" name="FlyAshFacilitiesAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_FlyAshFacilitiesDomain" name="FlyAshFacilitiesDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_FlyAshFacilitiesPeriodToCloseAndCapExistingOpenDisposalCells" name="FlyAshFacilitiesPeriodToCloseAndCapExistingOpenDisposalCells" nillable="true" substitutionGroup="xbrli:item" type="xbrli:durationItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_FranchiseTaxExaminationLiabilityFromSettlementWithTaxingAuthorityInAppeals" name="FranchiseTaxExaminationLiabilityFromSettlementWithTaxingAuthorityInAppeals" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_FuelAndCommodityTransportationCommitmentsMember" name="FuelAndCommodityTransportationCommitmentsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_FundingLimitToPayProfessionalFeesOtherCosts" name="FundingLimitToPayProfessionalFeesOtherCosts" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_FundsDepositedByCounterparties" name="FundsDepositedByCounterparties" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element id="gen_FundsDepositedByCounterpartiesPolicyTextBlock" name="FundsDepositedByCounterpartiesPolicyTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_FutureAmortizationExpensesOutOfMarketContractsAbstract" name="FutureAmortizationExpensesOutOfMarketContractsAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_FutureAmortizationExpensesOutOfMarketContractsYearFive" name="FutureAmortizationExpensesOutOfMarketContractsYearFive" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_FutureAmortizationExpensesOutOfMarketContractsYearFour" name="FutureAmortizationExpensesOutOfMarketContractsYearFour" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_FutureAmortizationExpensesOutOfMarketContractsYearOne" name="FutureAmortizationExpensesOutOfMarketContractsYearOne" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_FutureAmortizationExpensesOutOfMarketContractsYearThree" name="FutureAmortizationExpensesOutOfMarketContractsYearThree" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_FutureAmortizationExpensesOutOfMarketContractsYearTwo" name="FutureAmortizationExpensesOutOfMarketContractsYearTwo" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_GainsLossesOnExtinguishmentOfDebtNonCashPortion" name="GainsLossesOnExtinguishmentOfDebtNonCashPortion" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GeneratingFacilitiesAxis" name="GeneratingFacilitiesAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GeneratingFacilitiesDomain" name="GeneratingFacilitiesDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GeneratingFacilitiesExpectedOrScheduledToBeDeactivatedMember" name="GeneratingFacilitiesExpectedOrScheduledToBeDeactivatedMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GeneratingFacilityAxis" name="GeneratingFacilityAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GeneratingFacilityDomain" name="GeneratingFacilityDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GeneratingFacilityUnitAxis" name="GeneratingFacilityUnitAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GeneratingFacilityUnitDomain" name="GeneratingFacilityUnitDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GeneratingStationAxis" name="GeneratingStationAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GeneratingStationDomain" name="GeneratingStationDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GenonAmericasGenerationAndGenonMidAtlanticMember" name="GenonAmericasGenerationAndGenonMidAtlanticMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GenonAmericasGenerationLlcMember" name="GenonAmericasGenerationLlcMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GenonAmericasGenerationLlcParentCompanyMember" name="GenonAmericasGenerationLlcParentCompanyMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GenonAmericasMember" name="GenonAmericasMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GenonAndGenonAmericasGenerationMember" name="GenonAndGenonAmericasGenerationMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GenonEnergyHoldingsMember" name="GenonEnergyHoldingsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GenonEnergyManagementMember" name="GenonEnergyManagementMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GenonMarshLandingMember" name="GenonMarshLandingMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GenonMember" name="GenonMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GenonMidAtlanticLlcMember" name="GenonMidAtlanticLlcMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_GenonsPensionPlanAssetsWeightedAverageAllocationTableTextBlock" name="GenonsPensionPlanAssetsWeightedAverageAllocationTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GilbertMember" name="GilbertMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GlenGardnerMember" name="GlenGardnerMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GlobalWarmingAbstract" name="GlobalWarmingAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_GlobalWarmingMember" name="GlobalWarmingMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_GuaranteeMaturityBetweenOneToThreeYears" name="GuaranteeMaturityBetweenOneToThreeYears" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_GuaranteeMaturityBetweenThreeToFiveYears" name="GuaranteeMaturityBetweenThreeToFiveYears" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_GuaranteeMaturityGreaterThanFiveYears" name="GuaranteeMaturityGreaterThanFiveYears" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_GuaranteeMaturityLessThanOneYear" name="GuaranteeMaturityLessThanOneYear" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_GuaranteeObligationsByPurposeAxis" name="GuaranteeObligationsByPurposeAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_GuaranteeObligationsEstimatedExposure" name="GuaranteeObligationsEstimatedExposure" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_HealthCareCostTrendRateAssumedOtherPostretirementBenefitPlanObligationsForNextFiscalYearAgeSixtyFiveAfter" name="HealthCareCostTrendRateAssumedOtherPostretirementBenefitPlanObligationsForNextFiscalYearAgeSixtyFiveAfter" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_HealthCareCostTrendRateAssumedOtherPostretirementBenefitPlanObligationsForNextFiscalYearBeforeAgeSixtyFive" name="HealthCareCostTrendRateAssumedOtherPostretirementBenefitPlanObligationsForNextFiscalYearBeforeAgeSixtyFive" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_ImpairmentChargesAndAssetWriteDowns" name="ImpairmentChargesAndAssetWriteDowns" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element id="gen_IncomeTaxReconciliationEffectOfEquityRelatedTransactions" name="IncomeTaxReconciliationEffectOfEquityRelatedTransactions" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_IncomeTaxReconciliationGainOnBargainPurchase" name="IncomeTaxReconciliationGainOnBargainPurchase" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_IncomeTaxReconciliationMerger2RelatedCosts" name="IncomeTaxReconciliationMerger2RelatedCosts" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_IncomeTaxReconciliationMergerRelatedCosts" name="IncomeTaxReconciliationMergerRelatedCosts" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_IncomeTaxReconciliationMergerRelatedWriteOffOfNolOtherDeferredAssets" name="IncomeTaxReconciliationMergerRelatedWriteOffOfNolOtherDeferredAssets" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_IncomeTaxReconciliationMergerRelatedWriteOffOfNolStateAndLocalIncomeTaxesNet" name="IncomeTaxReconciliationMergerRelatedWriteOffOfNolStateAndLocalIncomeTaxesNet" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_IncomeTaxReconciliationReorganizationAdjustments" name="IncomeTaxReconciliationReorganizationAdjustments" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_IncreaseDecreaseInEnergyMarketingOverheadExpense" name="IncreaseDecreaseInEnergyMarketingOverheadExpense" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_IndependentSystemsOperatorsMember" name="IndependentSystemsOperatorsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_InitialEquityContributionRequiredToBorrowUnderCreditFacility" name="InitialEquityContributionRequiredToBorrowUnderCreditFacility" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_IntercompanyCreditAgreementMember" name="IntercompanyCreditAgreementMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_InterestAndPenaltiesIncludedInAmountOfFranchiseTaxAssessmentsInAppeals" name="InterestAndPenaltiesIncludedInAmountOfFranchiseTaxAssessmentsInAppeals" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_InterestRateContractCurrentMember" name="InterestRateContractCurrentMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_InterestRateContractNonCurrentMember" name="InterestRateContractNonCurrentMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_InternationalStocksMember" name="InternationalStocksMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_InventoryFuelOil" name="InventoryFuelOil" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_InventoryLineItems" name="InventoryLineItems" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_InventoryPurchasedEmissionsAllowances" name="InventoryPurchasedEmissionsAllowances" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_InventoryTable" name="InventoryTable" nillable="true" substitutionGroup="xbrldt:hypercubeItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_KeystoneConemaughMember" name="KeystoneConemaughMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_KeystoneMember" name="KeystoneMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_LeasePaymentsInExcessOfRentExpenseRecognized" name="LeasePaymentsInExcessOfRentExpenseRecognized" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element id="gen_LeasePaymentsInExcessOfRentExpenseRecognizedIncludedInPrepaidExpenses" name="LeasePaymentsInExcessOfRentExpenseRecognizedIncludedInPrepaidExpenses" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_LettersOfCreditAndSuretyBondsMember" name="LettersOfCreditAndSuretyBondsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_LiensReleasedByPlaintiffAmount" name="LiensReleasedByPlaintiffAmount" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_LitigationLossContingenciesByLegalProceedingAxis" name="LitigationLossContingenciesByLegalProceedingAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_LitigationLossContingenciesByLegalProceedingDomain" name="LitigationLossContingenciesByLegalProceedingDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_LitigationSettlementDistributedRetainedReimbursement" name="LitigationSettlementDistributedRetainedReimbursement" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_LongLivedAssetDisclosureTextBlock" name="LongLivedAssetDisclosureTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_LongLivedAssetsImpairments" name="LongLivedAssetsImpairments" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_LongTermPurchaseCommitmentAbstract" name="LongTermPurchaseCommitmentAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_LongTermPurchaseCommitmentAmountAssigned" name="LongTermPurchaseCommitmentAmountAssigned" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_LongTermServiceAgreementsMember" name="LongTermServiceAgreementsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_LossContingencyNumberOfAcresAffected" name="LossContingencyNumberOfAcresAffected" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_LossContingencyNumberOfCellsOfFlyAsh" name="LossContingencyNumberOfCellsOfFlyAsh" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_LossContingencyNumberOfCubicYardsOfCoalFlyAsh" name="LossContingencyNumberOfCubicYardsOfCoalFlyAsh" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_LossContingencyNumberOfInterveningParties" name="LossContingencyNumberOfInterveningParties" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_LossForEnvironmentalAndLegal" name="LossForEnvironmentalAndLegal" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_MWhMember" name="MWhMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_MajorSuppliersAxis" name="MajorSuppliersAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_MajorSuppliersDomain" name="MajorSuppliersDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_MarylandFlyAshFacilitiesAbstract" name="MarylandFlyAshFacilitiesAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_MarylandFlyAshFacilitiesMember" name="MarylandFlyAshFacilitiesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_MaximumExposureForGuaranteesAbstract" name="MaximumExposureForGuaranteesAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_MaximumPercentageOfEconomicUsefulLifeIfOptionToExtendLeasesIsExercisedUnderOperatingLeaseArrangements" name="MaximumPercentageOfEconomicUsefulLifeIfOptionToExtendLeasesIsExercisedUnderOperatingLeaseArrangements" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_MaximumPercentageOfTargetedGrant" name="MaximumPercentageOfTargetedGrant" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_MaximumRemainingTermUnderIndividualFuelSupplyContract" name="MaximumRemainingTermUnderIndividualFuelSupplyContract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:durationItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_MaximumRemainingTermUnderIndividualTransportationContract" name="MaximumRemainingTermUnderIndividualTransportationContract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:durationItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_MaximumTermOfHedgingExposure" name="MaximumTermOfHedgingExposure" nillable="true" substitutionGroup="xbrli:item" type="xbrli:durationItemType" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_McAssetRecoveryActionsAbstract" name="McAssetRecoveryActionsAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_MeasurementUnitAxis" name="MeasurementUnitAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_MeasurementUnitDomain" name="MeasurementUnitDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_MembersEquityAbstract" name="MembersEquityAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_MembersEquityAbstractAbstract" name="MembersEquityAbstractAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_MembersInterestMember" name="MembersInterestMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_MergerRelatedCostsAbstract" name="MergerRelatedCostsAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_MergerStockExchangeRatio" name="MergerStockExchangeRatio" nillable="true" substitutionGroup="xbrli:item" type="xbrli:sharesItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_MinimumCivilPenaltiesWhichMayBeAssessed" name="MinimumCivilPenaltiesWhichMayBeAssessed" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_MinimumPercentageOfTargetedGrant" name="MinimumPercentageOfTargetedGrant" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_MinimumPercentageOwnershipOfLossCompanyStockRequiredForInclusionInOwnershipChangeMeasurement" name="MinimumPercentageOwnershipOfLossCompanyStockRequiredForInclusionInOwnershipChangeMeasurement" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_MirantRriEnergyMergerMember" name="MirantRriEnergyMergerMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_MmbtuMember" name="MmbtuMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ModificationExpense" name="ModificationExpense" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_MontgomeryCountyGeneratingFacilityFixedAssetsMember" name="MontgomeryCountyGeneratingFacilityFixedAssetsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NaturalGasMember" name="NaturalGasMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NatureOfBusinessAbstract" name="NatureOfBusinessAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NatureOfBusinessDisclosureAbstract" name="NatureOfBusinessDisclosureAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NatureOfBusinessLineItems" name="NatureOfBusinessLineItems" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NatureOfBusinessTable" name="NatureOfBusinessTable" nillable="true" substitutionGroup="xbrldt:hypercubeItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_NetCreditExposure" name="NetCreditExposure" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_NetLitigationSettlementDistributedToPlaintiff" name="NetLitigationSettlementDistributedToPlaintiff" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NetLossGainMember" name="NetLossGainMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_NetReclassificationsFromAccumulatedOtherComprehensiveLoss" name="NetReclassificationsFromAccumulatedOtherComprehensiveLoss" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NewCastleMember" name="NewCastleMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NewJerseyRemediationObligationsMember" name="NewJerseyRemediationObligationsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NewSourceReviewMattersAbstract" name="NewSourceReviewMattersAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NewSourceReviewMattersMember" name="NewSourceReviewMattersMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NilesMember" name="NilesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NonAffiliatedEntityMember" name="NonAffiliatedEntityMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NonQualifiedDeferredCompensationPlansMember" name="NonQualifiedDeferredCompensationPlansMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NonQualifiedStockOptionsDollarsPerShareAbstract" name="NonQualifiedStockOptionsDollarsPerShareAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NonQualifiedStockOptionsMember" name="NonQualifiedStockOptionsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NonTaxQualifiedPensionBenefitsMember" name="NonTaxQualifiedPensionBenefitsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NotesToParentCompanyFinancialStatementsAbstractAbstract" name="NotesToParentCompanyFinancialStatementsAbstractAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NoticeOfIntentToFileCitizensSuitAbstract" name="NoticeOfIntentToFileCitizensSuitAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NrgEnergyMember" name="NrgEnergyMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NrgMergerMember" name="NrgMergerMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_NumberLawsuitsFiled" name="NumberLawsuitsFiled" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_NumberLawsuitsWhichCourtAffirmedDismissed" name="NumberLawsuitsWhichCourtAffirmedDismissed" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_NumberOfClaimsTransferredToMcAssetRecoveryOutstanding" name="NumberOfClaimsTransferredToMcAssetRecoveryOutstanding" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_NumberOfClaimsTransferredToMcAssetRecoverySeekingDamagesForFradulentTransfers" name="NumberOfClaimsTransferredToMcAssetRecoverySeekingDamagesForFradulentTransfers" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_NumberOfConsolidatedCourtCases" name="NumberOfConsolidatedCourtCases" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_NumberOfCounterpartiesRepresentingExposure" name="NumberOfCounterpartiesRepresentingExposure" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_NumberOfFlyAshFacilities" name="NumberOfFlyAshFacilities" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_NumberOfFlyAshFacilitiesWithThreatOfNonRenewalOfWaterDischargePermits" name="NumberOfFlyAshFacilitiesWithThreatOfNonRenewalOfWaterDischargePermits" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_NumberOfLawsuitsDismissed" name="NumberOfLawsuitsDismissed" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_NumberOfMattersToSettle" name="NumberOfMattersToSettle" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_NumberOfOtherCompaniesNamedInLawsuitFiled" name="NumberOfOtherCompaniesNamedInLawsuitFiled" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_NumberOfPercentagePointIncreaseInStockOwnershipRequiredForOwnershipChange" name="NumberOfPercentagePointIncreaseInStockOwnershipRequiredForOwnershipChange" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_NumberOfPetitionsAllegingEmissionsStandardsViolationsFiled" name="NumberOfPetitionsAllegingEmissionsStandardsViolationsFiled" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_NumberOfPetitionsInFinalRuling" name="NumberOfPetitionsInFinalRuling" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_NumberOfRailroads" name="NumberOfRailroads" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NumberOfRestrictedStockUnitsAbstract" name="NumberOfRestrictedStockUnitsAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_NumberOfRestrictedStockUnitsExchangedForSharesOfAcquirerCommonStockInMerger" name="NumberOfRestrictedStockUnitsExchangedForSharesOfAcquirerCommonStockInMerger" nillable="true" substitutionGroup="xbrli:item" type="xbrli:sharesItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_NumberOfRestrictedStockUnitsExchangedForUnvestedRestrictedStockUnitsOfAcquirerInMerger" name="NumberOfRestrictedStockUnitsExchangedForUnvestedRestrictedStockUnitsOfAcquirerInMerger" nillable="true" substitutionGroup="xbrli:item" type="xbrli:sharesItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_NumberOfSharesCommonStockPerThousandDollarClaimAllowed" name="NumberOfSharesCommonStockPerThousandDollarClaimAllowed" nillable="true" substitutionGroup="xbrli:item" type="xbrli:sharesItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_NumberOfSharesUsedToCalculatePurchasePrice" name="NumberOfSharesUsedToCalculatePurchasePrice" nillable="true" substitutionGroup="xbrli:item" type="xbrli:sharesItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_NumberOfStockOptionsAbstract" name="NumberOfStockOptionsAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_NumberOfStockOptionsReceivedFromConversionOfAcquirerStockOptionsInMerger" name="NumberOfStockOptionsReceivedFromConversionOfAcquirerStockOptionsInMerger" nillable="true" substitutionGroup="xbrli:item" type="xbrli:sharesItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_NumberOfUnitsThatCouldBeRunningOptionYearTwo" name="NumberOfUnitsThatCouldBeRunningOptionYearTwo" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_NumberOfUnitsThatWouldRequireHigherCostsOrRetirementIfEpaLawsFinal" name="NumberOfUnitsThatWouldRequireHigherCostsOrRetirementIfEpaLawsFinal" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_NumberOfUnitsWhichWillBeRequiredToReduceMaximumAllowableEmissions" name="NumberOfUnitsWhichWillBeRequiredToReduceMaximumAllowableEmissions" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_NumberOfYearsInTestingPeriodForDeterminingOwnershipChangeMeasurement" name="NumberOfYearsInTestingPeriodForDeterminingOwnershipChangeMeasurement" nillable="true" substitutionGroup="xbrli:item" type="xbrli:durationItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_NumberSharesAcquirerCommonStockConvertedIntoSharesOfAcquireeCommonStock" name="NumberSharesAcquirerCommonStockConvertedIntoSharesOfAcquireeCommonStock" nillable="true" substitutionGroup="xbrli:item" type="xbrli:sharesItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_OilMember" name="OilMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_OneCounterpartyMember" name="OneCounterpartyMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_OneRailroadMember" name="OneRailroadMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_OperatingCostAndExpenseExcludingDepreciationDepletionAndAmortization" name="OperatingCostAndExpenseExcludingDepreciationDepletionAndAmortization" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_OperatingLeasesFeeReceivedFromOwners" name="OperatingLeasesFeeReceivedFromOwners" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element id="gen_OperatingLeasesTermOfAgreementsToOperate" name="OperatingLeasesTermOfAgreementsToOperate" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_OperatingLeasesTermOfNoticeRequiredToTerminateLeaseWithConditions" name="OperatingLeasesTermOfNoticeRequiredToTerminateLeaseWithConditions" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_OperatingRevenues" name="OperatingRevenues" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element id="gen_OtherCommitmentsTableTextBlock" name="OtherCommitmentsTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_OtherComprehensiveIncomeLossOtherAdjustmentsNetOfTax" name="OtherComprehensiveIncomeLossOtherAdjustmentsNetOfTax" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_OtherCostsToDeactivateGeneratingFacilities" name="OtherCostsToDeactivateGeneratingFacilities" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_OutOfMarketContracts" name="OutOfMarketContracts" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_OutOfMarketValueOfLeaseObligation" name="OutOfMarketValueOfLeaseObligation" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_PaymentsOnGuarantees" name="PaymentsOnGuarantees" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_PendingNaturalGasLitigationAbstract" name="PendingNaturalGasLitigationAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_PendingNaturalGasLitigationMember" name="PendingNaturalGasLitigationMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_PercentInterestInJointlyOwnedGeneratingPlantsNotOwnedByUs" name="PercentInterestInJointlyOwnedGeneratingPlantsNotOwnedByUs" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_PercentReductionInMaximumAllowableSo2EmmissionsYearFour" name="PercentReductionInMaximumAllowableSo2EmmissionsYearFour" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_PercentReductionInMaximumAllowableSo2EmmissionsYearTwo" name="PercentReductionInMaximumAllowableSo2EmmissionsYearTwo" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_PercentageInterestInBaseloadUnitsUnderOperatingLeaseArrangements" name="PercentageInterestInBaseloadUnitsUnderOperatingLeaseArrangements" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element id="gen_PercentageOfFaceAmountSeniorNotesPaidAsPremiumOnRedemption" name="PercentageOfFaceAmountSeniorNotesPaidAsPremiumOnRedemption" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_PercentageOfPrincipalAmountThatIsBaseRedemptionPricePriorToMaturity" name="PercentageOfPrincipalAmountThatIsBaseRedemptionPricePriorToMaturity" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_PercentageOfPrincipalAmountUsedToDeterminePremiumOnRedemptionPriorToMaturity" name="PercentageOfPrincipalAmountUsedToDeterminePremiumOnRedemptionPriorToMaturity" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_PerformanceMultiplierUsed" name="PerformanceMultiplierUsed" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_PerformanceStockUnitsMember" name="PerformanceStockUnitsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_PeriodBeyondWhichComapnyCanNotPredictHoldingOfCollateral" name="PeriodBeyondWhichComapnyCanNotPredictHoldingOfCollateral" nillable="true" substitutionGroup="xbrli:item" type="xbrli:durationItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_PersonnelCostsAccrued" name="PersonnelCostsAccrued" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_PlanAmendments" name="PlanAmendments" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_PortlandMember" name="PortlandMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_PotentialMaximumNetRecoveriesObtainedByVieForWhichCompanyIsLiableForRelatedTaxes" name="PotentialMaximumNetRecoveriesObtainedByVieForWhichCompanyIsLiableForRelatedTaxes" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_PotomacRiverMember" name="PotomacRiverMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_PotomacRiverSettlementObligationAndReversal" name="PotomacRiverSettlementObligationAndReversal" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_PowerGenerationCapacityMegawatts" name="PowerGenerationCapacityMegawatts" nillable="true" substitutionGroup="xbrli:item" type="num:powerItemType" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_PowerGenerationFacilitiesAxis" name="PowerGenerationFacilitiesAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_PowerGenerationFacilitiesByGeographyAxis" name="PowerGenerationFacilitiesByGeographyAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_PowerGenerationFacilitiesByTypeAxis" name="PowerGenerationFacilitiesByTypeAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_PowerGenerationFacilitiesOperatingStatusDomain" name="PowerGenerationFacilitiesOperatingStatusDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_PowerGenerationFacilitiesTypeDomain" name="PowerGenerationFacilitiesTypeDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_PowerMember" name="PowerMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_PredecessorAndSuccessorReportingPolicyTextBlock" name="PredecessorAndSuccessorReportingPolicyTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_PreferredStockInAffiliateMember" name="PreferredStockInAffiliateMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_PremiumPercentageOfPrincipalOfSeniorNotesDiscountFactor" name="PremiumPercentageOfPrincipalOfSeniorNotesDiscountFactor" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_PriorServiceCostCreditMember" name="PriorServiceCostCreditMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ProceedsFromStockWarrantStockOptionsExercises" name="ProceedsFromStockWarrantStockOptionsExercises" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ProformaAxis" name="ProformaAxis" nillable="true" substitutionGroup="xbrldt:dimensionItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ProformaDomain" name="ProformaDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ProformadomainDomain" name="ProformadomainDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_PropertyPlantAndEquipmentInService" name="PropertyPlantAndEquipmentInService" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element id="gen_PropertyPlantAndEquipmentProjectDevelopmentCostsAndInterestCapitalizationPolicyTextBlock" name="PropertyPlantAndEquipmentProjectDevelopmentCostsAndInterestCapitalizationPolicyTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ProvisionalAllocationOfAssetsAndLiabilitiesTableTextBlock" name="ProvisionalAllocationOfAssetsAndLiabilitiesTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_PurportedClassActionsRelatedToNrgMergerAbstract" name="PurportedClassActionsRelatedToNrgMergerAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ReadingGeneratingFacilityMember" name="ReadingGeneratingFacilityMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ReclassificationsPolicyTextBlock" name="ReclassificationsPolicyTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_RedemptionPeriodFromOctober152015ToOctober142016Member" name="RedemptionPeriodFromOctober152015ToOctober142016Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_RedemptionPeriodFromOctober152016ToOctober142017Member" name="RedemptionPeriodFromOctober152016ToOctober142017Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_RedemptionPeriodFromOctober152017ToOctober142018Member" name="RedemptionPeriodFromOctober152017ToOctober142018Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_RedemptionPeriodFromOctober152018AndThereafterMember" name="RedemptionPeriodFromOctober152018AndThereafterMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_RedemptionPriceAsPercentageOfPrincipalAmountPriorToMaturity" name="RedemptionPriceAsPercentageOfPrincipalAmountPriorToMaturity" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ReductionInNetOperatingLossesPerIrcCode" name="ReductionInNetOperatingLossesPerIrcCode" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element id="gen_ReductionTaxBasisDepreciableAssets" name="ReductionTaxBasisDepreciableAssets" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_RegulatoryMattersAbstract" name="RegulatoryMattersAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_RegulatoryMattersDisclosureAbstract" name="RegulatoryMattersDisclosureAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_RegulatoryMattersLineItems" name="RegulatoryMattersLineItems" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_RegulatoryMattersTable" name="RegulatoryMattersTable" nillable="true" substitutionGroup="xbrldt:hypercubeItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_RegulatoryMattersTextBlock" name="RegulatoryMattersTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_RelatedPartyTransactionAnnualFees" name="RelatedPartyTransactionAnnualFees" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_RemaMember" name="RemaMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_RemainingCostExpectedUnderPurchaseCommitment" name="RemainingCostExpectedUnderPurchaseCommitment" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_RemediationObligationsMember" name="RemediationObligationsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_RetainedAmountToFundFutureExpensesAndToApplyAgainstUnpaidExpenditures" name="RetainedAmountToFundFutureExpensesAndToApplyAgainstUnpaidExpenditures" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_RetireesGuaranteeMember" name="RetireesGuaranteeMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_RetirementsMothballingOrLongTermProtectiveLayupOfGeneratingFacilities" name="RetirementsMothballingOrLongTermProtectiveLayupOfGeneratingFacilities" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_RetirementsMothballingOrLongTermProtectiveLayupOfGeneratingFacilitiesTextBlock" name="RetirementsMothballingOrLongTermProtectiveLayupOfGeneratingFacilitiesTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_RevenueExpenseFromOperationsMember" name="RevenueExpenseFromOperationsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ReversalPreviouslyUnrecognizedUnrealizedGainsLossesSettledPositionsEconomicHedges" name="ReversalPreviouslyUnrecognizedUnrealizedGainsLossesSettledPositionsEconomicHedges" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="gen_ReversalPreviouslyUnrecognizedUnrealizedGainsLossesSettledPositionsTradingActivity" name="ReversalPreviouslyUnrecognizedUnrealizedGainsLossesSettledPositionsTradingActivity" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_RriEnergyMember" name="RriEnergyMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ScheduleOfAcquiredFiniteLivedIntangibleAssetsWeightedAverageUsefulLifeByMajorClassTableTextBlock" name="ScheduleOfAcquiredFiniteLivedIntangibleAssetsWeightedAverageUsefulLifeByMajorClassTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ScheduleOfAmortizationExpenseOfFiniteLivedIntangibleAssetsByMajorClassTableTextBlock" name="ScheduleOfAmortizationExpenseOfFiniteLivedIntangibleAssetsByMajorClassTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ScheduleOfChangesSharesIssuedAndOutstandingTableTextBlock" name="ScheduleOfChangesSharesIssuedAndOutstandingTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ScheduleOfCreditReserveForDerivativeContractAssetsTableTextBlock" name="ScheduleOfCreditReserveForDerivativeContractAssetsTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ScheduleOfDebtAndCapitalLeasesTable" name="ScheduleOfDebtAndCapitalLeasesTable" nillable="true" substitutionGroup="xbrldt:hypercubeItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ScheduleOfFutureAmortizationOfAcquiredFiniteLivedOutOfMarketContractsByMajorClassTableTextBlock" name="ScheduleOfFutureAmortizationOfAcquiredFiniteLivedOutOfMarketContractsByMajorClassTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ScheduleOfGlobalGenerationPortfolioByOperatingSegmentTableTextBlock" name="ScheduleOfGlobalGenerationPortfolioByOperatingSegmentTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ScheduleOfInterestCostIncurredTableTextBlock" name="ScheduleOfInterestCostIncurredTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ScheduleOfNetExposureToCounterPartyCreditExposureTableTextBlock" name="ScheduleOfNetExposureToCounterPartyCreditExposureTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ScheduleOfNotesRedemptionPeriodAndPercentageTableTextBlock" name="ScheduleOfNotesRedemptionPeriodAndPercentageTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ScheduleOfPerformanceBenchmarksTableTextBlock" name="ScheduleOfPerformanceBenchmarksTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ScheduleOfPurchasePriceCalculationTableTextBlock" name="ScheduleOfPurchasePriceCalculationTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ScheduleOfRentExpenseForOtherOperatingLeasesTableTextBlock" name="ScheduleOfRentExpenseForOtherOperatingLeasesTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ScheduleOfRestrictedAssetsTableTextBlock" name="ScheduleOfRestrictedAssetsTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ScheduleOfShareBasedCompnsationArrangementByShareBasedPaymentAwardAbstract" name="ScheduleOfShareBasedCompnsationArrangementByShareBasedPaymentAwardAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ScrubberContractLitigationAbstract" name="ScrubberContractLitigationAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ScrubberContractLitigationMember" name="ScrubberContractLitigationMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_SeniorSecuredLetterOfCreditFacilitiesContractRequirementsMember" name="SeniorSecuredLetterOfCreditFacilitiesContractRequirementsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_SeniorSecuredLetterOfCreditFacilitiesDebtServiceMember" name="SeniorSecuredLetterOfCreditFacilitiesDebtServiceMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_SeniorSecuredTermLoan2017AMember" name="SeniorSecuredTermLoan2017AMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_SeniorSecuredTermLoan2017Member" name="SeniorSecuredTermLoan2017Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_SeniorSecuredTermLoan2023Member" name="SeniorSecuredTermLoan2023Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_SeniorUnsecuredNotes2014And2017Member" name="SeniorUnsecuredNotes2014And2017Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_SeniorUnsecuredNotes2014Member" name="SeniorUnsecuredNotes2014Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_SeniorUnsecuredNotes2017And2023Member" name="SeniorUnsecuredNotes2017And2023Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_SeniorUnsecuredNotes2017Member" name="SeniorUnsecuredNotes2017Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_SeniorUnsecuredNotes2018And2020Member" name="SeniorUnsecuredNotes2018And2020Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_SeniorUnsecuredNotes2018Member" name="SeniorUnsecuredNotes2018Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_SeniorUnsecuredNotes2020Member" name="SeniorUnsecuredNotes2020Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_SeniorUnsecuredNotes2021Member" name="SeniorUnsecuredNotes2021Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_SeniorUnsecuredNotes2031Member" name="SeniorUnsecuredNotes2031Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_SeniorUnsecuredNotesDue2021And2031Member" name="SeniorUnsecuredNotesDue2021And2031Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ShareBasedCompensationArrangementByShareBasedPaymentAwardAwardHistoricalVestingRights" name="ShareBasedCompensationArrangementByShareBasedPaymentAwardAwardHistoricalVestingRights" nillable="true" substitutionGroup="xbrli:item" type="us-types:durationStringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ShareBasedCompensationArrangementByShareBasedPaymentAwardEquityInstrumentsOtherThanOptionsPerformanceFactorAdjustments" name="ShareBasedCompensationArrangementByShareBasedPaymentAwardEquityInstrumentsOtherThanOptionsPerformanceFactorAdjustments" nillable="true" substitutionGroup="xbrli:item" type="xbrli:sharesItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ShareBasedCompensationArrangementByShareBasedPaymentAwardEquityInstrumentsOtherThanOptionsPerformanceFactorAdjustmentsInPeriodWeightedAverageGrantDateFairValue" name="ShareBasedCompensationArrangementByShareBasedPaymentAwardEquityInstrumentsOtherThanOptionsPerformanceFactorAdjustmentsInPeriodWeightedAverageGrantDateFairValue" nillable="true" substitutionGroup="xbrli:item" type="num:perShareItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ShareBasedCompensationArrangementByShareBasedPaymentAwardFairValueAssumptionsExpectedTermServiceConditionAwardsWeightedAverage" name="ShareBasedCompensationArrangementByShareBasedPaymentAwardFairValueAssumptionsExpectedTermServiceConditionAwardsWeightedAverage" nillable="true" substitutionGroup="xbrli:item" type="xbrli:durationItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ShareBasedCompensationArrangementByShareBasedPaymentAwardFairValueAssumptionsRiskFreeInterestRateWeightedAverage" name="ShareBasedCompensationArrangementByShareBasedPaymentAwardFairValueAssumptionsRiskFreeInterestRateWeightedAverage" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ShareBasedCompensationArrangementByShareBasedPaymentAwardFairValueAssumptionsWeightedAverageExpectedDividendRate" name="ShareBasedCompensationArrangementByShareBasedPaymentAwardFairValueAssumptionsWeightedAverageExpectedDividendRate" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ShareBasedCompensationForServiceAndPerformance" name="ShareBasedCompensationForServiceAndPerformance" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ShawvilleMember" name="ShawvilleMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ShortTonMember" name="ShortTonMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_SouthCentralMember" name="SouthCentralMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_StockBasedCompensationDisclosureAbstract" name="StockBasedCompensationDisclosureAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_StroudsburgGeneratingFacilityMember" name="StroudsburgGeneratingFacilityMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_SummaryOfSignificantAccountingPoliciesDisclosureLineItems" name="SummaryOfSignificantAccountingPoliciesDisclosureLineItems" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_SummaryOfSignificantAccountingPoliciesLineItems" name="SummaryOfSignificantAccountingPoliciesLineItems" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_SummaryOfSignificantAccountingPoliciesTable" name="SummaryOfSignificantAccountingPoliciesTable" nillable="true" substitutionGroup="xbrldt:hypercubeItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_TaxContingenciesMaximumEquityContributionTemporaryDifferencesSettlement" name="TaxContingenciesMaximumEquityContributionTemporaryDifferencesSettlement" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_TaxContingenciesMaximumEquityDistributionTemporaryDifferencesSettlement" name="TaxContingenciesMaximumEquityDistributionTemporaryDifferencesSettlement" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_TaxMattersMember" name="TaxMattersMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_TaxQualifiedPensionBenefitsMember" name="TaxQualifiedPensionBenefitsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_TaxesReceivableAndOtherCurrentAssets" name="TaxesReceivableAndOtherCurrentAssets" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element id="gen_TermOfFacility" name="TermOfFacility" nillable="true" substitutionGroup="xbrli:item" type="xbrli:durationItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_TexasFranchiseAuditAbstract" name="TexasFranchiseAuditAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_TexasFranchiseAuditMember" name="TexasFranchiseAuditMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_ThreeCounterpartiesMember" name="ThreeCounterpartiesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_ThresholdPercentageForConcentrationRisk" name="ThresholdPercentageForConcentrationRisk" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_TimeBasedRestrictedStockUnitsRsuMember" name="TimeBasedRestrictedStockUnitsRsuMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_TitusMember" name="TitusMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_TotalLiabilitiesAndMembersEquity" name="TotalLiabilitiesAndMembersEquity" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_TotalMembersEquity" name="TotalMembersEquity" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="gen_TotalOtherAssets" name="TotalOtherAssets" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="gen_TotalTimeBasedRestrictedStockUnitsAndPerformanceBasedRestrictedStockUnitsMember" name="TotalTimeBasedRestrictedStockUnitsAndPerformanceBasedRestrictedStockUnitsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_TradingRightsMember" name="TradingRightsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_TransmissionUpgradesMember" name="TransmissionUpgradesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_TransportationInConcentrationRiskMember" name="TransportationInConcentrationRiskMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_TwoCounterpartiesMember" name="TwoCounterpartiesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_UnderConstructionMember" name="UnderConstructionMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_UnderlyingAssetsDomain" name="UnderlyingAssetsDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_UnderlyingPurposeDomain" name="UnderlyingPurposeDomain" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_UnitFourMember" name="UnitFourMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_UnitOneMember" name="UnitOneMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_UnitTwoMember" name="UnitTwoMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_UnitsOneToThreeMember" name="UnitsOneToThreeMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_UnrealizedGainLossOnDerivativesMarkToMarketEconomicHedgingActivities" name="UnrealizedGainLossOnDerivativesMarkToMarketEconomicHedgingActivities" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element id="gen_UnrealizedGainLossOnDerivativesMarkToMarketTradingActivites" name="UnrealizedGainLossOnDerivativesMarkToMarketTradingActivites" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_UnrealizedMarkToMarketResultsAbstract" name="UnrealizedMarkToMarketResultsAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_UnrecognizedTaxBenefitsMinimumNumberOfMonthsDuringWhichSignificantChangesAreNotAnticipated" name="UnrecognizedTaxBenefitsMinimumNumberOfMonthsDuringWhichSignificantChangesAreNotAnticipated" nillable="true" substitutionGroup="xbrli:item" type="xbrli:durationItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_UtilitiesEnergyMerchantsMarketersAndOtherMember" name="UtilitiesEnergyMerchantsMarketersAndOtherMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_UtilizedEmissionsAllowances" name="UtilizedEmissionsAllowances" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_VolumetricUnderlyingDerivativeTransactionsAbstract" name="VolumetricUnderlyingDerivativeTransactionsAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_WeightedAverageGrantDateFairValueAbstract" name="WeightedAverageGrantDateFairValueAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_WernerMember" name="WernerMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_WestMember" name="WestMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="gen_WholesalePowerGenerationMember" name="WholesalePowerGenerationMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="gen_YearThatRateReachesUltimateTrendRateOtherPostretirementBenefitPlanObligations" name="YearThatRateReachesUltimateTrendRateOtherPostretirementBenefitPlanObligations" nillable="true" substitutionGroup="xbrli:item" type="us-types:dateStringItemType" xbrli:periodType="instant" />
+</xsd:schema>

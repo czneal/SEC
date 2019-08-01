@@ -14,40 +14,6 @@ from settings import Settings
 from keras.preprocessing import sequence
 from keras.models import load_model
 
-class MainSheets(object):
-    def __init__(self):
-        self.rebs = re.compile('.*balance.*sheet.*|.*financial.*position.*|.*finanical.*position.*|.*financial.*condition.*|.*statement.*condition.*|.*assets.*liabilities.*|.*statement.*assets.*', re.I)
-        self.reis = re.compile('.*income.*statement.*|.*statement.*income.*|.*statement.*operation.*|.*statement.*earning.*|.*statement.*loss.*|.*result.*operation.*|.*comprehensive.*income.*|.*comprehensive.*loss.*', re.I)
-        self.recf = re.compile('.*cash.*flow.*', re.I)
-        self.detail = re.compile('.*\(detail.*\).*', re.I)
-    def match_bs(self, label):
-        if self.detail.match(label):
-            return False
-        if self.rebs.match(label):
-            return True
-        return False
-
-    def match_is(self, label):
-        if self.detail.match(label):
-            return False
-        if self.reis.match(label):
-            return True
-        return False
-
-    def match_cf(self, label):
-        if self.detail.match(label):
-            return False
-        if self.recf.match(label):
-            return True
-        return False
-
-    def match(self, label):
-        if (self.match_bs(label) or
-            self.match_cf(label) or
-            self.match_is(label)):
-            return True
-        return False
-
 class ChapterClassificator(object):
     def match(chapter_name):
         chap = None
@@ -255,3 +221,6 @@ class LSHEDirectChildrenClassifier(StaticClassifier):
             raise
         finally:
             con.close()
+            
+if __name__ == '__main__':
+    ms = MainSheets()

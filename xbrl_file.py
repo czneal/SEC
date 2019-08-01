@@ -624,8 +624,9 @@ class XSDFile(object):
                         chapter = "det"
                     else:
                         chapter = "not"
-                role_uri = role.attrib["roleURI"]
-                label = rol_def.text.split(" - ")[-1].strip()
+                role_uri = role.attrib["roleURI"]                
+                label = re.sub('\d+\s*-\s*Statement\s*-\s*', '', 
+                               rol_def.text.strip())
                 chapters[role_uri] = Chapter(role_uri, role.attrib["id"], chapter, label)
 
             self.log.write_to_log("end reading xsd scheme, status ok")

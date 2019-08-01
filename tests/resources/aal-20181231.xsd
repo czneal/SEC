@@ -1,0 +1,931 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!--XBRL Document Created with Wdesk from Workiva-->
+<!-- -->
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.aa.com/20181231" xmlns:aal="http://www.aa.com/20181231" xmlns:link="http://www.xbrl.org/2003/linkbase" xmlns:nonnum="http://www.xbrl.org/dtr/type/non-numeric" xmlns:num="http://www.xbrl.org/dtr/type/numeric" xmlns:us-types="http://fasb.org/us-types/2018-01-31" xmlns:xbrldt="http://xbrl.org/2005/xbrldt" xmlns:xbrli="http://www.xbrl.org/2003/instance" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:import namespace="http://fasb.org/srt/2018-01-31" schemaLocation="http://xbrl.fasb.org/srt/2018/elts/srt-2018-01-31.xsd" />
+  <xsd:import namespace="http://fasb.org/us-gaap/2018-01-31" schemaLocation="http://xbrl.fasb.org/us-gaap/2018/elts/us-gaap-2018-01-31.xsd" />
+  <xsd:import namespace="http://fasb.org/us-roles/2018-01-31" schemaLocation="http://xbrl.fasb.org/us-gaap/2018/elts/us-roles-2018-01-31.xsd" />
+  <xsd:import namespace="http://fasb.org/us-types/2018-01-31" schemaLocation="http://xbrl.fasb.org/us-gaap/2018/elts/us-types-2018-01-31.xsd" />
+  <xsd:import namespace="http://www.xbrl.org/2003/instance" schemaLocation="http://www.xbrl.org/2003/xbrl-instance-2003-12-31.xsd" />
+  <xsd:import namespace="http://www.xbrl.org/2003/linkbase" schemaLocation="http://www.xbrl.org/2003/xbrl-linkbase-2003-12-31.xsd" />
+  <xsd:import namespace="http://www.xbrl.org/2009/arcrole/fact-explanatoryFact" schemaLocation="http://www.xbrl.org/lrr/arcrole/factExplanatory-2009-12-16.xsd" />
+  <xsd:import namespace="http://www.xbrl.org/2009/role/negated" schemaLocation="http://www.xbrl.org/lrr/role/negated-2009-12-16.xsd" />
+  <xsd:import namespace="http://www.xbrl.org/2009/role/net" schemaLocation="http://www.xbrl.org/lrr/role/net-2009-12-16.xsd" />
+  <xsd:import namespace="http://www.xbrl.org/dtr/type/non-numeric" schemaLocation="http://www.xbrl.org/dtr/type/nonNumeric-2009-12-16.xsd" />
+  <xsd:import namespace="http://www.xbrl.org/dtr/type/numeric" schemaLocation="http://www.xbrl.org/dtr/type/numeric-2009-12-16.xsd" />
+  <xsd:import namespace="http://xbrl.org/2005/xbrldt" schemaLocation="http://www.xbrl.org/2005/xbrldt-2005.xsd" />
+  <xsd:import namespace="http://xbrl.sec.gov/country/2017-01-31" schemaLocation="http://xbrl.sec.gov/country/2017/country-2017-01-31.xsd" />
+  <xsd:import namespace="http://xbrl.sec.gov/currency/2017-01-31" schemaLocation="http://xbrl.sec.gov/currency/2017/currency-2017-01-31.xsd" />
+  <xsd:import namespace="http://xbrl.sec.gov/dei/2018-01-31" schemaLocation="https://xbrl.sec.gov/dei/2018/dei-2018-01-31.xsd" />
+  <xsd:import namespace="http://xbrl.sec.gov/exch/2018-01-31" schemaLocation="https://xbrl.sec.gov/exch/2018/exch-2018-01-31.xsd" />
+  <xsd:import namespace="http://xbrl.sec.gov/invest/2013-01-31" schemaLocation="http://xbrl.sec.gov/invest/2013/invest-2013-01-31.xsd" />
+  <xsd:import namespace="http://xbrl.sec.gov/naics/2017-01-31" schemaLocation="http://xbrl.sec.gov/naics/2017/naics-2017-01-31.xsd" />
+  <xsd:import namespace="http://xbrl.sec.gov/sic/2011-01-31" schemaLocation="http://xbrl.sec.gov/sic/2011/sic-2011-01-31.xsd" />
+  <xsd:import namespace="http://xbrl.sec.gov/stpr/2018-01-31" schemaLocation="https://xbrl.sec.gov/stpr/2018/stpr-2018-01-31.xsd" />
+  <xsd:annotation>
+    <xsd:appinfo>
+      <link:linkbaseRef xlink:arcrole="http://www.w3.org/1999/xlink/properties/linkbase" xlink:href="aal-20181231_cal.xml" xlink:role="http://www.xbrl.org/2003/role/calculationLinkbaseRef" xlink:type="simple" />
+      <link:linkbaseRef xlink:arcrole="http://www.w3.org/1999/xlink/properties/linkbase" xlink:href="aal-20181231_def.xml" xlink:role="http://www.xbrl.org/2003/role/definitionLinkbaseRef" xlink:type="simple" />
+      <link:linkbaseRef xlink:arcrole="http://www.w3.org/1999/xlink/properties/linkbase" xlink:href="aal-20181231_lab.xml" xlink:role="http://www.xbrl.org/2003/role/labelLinkbaseRef" xlink:type="simple" />
+      <link:linkbaseRef xlink:arcrole="http://www.w3.org/1999/xlink/properties/linkbase" xlink:href="aal-20181231_pre.xml" xlink:role="http://www.xbrl.org/2003/role/presentationLinkbaseRef" xlink:type="simple" />
+      <link:roleType id="AccumulatedOtherComprehensiveLoss" roleURI="http://www.aa.com/role/AccumulatedOtherComprehensiveLoss">
+        <link:definition>2111100 - Disclosure - Accumulated Other Comprehensive Loss</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="AccumulatedOtherComprehensiveLossComponentsOfAccumulatedOtherComprehensiveLossAociDetails" roleURI="http://www.aa.com/role/AccumulatedOtherComprehensiveLossComponentsOfAccumulatedOtherComprehensiveLossAociDetails">
+        <link:definition>2411402 - Disclosure - Accumulated Other Comprehensive Loss - Components of Accumulated Other Comprehensive Loss (AOCI) (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="AccumulatedOtherComprehensiveLossComponentsOfAccumulatedOtherComprehensiveLossAociDetailsCalc2" roleURI="http://www.aa.com/role/AccumulatedOtherComprehensiveLossComponentsOfAccumulatedOtherComprehensiveLossAociDetailsCalc2">
+        <link:definition>2411402 - Disclosure - Accumulated Other Comprehensive Loss - Components of Accumulated Other Comprehensive Loss (AOCI) (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="AccumulatedOtherComprehensiveLossReclassificationsOutOfAociDetails" roleURI="http://www.aa.com/role/AccumulatedOtherComprehensiveLossReclassificationsOutOfAociDetails">
+        <link:definition>2411403 - Disclosure - Accumulated Other Comprehensive Loss - Reclassifications out of AOCI (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="AccumulatedOtherComprehensiveLossTables" roleURI="http://www.aa.com/role/AccumulatedOtherComprehensiveLossTables">
+        <link:definition>2311301 - Disclosure - Accumulated Other Comprehensive Loss (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BasisOfPresentationAndSummaryOfSignificantAccountingPolicies" roleURI="http://www.aa.com/role/BasisOfPresentationAndSummaryOfSignificantAccountingPolicies">
+        <link:definition>2101100 - Disclosure - Basis of Presentation and Summary of Significant Accounting Policies</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesAdditionalInformationDetail" roleURI="http://www.aa.com/role/BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesAdditionalInformationDetail">
+        <link:definition>2401412 - Disclosure - Basis of Presentation and Summary of Significant Accounting Policies - Additional Information (Detail)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesChangesInLoyaltyProgramLiabilityDetails" roleURI="http://www.aa.com/role/BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesChangesInLoyaltyProgramLiabilityDetails">
+        <link:definition>2401410 - Disclosure - Basis of Presentation and Summary of Significant Accounting Policies - Changes in Loyalty Program Liability (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesFiniteLivedIntangibleAssetsAmortizationExpenseDetail" roleURI="http://www.aa.com/role/BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesFiniteLivedIntangibleAssetsAmortizationExpenseDetail">
+        <link:definition>2401406 - Disclosure - Basis of Presentation and Summary of Significant Accounting Policies - Finite-Lived Intangible Assets Amortization Expense (Detail)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesFiniteLivedIntangibleAssetsDetail" roleURI="http://www.aa.com/role/BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesFiniteLivedIntangibleAssetsDetail">
+        <link:definition>2401405 - Disclosure - Basis of Presentation and Summary of Significant Accounting Policies - Finite-Lived Intangible Assets (Detail)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesOperatingPropertyAndEquipmentDetail" roleURI="http://www.aa.com/role/BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesOperatingPropertyAndEquipmentDetail">
+        <link:definition>2401404 - Disclosure - Basis of Presentation and Summary of Significant Accounting Policies - Operating Property and Equipment (Detail)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesPassengerRevenueByGeographicRegionDetails" roleURI="http://www.aa.com/role/BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesPassengerRevenueByGeographicRegionDetails">
+        <link:definition>2401408 - Disclosure - Basis of Presentation and Summary of Significant Accounting Policies - Passenger Revenue by Geographic Region (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesPolicies" roleURI="http://www.aa.com/role/BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesPolicies">
+        <link:definition>2201201 - Disclosure - Basis of Presentation and Summary of Significant Accounting Policies (Policies)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesRecentAccountingPronouncementsDetails" roleURI="http://www.aa.com/role/BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesRecentAccountingPronouncementsDetails">
+        <link:definition>2401403 - Disclosure - Basis of Presentation and Summary of Significant Accounting Policies - Recent Accounting Pronouncements (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesRegionalExpensesDetail" roleURI="http://www.aa.com/role/BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesRegionalExpensesDetail">
+        <link:definition>2401411 - Disclosure - Basis of Presentation and Summary of Significant Accounting Policies - Regional Expenses (Detail)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesSignificantCategoriesOfReportedOperatingRevenuesDetails" roleURI="http://www.aa.com/role/BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesSignificantCategoriesOfReportedOperatingRevenuesDetails">
+        <link:definition>2401407 - Disclosure - Basis of Presentation and Summary of Significant Accounting Policies - Significant Categories of Reported Operating Revenues (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesSignificantContractLiabilitiesDetails" roleURI="http://www.aa.com/role/BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesSignificantContractLiabilitiesDetails">
+        <link:definition>2401409 - Disclosure - Basis of Presentation and Summary of Significant Accounting Policies - Significant Contract Liabilities (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesTables" roleURI="http://www.aa.com/role/BasisOfPresentationAndSummaryOfSignificantAccountingPoliciesTables">
+        <link:definition>2301302 - Disclosure - Basis of Presentation and Summary of Significant Accounting Policies (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="CommitmentsContingenciesAndGuarantees" roleURI="http://www.aa.com/role/CommitmentsContingenciesAndGuarantees">
+        <link:definition>2112100 - Disclosure - Commitments, Contingencies and Guarantees</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="CommitmentsContingenciesAndGuaranteesAdditionalInformationDetails" roleURI="http://www.aa.com/role/CommitmentsContingenciesAndGuaranteesAdditionalInformationDetails">
+        <link:definition>2412404 - Disclosure - Commitments, Contingencies and Guarantees - Additional Information (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="CommitmentsContingenciesAndGuaranteesAircraftEngineAndOtherPurchaseCommitmentsDetails" roleURI="http://www.aa.com/role/CommitmentsContingenciesAndGuaranteesAircraftEngineAndOtherPurchaseCommitmentsDetails">
+        <link:definition>2412402 - Disclosure - Commitments, Contingencies and Guarantees - Aircraft, Engine and Other Purchase Commitments (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="CommitmentsContingenciesAndGuaranteesCapacityPurchaseAgreementsDetails" roleURI="http://www.aa.com/role/CommitmentsContingenciesAndGuaranteesCapacityPurchaseAgreementsDetails">
+        <link:definition>2412403 - Disclosure - Commitments, Contingencies and Guarantees - Capacity Purchase Agreements (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="CommitmentsContingenciesAndGuaranteesTables" roleURI="http://www.aa.com/role/CommitmentsContingenciesAndGuaranteesTables">
+        <link:definition>2312301 - Disclosure - Commitments, Contingencies and Guarantees (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ConsolidatedBalanceSheets" roleURI="http://www.aa.com/role/ConsolidatedBalanceSheets">
+        <link:definition>1003000 - Statement - Consolidated Balance Sheets</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ConsolidatedBalanceSheetsParenthetical" roleURI="http://www.aa.com/role/ConsolidatedBalanceSheetsParenthetical">
+        <link:definition>1003501 - Statement - Consolidated Balance Sheets (Parenthetical)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ConsolidatedStatementsOfCashFlows" roleURI="http://www.aa.com/role/ConsolidatedStatementsOfCashFlows">
+        <link:definition>1004000 - Statement - Consolidated Statements of Cash Flows</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ConsolidatedStatementsOfCashFlowsParenthetical" roleURI="http://www.aa.com/role/ConsolidatedStatementsOfCashFlowsParenthetical">
+        <link:definition>1004001 - Statement - Consolidated Statements of Cash Flows (Parenthetical)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ConsolidatedStatementsOfComprehensiveIncome" roleURI="http://www.aa.com/role/ConsolidatedStatementsOfComprehensiveIncome">
+        <link:definition>1002000 - Statement - Consolidated Statements of Comprehensive Income</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ConsolidatedStatementsOfOperations" roleURI="http://www.aa.com/role/ConsolidatedStatementsOfOperations">
+        <link:definition>1001000 - Statement - Consolidated Statements of Operations</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ConsolidatedStatementsOfStockholdersEquity" roleURI="http://www.aa.com/role/ConsolidatedStatementsOfStockholdersEquity">
+        <link:definition>1005000 - Statement - Consolidated Statements of Stockholders' Equity</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ConsolidatedStatementsOfStockholdersEquityParenthetical" roleURI="http://www.aa.com/role/ConsolidatedStatementsOfStockholdersEquityParenthetical">
+        <link:definition>1005501 - Statement - Consolidated Statements of Stockholders' Equity (Parenthetical)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="Debt" roleURI="http://www.aa.com/role/Debt">
+        <link:definition>2105100 - Disclosure - Debt</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="Debt20122CrEetcsCertainInformationDetails" roleURI="http://www.aa.com/role/Debt20122CrEetcsCertainInformationDetails">
+        <link:definition>2405409 - Disclosure - Debt - 2012-2C(R) EETCs - Certain Information (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="Debt20122CrEetcsDetails" roleURI="http://www.aa.com/role/Debt20122CrEetcsDetails">
+        <link:definition>2405408 - Disclosure - Debt - 2012-2C(R) EETCs (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="Debt20132014And2016CreditFacilitiesDetails" roleURI="http://www.aa.com/role/Debt20132014And2016CreditFacilitiesDetails">
+        <link:definition>2405405 - Disclosure - Debt - 2013, 2014 and 2016 Credit Facilities (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="Debt20172EetcsCertainInformationDetails" roleURI="http://www.aa.com/role/Debt20172EetcsCertainInformationDetails">
+        <link:definition>2405407 - Disclosure - Debt - 2017-2 EETCs - Certain Information (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="Debt20172EetcsDetails" roleURI="http://www.aa.com/role/Debt20172EetcsDetails">
+        <link:definition>2405406 - Disclosure - Debt - 2017-2 EETCs (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="DebtCollateralRelatedCovenantsDetails" roleURI="http://www.aa.com/role/DebtCollateralRelatedCovenantsDetails">
+        <link:definition>2405413 - Disclosure - Debt - Collateral-Related Covenants (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="DebtComponentsOfLongTermDebtDetails" roleURI="http://www.aa.com/role/DebtComponentsOfLongTermDebtDetails">
+        <link:definition>2405402 - Disclosure - Debt - Components of Long-Term Debt (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="DebtEquipmentLoansAndOtherNotesPayableIssuedIn2018Details" roleURI="http://www.aa.com/role/DebtEquipmentLoansAndOtherNotesPayableIssuedIn2018Details">
+        <link:definition>2405410 - Disclosure - Debt - Equipment Loans and Other Notes Payable Issued in 2018 (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="DebtGuaranteesDetails" roleURI="http://www.aa.com/role/DebtGuaranteesDetails">
+        <link:definition>2405412 - Disclosure - Debt - Guarantees (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="DebtScheduleOfMaturitiesOfLongTermDebtAndCapitalLeasesDetails" roleURI="http://www.aa.com/role/DebtScheduleOfMaturitiesOfLongTermDebtAndCapitalLeasesDetails">
+        <link:definition>2405404 - Disclosure - Debt - Schedule of Maturities of Long-Term Debt and Capital Leases (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="DebtSeniorNotesDetails" roleURI="http://www.aa.com/role/DebtSeniorNotesDetails">
+        <link:definition>2405411 - Disclosure - Debt - Senior Notes (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="DebtSummaryOfAvailabilityUnderRevolvingCreditFacilitiesDetails" roleURI="http://www.aa.com/role/DebtSummaryOfAvailabilityUnderRevolvingCreditFacilitiesDetails">
+        <link:definition>2405403 - Disclosure - Debt - Summary of Availability under Revolving Credit Facilities (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="DebtTables" roleURI="http://www.aa.com/role/DebtTables">
+        <link:definition>2305301 - Disclosure - Debt (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="DocumentAndEntityInformation" roleURI="http://www.aa.com/role/DocumentAndEntityInformation">
+        <link:definition>0001000 - Document - Document and Entity Information</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EarningsPerCommonShare" roleURI="http://www.aa.com/role/EarningsPerCommonShare">
+        <link:definition>2103100 - Disclosure - Earnings Per Common Share</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EarningsPerCommonShareDetails" roleURI="http://www.aa.com/role/EarningsPerCommonShareDetails">
+        <link:definition>2403402 - Disclosure - Earnings Per Common Share (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EarningsPerCommonShareTables" roleURI="http://www.aa.com/role/EarningsPerCommonShareTables">
+        <link:definition>2303301 - Disclosure - Earnings Per Common Share (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EmployeeBenefitPlans" roleURI="http://www.aa.com/role/EmployeeBenefitPlans">
+        <link:definition>2110100 - Disclosure - Employee Benefit Plans</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EmployeeBenefitPlansAdditionalInformationDetails" roleURI="http://www.aa.com/role/EmployeeBenefitPlansAdditionalInformationDetails">
+        <link:definition>2410402 - Disclosure - Employee Benefit Plans - Additional Information (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EmployeeBenefitPlansChangesInFairValueMeasurementsOfLevel3InvestmentsDetails" roleURI="http://www.aa.com/role/EmployeeBenefitPlansChangesInFairValueMeasurementsOfLevel3InvestmentsDetails">
+        <link:definition>2410415 - Disclosure - Employee Benefit Plans - Changes in Fair Value Measurements of Level 3 Investments (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EmployeeBenefitPlansComponentsOfNetPeriodicBenefitCostIncomeDetails" roleURI="http://www.aa.com/role/EmployeeBenefitPlansComponentsOfNetPeriodicBenefitCostIncomeDetails">
+        <link:definition>2410408 - Disclosure - Employee Benefit Plans - Components of Net Periodic Benefit Cost (Income) (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EmployeeBenefitPlansDefinedContributionPlansDetails" roleURI="http://www.aa.com/role/EmployeeBenefitPlansDefinedContributionPlansDetails">
+        <link:definition>2410417 - Disclosure - Employee Benefit Plans - Defined Contribution Plans (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EmployeeBenefitPlansEmployeeBenefitPlansProfitSharingProgramDetails" roleURI="http://www.aa.com/role/EmployeeBenefitPlansEmployeeBenefitPlansProfitSharingProgramDetails">
+        <link:definition>2410418 - Disclosure - Employee Benefit Plans Employee Benefit Plans - Profit Sharing Program (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EmployeeBenefitPlansFairValuesOfRetireeMedicalAndOtherPostretirementBenefitPlansAssetsByAssetCategoryDetails" roleURI="http://www.aa.com/role/EmployeeBenefitPlansFairValuesOfRetireeMedicalAndOtherPostretirementBenefitPlansAssetsByAssetCategoryDetails">
+        <link:definition>2410416 - Disclosure - Employee Benefit Plans - Fair Values of Retiree Medical and Other Postretirement Benefit Plans Assets by Asset Category (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EmployeeBenefitPlansScheduleOfAccumulatedBenefitObligationsExceedingFairValueOfPlanAssetsDetails" roleURI="http://www.aa.com/role/EmployeeBenefitPlansScheduleOfAccumulatedBenefitObligationsExceedingFairValueOfPlanAssetsDetails">
+        <link:definition>2410407 - Disclosure - Employee Benefit Plans - Schedule of Accumulated Benefit Obligations Exceeding Fair Value of Plan Assets (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EmployeeBenefitPlansScheduleOfAllocationOfPlanAssetsDetails" roleURI="http://www.aa.com/role/EmployeeBenefitPlansScheduleOfAllocationOfPlanAssetsDetails">
+        <link:definition>2410412 - Disclosure - Employee Benefit Plans - Schedule of Allocation of Plan Assets (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EmployeeBenefitPlansScheduleOfAmountsRecognizedInConsolidatedBalanceSheetsDetails" roleURI="http://www.aa.com/role/EmployeeBenefitPlansScheduleOfAmountsRecognizedInConsolidatedBalanceSheetsDetails">
+        <link:definition>2410405 - Disclosure - Employee Benefit Plans - Schedule of Amounts Recognized in Consolidated Balance Sheets (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EmployeeBenefitPlansScheduleOfAmountsRecognizedInOtherComprehensiveIncomeDetails" roleURI="http://www.aa.com/role/EmployeeBenefitPlansScheduleOfAmountsRecognizedInOtherComprehensiveIncomeDetails">
+        <link:definition>2410406 - Disclosure - Employee Benefit Plans - Schedule of Amounts Recognized in Other Comprehensive Income (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EmployeeBenefitPlansScheduleOfAssumptionUsedToDetermineBenefitObligationsDetails" roleURI="http://www.aa.com/role/EmployeeBenefitPlansScheduleOfAssumptionUsedToDetermineBenefitObligationsDetails">
+        <link:definition>2410409 - Disclosure - Employee Benefit Plans - Schedule of Assumption Used to Determine Benefit Obligations (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EmployeeBenefitPlansScheduleOfChangesInFairValueOfPlanAssetsDetails" roleURI="http://www.aa.com/role/EmployeeBenefitPlansScheduleOfChangesInFairValueOfPlanAssetsDetails">
+        <link:definition>2410404 - Disclosure - Employee Benefit Plans - Schedule of Changes in Fair Value of Plan Assets (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EmployeeBenefitPlansScheduleOfChangesInProjectedBenefitObligationsDetails" roleURI="http://www.aa.com/role/EmployeeBenefitPlansScheduleOfChangesInProjectedBenefitObligationsDetails">
+        <link:definition>2410403 - Disclosure - Employee Benefit Plans - Schedule of Changes in Projected Benefit Obligations (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EmployeeBenefitPlansScheduleOfExpectedFutureServiceBenefitPaymentsDetails" roleURI="http://www.aa.com/role/EmployeeBenefitPlansScheduleOfExpectedFutureServiceBenefitPaymentsDetails">
+        <link:definition>2410411 - Disclosure - Employee Benefit Plans - Schedule of Expected Future Service Benefit Payments (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EmployeeBenefitPlansScheduleOfFairValueOfPensionPlanAssetsByAssetCategoryAdditionalInformationDetails" roleURI="http://www.aa.com/role/EmployeeBenefitPlansScheduleOfFairValueOfPensionPlanAssetsByAssetCategoryAdditionalInformationDetails">
+        <link:definition>2410414 - Disclosure - Employee Benefit Plans - Schedule of Fair Value of Pension Plan Assets by Asset Category - Additional Information (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EmployeeBenefitPlansScheduleOfFairValueOfPensionPlanAssetsByAssetCategoryDetails" roleURI="http://www.aa.com/role/EmployeeBenefitPlansScheduleOfFairValueOfPensionPlanAssetsByAssetCategoryDetails">
+        <link:definition>2410413 - Disclosure - Employee Benefit Plans - Schedule of Fair Value of Pension Plan Assets by Asset Category (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EmployeeBenefitPlansScheduleOfOnePercentagePointChangeInAssumedHealthCareCostTrendRatesDetails" roleURI="http://www.aa.com/role/EmployeeBenefitPlansScheduleOfOnePercentagePointChangeInAssumedHealthCareCostTrendRatesDetails">
+        <link:definition>2410410 - Disclosure - Employee Benefit Plans - Schedule of One Percentage Point Change in Assumed Health Care Cost Trend Rates (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="EmployeeBenefitPlansTables" roleURI="http://www.aa.com/role/EmployeeBenefitPlansTables">
+        <link:definition>2310301 - Disclosure - Employee Benefit Plans (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="FairValueMeasurementsAndOtherInvestments" roleURI="http://www.aa.com/role/FairValueMeasurementsAndOtherInvestments">
+        <link:definition>2109100 - Disclosure - Fair Value Measurements and Other Investments</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="FairValueMeasurementsAndOtherInvestmentsScheduleOfCarryingValueAndEstimatedFairValueOfLongTermDebtIncludingCurrentMaturitiesDetails" roleURI="http://www.aa.com/role/FairValueMeasurementsAndOtherInvestmentsScheduleOfCarryingValueAndEstimatedFairValueOfLongTermDebtIncludingCurrentMaturitiesDetails">
+        <link:definition>2409403 - Disclosure - Fair Value Measurements and Other Investments - Schedule of Carrying Value and Estimated Fair Value of Long-Term Debt, Including Current Maturities (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="FairValueMeasurementsAndOtherInvestmentsSummaryOfAssetsMeasuredAtFairValueOnRecurringBasisDetails" roleURI="http://www.aa.com/role/FairValueMeasurementsAndOtherInvestmentsSummaryOfAssetsMeasuredAtFairValueOnRecurringBasisDetails">
+        <link:definition>2409402 - Disclosure - Fair Value Measurements and Other Investments - Summary of Assets Measured at Fair Value on Recurring Basis (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="FairValueMeasurementsAndOtherInvestmentsTables" roleURI="http://www.aa.com/role/FairValueMeasurementsAndOtherInvestmentsTables">
+        <link:definition>2309301 - Disclosure - Fair Value Measurements and Other Investments (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="IncomeTaxes" roleURI="http://www.aa.com/role/IncomeTaxes">
+        <link:definition>2107100 - Disclosure - Income Taxes</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="IncomeTaxesAdditionalDisclosuresDetails" roleURI="http://www.aa.com/role/IncomeTaxesAdditionalDisclosuresDetails">
+        <link:definition>2407405 - Disclosure - Income Taxes - Additional Disclosures (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="IncomeTaxesComponentsOfIncomeTaxProvisionBenefitDetails" roleURI="http://www.aa.com/role/IncomeTaxesComponentsOfIncomeTaxProvisionBenefitDetails">
+        <link:definition>2407402 - Disclosure - Income Taxes - Components of Income Tax Provision (Benefit) (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="IncomeTaxesDeferredTaxAssetsAndLiabilitiesDetails" roleURI="http://www.aa.com/role/IncomeTaxesDeferredTaxAssetsAndLiabilitiesDetails">
+        <link:definition>2407404 - Disclosure - Income Taxes - Deferred Tax Assets and Liabilities (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="IncomeTaxesReconciliationOfIncomeTaxProvisionDetails" roleURI="http://www.aa.com/role/IncomeTaxesReconciliationOfIncomeTaxProvisionDetails">
+        <link:definition>2407403 - Disclosure - Income Taxes - Reconciliation of Income Tax Provision (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="IncomeTaxesTables" roleURI="http://www.aa.com/role/IncomeTaxesTables">
+        <link:definition>2307301 - Disclosure - Income Taxes (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="Leases" roleURI="http://www.aa.com/role/Leases">
+        <link:definition>2106100 - Disclosure - Leases</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="LeasesAdditionalInformationDetails" roleURI="http://www.aa.com/role/LeasesAdditionalInformationDetails">
+        <link:definition>2406407 - Disclosure - Leases - Additional Information (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="LeasesComponentsOfLeaseExpenseDetails" roleURI="http://www.aa.com/role/LeasesComponentsOfLeaseExpenseDetails">
+        <link:definition>2406402 - Disclosure - Leases - Components of Lease Expense (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="LeasesFutureMinimumLeasePaymentsDetails" roleURI="http://www.aa.com/role/LeasesFutureMinimumLeasePaymentsDetails">
+        <link:definition>2406406 - Disclosure - Leases - Future Minimum Lease Payments (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="LeasesFutureMinimumLeasePaymentsDetailsCalc2" roleURI="http://www.aa.com/role/LeasesFutureMinimumLeasePaymentsDetailsCalc2">
+        <link:definition>2406406 - Disclosure - Leases - Future Minimum Lease Payments (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="LeasesMaturitiesOfLeaseLiabilitiesDetails" roleURI="http://www.aa.com/role/LeasesMaturitiesOfLeaseLiabilitiesDetails">
+        <link:definition>2406405 - Disclosure - Leases - Maturities of Lease Liabilities (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="LeasesMaturitiesOfLeaseLiabilitiesDetailsCalc2" roleURI="http://www.aa.com/role/LeasesMaturitiesOfLeaseLiabilitiesDetailsCalc2">
+        <link:definition>2406405 - Disclosure - Leases - Maturities of Lease Liabilities (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="LeasesSupplementalBalanceSheetInformationDetails" roleURI="http://www.aa.com/role/LeasesSupplementalBalanceSheetInformationDetails">
+        <link:definition>2406403 - Disclosure - Leases - Supplemental Balance Sheet Information (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="LeasesSupplementalCashFlowAndOtherInformationDetails" roleURI="http://www.aa.com/role/LeasesSupplementalCashFlowAndOtherInformationDetails">
+        <link:definition>2406404 - Disclosure - Leases - Supplemental Cash Flow and Other Information (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="LeasesTables" roleURI="http://www.aa.com/role/LeasesTables">
+        <link:definition>2306301 - Disclosure - Leases (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="OperatingSegmentsAndRelatedDisclosures" roleURI="http://www.aa.com/role/OperatingSegmentsAndRelatedDisclosures">
+        <link:definition>2114100 - Disclosure - Operating Segments and Related Disclosures</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="OperatingSegmentsAndRelatedDisclosuresAdditionalInformationDetails" roleURI="http://www.aa.com/role/OperatingSegmentsAndRelatedDisclosuresAdditionalInformationDetails">
+        <link:definition>2414401 - Disclosure - Operating Segments and Related Disclosures - Additional Information (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="QuarterlyFinancialDataAdditionalInformationDetails" roleURI="http://www.aa.com/role/QuarterlyFinancialDataAdditionalInformationDetails">
+        <link:definition>2417403 - Disclosure - Quarterly Financial Data - Additional Information (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="QuarterlyFinancialDataSummarizedFinancialDataDetails" roleURI="http://www.aa.com/role/QuarterlyFinancialDataSummarizedFinancialDataDetails">
+        <link:definition>2417402 - Disclosure - Quarterly Financial Data - Summarized Financial Data (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="QuarterlyFinancialDataUnaudited" roleURI="http://www.aa.com/role/QuarterlyFinancialDataUnaudited">
+        <link:definition>2117100 - Disclosure - Quarterly Financial Data (Unaudited)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="QuarterlyFinancialDataUnauditedTables" roleURI="http://www.aa.com/role/QuarterlyFinancialDataUnauditedTables">
+        <link:definition>2317301 - Disclosure - Quarterly Financial Data (Unaudited) (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="RiskManagement" roleURI="http://www.aa.com/role/RiskManagement">
+        <link:definition>2108100 - Disclosure - Risk Management</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="RiskManagementAdditionalInformationDetails" roleURI="http://www.aa.com/role/RiskManagementAdditionalInformationDetails">
+        <link:definition>2408401 - Disclosure - Risk Management - Additional Information (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ShareBasedCompensation" roleURI="http://www.aa.com/role/ShareBasedCompensation">
+        <link:definition>2115100 - Disclosure - Share-based Compensation</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ShareBasedCompensationAdditionalInformationDetails" roleURI="http://www.aa.com/role/ShareBasedCompensationAdditionalInformationDetails">
+        <link:definition>2415402 - Disclosure - Share Based Compensation - Additional Information (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ShareBasedCompensationRestrictedStockUnitAwardsDetails" roleURI="http://www.aa.com/role/ShareBasedCompensationRestrictedStockUnitAwardsDetails">
+        <link:definition>2415403 - Disclosure - Share Based Compensation - Restricted Stock Unit Awards (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ShareBasedCompensationTables" roleURI="http://www.aa.com/role/ShareBasedCompensationTables">
+        <link:definition>2315301 - Disclosure - Share-based Compensation (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ShareRepurchaseProgramsAndDividends" roleURI="http://www.aa.com/role/ShareRepurchaseProgramsAndDividends">
+        <link:definition>2104100 - Disclosure - Share Repurchase Programs and Dividends</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ShareRepurchaseProgramsAndDividendsDividendsDetails" roleURI="http://www.aa.com/role/ShareRepurchaseProgramsAndDividendsDividendsDetails">
+        <link:definition>2404402 - Disclosure - Share Repurchase Programs and Dividends - Dividends (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ShareRepurchaseProgramsAndDividendsShareRepurchaseProgramsDetails" roleURI="http://www.aa.com/role/ShareRepurchaseProgramsAndDividendsShareRepurchaseProgramsDetails">
+        <link:definition>2404401 - Disclosure - Share Repurchase Programs and Dividends - Share Repurchase Programs (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="SpecialItemsNet" roleURI="http://www.aa.com/role/SpecialItemsNet">
+        <link:definition>2102100 - Disclosure - Special Items, Net</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="SpecialItemsNetDetails" roleURI="http://www.aa.com/role/SpecialItemsNetDetails">
+        <link:definition>2402402 - Disclosure - Special Items, Net (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="SpecialItemsNetTables" roleURI="http://www.aa.com/role/SpecialItemsNetTables">
+        <link:definition>2302301 - Disclosure - Special Items, Net (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="SubsequentEvent" roleURI="http://www.aa.com/role/SubsequentEvent">
+        <link:definition>2119100 - Disclosure - Subsequent Event</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="SubsequentEventAdditionalInformationDetails" roleURI="http://www.aa.com/role/SubsequentEventAdditionalInformationDetails">
+        <link:definition>2419401 - Disclosure - Subsequent Event - Additional Information (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="SupplementalCashFlowInformation" roleURI="http://www.aa.com/role/SupplementalCashFlowInformation">
+        <link:definition>2113100 - Disclosure - Supplemental Cash Flow Information</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="SupplementalCashFlowInformationCashFlowInformationAndNonCashInvestingAndFinancingActivitiesDetails" roleURI="http://www.aa.com/role/SupplementalCashFlowInformationCashFlowInformationAndNonCashInvestingAndFinancingActivitiesDetails">
+        <link:definition>2413402 - Disclosure - Supplemental Cash Flow Information - Cash Flow Information and Non-Cash Investing and Financing Activities (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="SupplementalCashFlowInformationTables" roleURI="http://www.aa.com/role/SupplementalCashFlowInformationTables">
+        <link:definition>2313301 - Disclosure - Supplemental Cash Flow Information (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="TransactionsWithRelatedParties" roleURI="http://www.aa.com/role/TransactionsWithRelatedParties">
+        <link:definition>2118100 - Disclosure - Transactions with Related Parties</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="TransactionsWithRelatedPartiesAdditionalInformationDetails" roleURI="http://www.aa.com/role/TransactionsWithRelatedPartiesAdditionalInformationDetails">
+        <link:definition>2418403 - Disclosure - Transactions with Related Parties - Additional Information (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="TransactionsWithRelatedPartiesDetails" roleURI="http://www.aa.com/role/TransactionsWithRelatedPartiesDetails">
+        <link:definition>2418402 - Disclosure - Transactions with Related Parties (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="TransactionsWithRelatedPartiesTables" roleURI="http://www.aa.com/role/TransactionsWithRelatedPartiesTables">
+        <link:definition>2318301 - Disclosure - Transactions with Related Parties (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ValuationAndQualifyingAccounts" roleURI="http://www.aa.com/role/ValuationAndQualifyingAccounts">
+        <link:definition>2116100 - Disclosure - Valuation and Qualifying Accounts</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ValuationAndQualifyingAccountsComponentsOfValuationAndQualifyingAccountsDetails" roleURI="http://www.aa.com/role/ValuationAndQualifyingAccountsComponentsOfValuationAndQualifyingAccountsDetails">
+        <link:definition>2416402 - Disclosure - Valuation and Qualifying Accounts - Components of Valuation and Qualifying Accounts (Details)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+      <link:roleType id="ValuationAndQualifyingAccountsTables" roleURI="http://www.aa.com/role/ValuationAndQualifyingAccountsTables">
+        <link:definition>2316301 - Disclosure - Valuation and Qualifying Accounts (Tables)</link:definition>
+        <link:usedOn>link:presentationLink</link:usedOn>
+        <link:usedOn>link:calculationLink</link:usedOn>
+        <link:usedOn>link:definitionLink</link:usedOn>
+      </link:roleType>
+    </xsd:appinfo>
+  </xsd:annotation>
+  <xsd:element abstract="true" id="aal_A20122ClassCREnhancedEquipmentTrustCertificatesMember" name="A20122ClassCREnhancedEquipmentTrustCertificatesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_A20172EnhancedEquipmentTrustCertificatesMember" name="A20172EnhancedEquipmentTrustCertificatesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_A20172SeriesAAEnhancedEquipmentTrustCertificatesMember" name="A20172SeriesAAEnhancedEquipmentTrustCertificatesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_A20172SeriesAEnhancedEquipmentTrustCertificatesMember" name="A20172SeriesAEnhancedEquipmentTrustCertificatesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_A20172SeriesBEnhancedEquipmentTrustCertificatesMember" name="A20172SeriesBEnhancedEquipmentTrustCertificatesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_AagIncentiveAwardPlan2013Member" name="AagIncentiveAwardPlan2013Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_AccountingStandardsUpdate201409AncillaryRevenueReclassificationsMember" name="AccountingStandardsUpdate201409AncillaryRevenueReclassificationsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_AccountingStandardsUpdate201409DeferredRevenueMethodMember" name="AccountingStandardsUpdate201409DeferredRevenueMethodMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_AccountingStandardsUpdate201409GrossVersusNetPresentationMember" name="AccountingStandardsUpdate201409GrossVersusNetPresentationMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_AdjustmentsToAdditionalPaidInCapitalSettlementOfSingleDipUnsecuredClaims" name="AdjustmentsToAdditionalPaidInCapitalSettlementOfSingleDipUnsecuredClaims" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_AirTrafficMember" name="AirTrafficMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_AircraftEnginesAndRelatedRotablePartsMember" name="AircraftEnginesAndRelatedRotablePartsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_AirportGateLeaseholdRightsMember" name="AirportGateLeaseholdRightsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_AirportRedevelopmentAmount" name="AirportRedevelopmentAmount" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="aal_AirportRedevelopmentNumberOfSecurityScreenLanes" name="AirportRedevelopmentNumberOfSecurityScreenLanes" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="instant" />
+  <xsd:element id="aal_AirportRedevelopmentPaymentsToAcquireProductiveAssets" name="AirportRedevelopmentPaymentsToAcquireProductiveAssets" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_AirportTakeOffAndLandingSlotsMember" name="AirportTakeOffAndLandingSlotsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_AlternativeInvestmentMember" name="AlternativeInvestmentMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_AlternativeMinimumTaxCreditCarryforwardMember" name="AlternativeMinimumTaxCreditCarryforwardMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_AmortizationOfDebtDiscountPremiumAndLeasedAssets" name="AmortizationOfDebtDiscountPremiumAndLeasedAssets" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_AociBeforeTaxAttributableToParentRollForward" name="AociBeforeTaxAttributableToParentRollForward" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_AociTaxAttributableToParentRollForward" name="AociTaxAttributableToParentRollForward" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_AssetsandLiabilitiesLesseeTableTextBlock" name="AssetsandLiabilitiesLesseeTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_CanadianSegregatedBalancedValueMember" name="CanadianSegregatedBalancedValueMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_CapacityPurchases" name="CapacityPurchases" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_CapitalizedSoftwareMember" name="CapitalizedSoftwareMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_CashFlowLesseeAbstract" name="CashFlowLesseeAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_CashFlowLesseeTableTextBlock" name="CashFlowLesseeTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_ChinaSouthernAirlinesCompanyLimitedMember" name="ChinaSouthernAirlinesCompanyLimitedMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_ClassCCertificatesMember" name="ClassCCertificatesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_CollectiveBargainingArrangementPercentageOfEmployersParticipantsUnderAgreementsAmendableWithinOneYear" name="CollectiveBargainingArrangementPercentageOfEmployersParticipantsUnderAgreementsAmendableWithinOneYear" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element id="aal_CollectiveBargainingArrangementPercentageofEmployersParticipants" name="CollectiveBargainingArrangementPercentageofEmployersParticipants" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="aal_CollectiveInterestTrustMember" name="CollectiveInterestTrustMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_CommitmentsandContingenciesLineItems" name="CommitmentsandContingenciesLineItems" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_CommitmentsandContingenciesTable" name="CommitmentsandContingenciesTable" nillable="true" substitutionGroup="xbrldt:hypercubeItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_CommonCollectiveTrustand1032InvestmentTrustsMember" name="CommonCollectiveTrustand1032InvestmentTrustsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_CommonOrCollectiveTrustMember" name="CommonOrCollectiveTrustMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_CommonStockCapitalSharesDistributedFromDisputedClaimsReserve" name="CommonStockCapitalSharesDistributedFromDisputedClaimsReserve" nillable="true" substitutionGroup="xbrli:item" type="xbrli:sharesItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_CommonStockCapitalSharesReservedForIssuanceInDisputedClaimsReserve" name="CommonStockCapitalSharesReservedForIssuanceInDisputedClaimsReserve" nillable="true" substitutionGroup="xbrli:item" type="xbrli:sharesItemType" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="aal_ComponentsOfIncomeTaxesLineItems" name="ComponentsOfIncomeTaxesLineItems" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_ComponentsOfIncomeTaxesTable" name="ComponentsOfIncomeTaxesTable" nillable="true" substitutionGroup="xbrldt:hypercubeItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_ContractReceivablesSettlementDuration" name="ContractReceivablesSettlementDuration" nillable="true" substitutionGroup="xbrli:item" type="xbrli:durationItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_ContractwithCustomerLiabilityIncreasefromDeferralOfRevenue" name="ContractwithCustomerLiabilityIncreasefromDeferralOfRevenue" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_CorporateDebtWithStandardAndPoorsRatingAOrHigherMember" name="CorporateDebtWithStandardAndPoorsRatingAOrHigherMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_CorporateDebtWithStandardAndPoorsRatingLowerThanAMember" name="CorporateDebtWithStandardAndPoorsRatingLowerThanAMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_CreditFacilitiesAndCertainEetcFinancingsMember" name="CreditFacilitiesAndCertainEetcFinancingsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_CreditFacility2013Member" name="CreditFacility2013Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_CreditFacility2014Member" name="CreditFacility2014Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_CreditFacilityApril2016Member" name="CreditFacilityApril2016Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_CreditFacilityDecember2016Member" name="CreditFacilityDecember2016Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_DebtInstrumentAnnualRepaymentPercentOfPrincipalBalance" name="DebtInstrumentAnnualRepaymentPercentOfPrincipalBalance" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_DebtInstrumentCollateralCovenantLoanToValueRatioMultiplier" name="DebtInstrumentCollateralCovenantLoanToValueRatioMultiplier" nillable="true" substitutionGroup="xbrli:item" type="xbrli:decimalItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_DebtInstrumentCollateralCovenantMaximumLoanToValueRatio" name="DebtInstrumentCollateralCovenantMaximumLoanToValueRatio" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_DebtInstrumentRestrictiveCovenantsMinimumAggregateLiquidityAmount" name="DebtInstrumentRestrictiveCovenantsMinimumAggregateLiquidityAmount" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element id="aal_DebtRefinancingandDebtExtinguishmentExpense" name="DebtRefinancingandDebtExtinguishmentExpense" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="aal_DeferredTaxAssetsLeases" name="DeferredTaxAssetsLeases" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element id="aal_DeferredTaxLiabilitiesAcceleratedDepreciationAndAmortization" name="DeferredTaxLiabilitiesAcceleratedDepreciationAndAmortization" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="aal_DefinedBenefitPlanAmortizationPeriodOfGainsLossesRelatedToPlanAmendment" name="DefinedBenefitPlanAmortizationPeriodOfGainsLossesRelatedToPlanAmendment" nillable="true" substitutionGroup="xbrli:item" type="xbrli:durationItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_DefinedBenefitPlanEquitySecuritiesFranceMember" name="DefinedBenefitPlanEquitySecuritiesFranceMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_DefinedBenefitPlanEquitySecuritiesIrelandMember" name="DefinedBenefitPlanEquitySecuritiesIrelandMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_DefinedBenefitPlanEquitySecuritiesJapanMember" name="DefinedBenefitPlanEquitySecuritiesJapanMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_DefinedBenefitPlanEquitySecuritiesNonUSEmergingMarketsMember" name="DefinedBenefitPlanEquitySecuritiesNonUSEmergingMarketsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_DefinedBenefitPlanEquitySecuritiesNonUSIndividuallyImmaterialMember" name="DefinedBenefitPlanEquitySecuritiesNonUSIndividuallyImmaterialMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_DefinedBenefitPlanEquitySecuritiesSwitzerlandMember" name="DefinedBenefitPlanEquitySecuritiesSwitzerlandMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_DefinedBenefitPlanEquitySecuritiesUnitedKingdomMember" name="DefinedBenefitPlanEquitySecuritiesUnitedKingdomMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_DefinedBenefitPlanMasterTrustFutureFundingCommitments" name="DefinedBenefitPlanMasterTrustFutureFundingCommitments" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="aal_DefinedBenefitPlanMinimumContributionsbyEmployer" name="DefinedBenefitPlanMinimumContributionsbyEmployer" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_DefinedBenefitPlanNetPeriodicBenefitCostCreditAmortizationAmountsAbstract" name="DefinedBenefitPlanNetPeriodicBenefitCostCreditAmortizationAmountsAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_DefinedBenefitPlanPlanAssetsLevel3ReconciliationIncreaseDecreaseforActualReturnLossonPlanAssetsAbstract" name="DefinedBenefitPlanPlanAssetsLevel3ReconciliationIncreaseDecreaseforActualReturnLossonPlanAssetsAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_DefinedBenefitPlanPlanAssetsLevel3ReconciliationPurchases" name="DefinedBenefitPlanPlanAssetsLevel3ReconciliationPurchases" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="aal_DefinedBenefitPlanPlanAssetsLevel3ReconciliationSales" name="DefinedBenefitPlanPlanAssetsLevel3ReconciliationSales" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element id="aal_DefinedBenefitPlanPlanwithAccumulatedBenefitObligationinExcessofPlanAssetsAmountInExcessOfPlanAssets" name="DefinedBenefitPlanPlanwithAccumulatedBenefitObligationinExcessofPlanAssetsAmountInExcessOfPlanAssets" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="aal_DefinedBenefitPlanSupplementalContributionsByEmployer" name="DefinedBenefitPlanSupplementalContributionsByEmployer" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="aal_DefinedBenefitPlansEstimatedSupplementalFutureEmployerContributionsInNextFiscalYear" name="DefinedBenefitPlansEstimatedSupplementalFutureEmployerContributionsInNextFiscalYear" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="aal_DividendAndInterestReceivableMember" name="DividendAndInterestReceivableMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_DocumentAndEntityInformationAbstract" name="DocumentAndEntityInformationAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_DomesticGovernmentSecuritiesMember" name="DomesticGovernmentSecuritiesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_DueToFromBrokersForSaleOfSecuritiesMember" name="DueToFromBrokersForSaleOfSecuritiesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_EetcLeveragedLeaseFinancingsMember" name="EetcLeveragedLeaseFinancingsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_EffectiveIncomeTaxRateReconciliationBankruptcyAdministrationExpenses" name="EffectiveIncomeTaxRateReconciliationBankruptcyAdministrationExpenses" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="aal_EffectiveIncomeTaxRateReconciliationEffectofTaxCutsandJobsActof2017Amount" name="EffectiveIncomeTaxRateReconciliationEffectofTaxCutsandJobsActof2017Amount" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_EmergingMarket10312InvestmentTrustMember" name="EmergingMarket10312InvestmentTrustMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_EmergingMarketCompaniesMember" name="EmergingMarketCompaniesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_EmergingMarketGovernmentSecuritiesMember" name="EmergingMarketGovernmentSecuritiesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_EmergingMarketsMember" name="EmergingMarketsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_EmployeeTaxReformBonusAmount" name="EmployeeTaxReformBonusAmount" nillable="true" substitutionGroup="xbrli:item" type="us-types:perUnitItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_EmployeeTaxReformBonusExpense" name="EmployeeTaxReformBonusExpense" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_EquipmentLoansAndOtherNotesPayableMember" name="EquipmentLoansAndOtherNotesPayableMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_EstimatedLifeOfLiquidationOfUnderlyingAssets" name="EstimatedLifeOfLiquidationOfUnderlyingAssets" nillable="true" substitutionGroup="xbrli:item" type="xbrli:durationItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_EuropeanBuyoutOpportunitiesMember" name="EuropeanBuyoutOpportunitiesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_FinanceLeaseAssetsAndLiabilitiesLesseeAbstract" name="FinanceLeaseAssetsAndLiabilitiesLesseeAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_FinanceLeaseRightOfUseAssetAccumulatedDepreciation" name="FinanceLeaseRightOfUseAssetAccumulatedDepreciation" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="aal_FinanceLeaseRightOfUseAssetGross" name="FinanceLeaseRightOfUseAssetGross" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="aal_FixedIncomeEmergingMarketsMember" name="FixedIncomeEmergingMarketsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_FixedIncomeUSLongDurationMember" name="FixedIncomeUSLongDurationMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_GroundPropertyAndEquipmentGross" name="GroundPropertyAndEquipmentGross" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element id="aal_InactivePeriodBeforeExpirationOfMileageCredits" name="InactivePeriodBeforeExpirationOfMileageCredits" nillable="true" substitutionGroup="xbrli:item" type="xbrli:durationItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_IncomeTaxDisclosureLineItems" name="IncomeTaxDisclosureLineItems" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_IncomeTaxesLineItems" name="IncomeTaxesLineItems" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_IncomeTaxesSpecialItemsNet" name="IncomeTaxesSpecialItemsNet" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_IncomeTaxesTable" name="IncomeTaxesTable" nillable="true" substitutionGroup="xbrldt:hypercubeItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_InsuranceGroupAnnuityContractsMember" name="InsuranceGroupAnnuityContractsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_InternationalCompaniesMember" name="InternationalCompaniesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_InvestmentOwnershipPercentage" name="InvestmentOwnershipPercentage" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="aal_JetFuelFacilityConstructionProjectsandInformationTechnologySupportMember" name="JetFuelFacilityConstructionProjectsandInformationTechnologySupportMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_LaborContractExpenses" name="LaborContractExpenses" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_LeasesWeightedAverageDiscountRateAbstract" name="LeasesWeightedAverageDiscountRateAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_LesseeLeasesTextBlock" name="LesseeLeasesTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_LesseeOperatingAndFinanceLeaseTermOfContract" name="LesseeOperatingAndFinanceLeaseTermOfContract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:durationItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_LesseeOperatingLeaseLeaseNotyetCommencedNumberOfLeasedAircraft" name="LesseeOperatingLeaseLeaseNotyetCommencedNumberOfLeasedAircraft" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="instant" />
+  <xsd:element id="aal_LesseeOperatingLeaseLeaseNotyetCommencedPaymentsDue" name="LesseeOperatingLeaseLeaseNotyetCommencedPaymentsDue" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="aal_LettersofCreditOutstandingandSuretyBondsAmount" name="LettersofCreditOutstandingandSuretyBondsAmount" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="aal_LineOfCreditFacilityAccordionFeatureIncreaseLimit" name="LineOfCreditFacilityAccordionFeatureIncreaseLimit" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element id="aal_LineofCreditFacilityReductionInCommitments" name="LineofCreditFacilityReductionInCommitments" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element id="aal_LongTermDebtAverageInterestRate" name="LongTermDebtAverageInterestRate" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="aal_LoyaltyProgramMarketingServicesMember" name="LoyaltyProgramMarketingServicesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_LoyaltyProgramMember" name="LoyaltyProgramMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_LoyaltyProgramTravelRedemptionsMember" name="LoyaltyProgramTravelRedemptionsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_LtvAsOfMeasurementDate" name="LtvAsOfMeasurementDate" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_MainlineAndExpressDepreciationAndAmortization" name="MainlineAndExpressDepreciationAndAmortization" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="aal_MarkToMarketAdjustmentsForBankruptcyObligationsAndOther" name="MarkToMarketAdjustmentsForBankruptcyObligationsAndOther" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_MaturityDatesExceedingOneYearMember" name="MaturityDatesExceedingOneYearMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_MovementInContractWithCustomerLiabilityRollForward" name="MovementInContractWithCustomerLiabilityRollForward" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_MutualFundAALClassMember" name="MutualFundAALClassMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_NonoperatingSpecialItemsNet" name="NonoperatingSpecialItemsNet" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="aal_NumberOfAircraftFinancedByDebtIssuance" name="NumberOfAircraftFinancedByDebtIssuance" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="instant" />
+  <xsd:element id="aal_NumberOfAircraftOperatingUnderOperatingAndFinanceLease" name="NumberOfAircraftOperatingUnderOperatingAndFinanceLease" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="instant" />
+  <xsd:element id="aal_NumberOfAircraftOwnedEnhancedEquipmentTrustCertificate" name="NumberOfAircraftOwnedEnhancedEquipmentTrustCertificate" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="instant" />
+  <xsd:element id="aal_NumberOfAircraftsFinancedThroughRepurchasedDebt" name="NumberOfAircraftsFinancedThroughRepurchasedDebt" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="instant" />
+  <xsd:element id="aal_NumberOfOperatingAircraftLeasedFromTrustsInWhichCompanyHoldsSignificantVariableInterest" name="NumberOfOperatingAircraftLeasedFromTrustsInWhichCompanyHoldsSignificantVariableInterest" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="instant" />
+  <xsd:element id="aal_NumberOfPassThroughTrustsIssued" name="NumberOfPassThroughTrustsIssued" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_NumberOfPutativeClassActionLawsuits" name="NumberOfPutativeClassActionLawsuits" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_NumberOfRevenueComponents" name="NumberOfRevenueComponents" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_NumberOfShareRepurchaseProgramsAuthorized" name="NumberOfShareRepurchaseProgramsAuthorized" nillable="true" substitutionGroup="xbrli:item" type="xbrli:integerItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_OperatingAndNonoperatingSpecialChargesNet" name="OperatingAndNonoperatingSpecialChargesNet" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_OperatingLeaseAssetsAndLiabilitiesLesseeAbstract" name="OperatingLeaseAssetsAndLiabilitiesLesseeAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_OperatingLossCarryforwardsOutstandingWithoutAnnualLimitationsOnUse" name="OperatingLossCarryforwardsOutstandingWithoutAnnualLimitationsOnUse" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element id="aal_OperatingLossCarryforwardsWithoutAnnualLimitationsOnUse" name="OperatingLossCarryforwardsWithoutAnnualLimitationsOnUse" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="aal_OrganizationBasisOfPresentationAndSummaryOfSignificantAccountingPoliciesLineItems" name="OrganizationBasisOfPresentationAndSummaryOfSignificantAccountingPoliciesLineItems" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_OrganizationBasisOfPresentationAndSummaryOfSignificantAccountingPoliciesTable" name="OrganizationBasisOfPresentationAndSummaryOfSignificantAccountingPoliciesTable" nillable="true" substitutionGroup="xbrldt:hypercubeItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_OtherCostAndExpenseOperatingPolicyTextBlock" name="OtherCostAndExpenseOperatingPolicyTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_OtherInternationalGovernmentSecuritiesMember" name="OtherInternationalGovernmentSecuritiesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_OtherNonOperatingSpecialChargesCreditsNet" name="OtherNonOperatingSpecialChargesCreditsNet" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="aal_OtherOperatingSpecialChargesNet" name="OtherOperatingSpecialChargesNet" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_OtherPlanAssetCategoriesLiabilitiesNetMember" name="OtherPlanAssetCategoriesLiabilitiesNetMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_OtherRevenueMember" name="OtherRevenueMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_OtherSecuredObligationsMember" name="OtherSecuredObligationsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_OtherSignificantNoncashTransactionBankruptcySettlementObligation" name="OtherSignificantNoncashTransactionBankruptcySettlementObligation" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element id="aal_OtherTaxCharges" name="OtherTaxCharges" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_PassengerTravelMember" name="PassengerTravelMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_PensionAndOtherPostretirementBenefitPlansAccumulatedOtherComprehensiveIncomeLossNetGainsLossesRelatedToPlanAmendmentBeforeTax" name="PensionAndOtherPostretirementBenefitPlansAccumulatedOtherComprehensiveIncomeLossNetGainsLossesRelatedToPlanAmendmentBeforeTax" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="aal_PrivateFixedIncomeMember" name="PrivateFixedIncomeMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_ProceedsFromSaleOfPropertyPlantAndEquipmentAndSaleLeaseBackTransactions" name="ProceedsFromSaleOfPropertyPlantAndEquipmentAndSaleLeaseBackTransactions" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="aal_ProfitSharePercentage" name="ProfitSharePercentage" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_PurchaseAndLeaseCommitmentsMember" name="PurchaseAndLeaseCommitmentsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_RegionalExpensesLineItems" name="RegionalExpensesLineItems" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_RegionalExpensesPolicyPolicyTextBlock" name="RegionalExpensesPolicyPolicyTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_RegionalExpensesTable" name="RegionalExpensesTable" nillable="true" substitutionGroup="xbrldt:hypercubeItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_ReimbursementReceivablePercentageUnderAgreement" name="ReimbursementReceivablePercentageUnderAgreement" nillable="true" substitutionGroup="xbrli:item" type="num:percentItemType" xbrli:periodType="instant" />
+  <xsd:element abstract="true" id="aal_RepublicAirlineIncMember" name="RepublicAirlineIncMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_RepublicAirwaysHoldingsInc.Member" name="RepublicAirwaysHoldingsInc.Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_RestrictedCashAndCashEquivalentsAndShorttermInvestmentsFairValueDisclosure" name="RestrictedCashAndCashEquivalentsAndShorttermInvestmentsFairValueDisclosure" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="instant" />
+  <xsd:element id="aal_RestrictedCashAndShortTermInvestmentsPolicyPolicyTextBlock" name="RestrictedCashAndShortTermInvestmentsPolicyPolicyTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_RestructuringAndOther" name="RestructuringAndOther" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="aal_RestructuringAndOtherMainline" name="RestructuringAndOtherMainline" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="aal_RestructuringAndOtherNet" name="RestructuringAndOtherNet" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="aal_RestructuringAndOtherRegional" name="RestructuringAndOtherRegional" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element id="aal_RevenuePerformanceObligationPaymentTerm" name="RevenuePerformanceObligationPaymentTerm" nillable="true" substitutionGroup="xbrli:item" type="xbrli:durationItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_RightOfUseAssetObtainedInExchangeForLeaseLiabilityAbstract" name="RightOfUseAssetObtainedInExchangeForLeaseLiabilityAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_RiskManagementTextBlock" name="RiskManagementTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_ScheduleOfCollateralCoverageTestsTableTextBlock" name="ScheduleOfCollateralCoverageTestsTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_ScheduleOfRegionalOperatingExpensesTableTextBlock" name="ScheduleOfRegionalOperatingExpensesTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_ScheduleOfValuationAndQualifyingAccountsTableTextBlock" name="ScheduleOfValuationAndQualifyingAccountsTableTextBlock" nillable="true" substitutionGroup="xbrli:item" type="nonnum:textBlockItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_SelectedQuarterlyFinancialInformationLineItems" name="SelectedQuarterlyFinancialInformationLineItems" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_SelectedQuarterlyFinancialInformationTable" name="SelectedQuarterlyFinancialInformationTable" nillable="true" substitutionGroup="xbrldt:hypercubeItem" type="xbrli:stringItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_SeniorNotes4.625Duein2020Member" name="SeniorNotes4.625Duein2020Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_SeniorNotes5.50Duein2019Member" name="SeniorNotes5.50Duein2019Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_SeniorNotes6.125Duein2018Member" name="SeniorNotes6.125Duein2018Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_ShareRepurchaseProgramApril2018Member" name="ShareRepurchaseProgramApril2018Member" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_SpecialChargesNonCash" name="SpecialChargesNonCash" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_SpecialFacilityRevenueBondsMember" name="SpecialFacilityRevenueBondsMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_StockRepurchasedandRetiredDuringPeriodIncludingSharesPursuanttoBankruptcyDistributionShares" name="StockRepurchasedandRetiredDuringPeriodIncludingSharesPursuanttoBankruptcyDistributionShares" nillable="true" substitutionGroup="xbrli:item" type="xbrli:sharesItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_TaxCutsAndJobsActOf2017IncompleteAccountingChangeInTaxRateDeferredTaxAssetProvisionalIncomeTaxExpense" name="TaxCutsAndJobsActOf2017IncompleteAccountingChangeInTaxRateDeferredTaxAssetProvisionalIncomeTaxExpense" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="debit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_TermLoanFacilityMember" name="TermLoanFacilityMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_USBuyoutOpportunitiesMember" name="USBuyoutOpportunitiesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_USCompaniesMember" name="USCompaniesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_USGovernmentDebtSecuritiesandCorporateDebtSecuritiesMember" name="USGovernmentDebtSecuritiesandCorporateDebtSecuritiesMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element id="aal_ValuationAllowanceTaxCutsAndJobsActOf2017DeferredTaxAssetIncreaseDecreaseAmount" name="ValuationAllowanceTaxCutsAndJobsActOf2017DeferredTaxAssetIncreaseDecreaseAmount" nillable="true" substitutionGroup="xbrli:item" type="xbrli:monetaryItemType" xbrli:balance="credit" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_VariableRateDebtMember" name="VariableRateDebtMember" nillable="true" substitutionGroup="xbrli:item" type="nonnum:domainItemType" xbrli:periodType="duration" />
+  <xsd:element abstract="true" id="aal_WeightedAverageRemainingLeaseTermAbstract" name="WeightedAverageRemainingLeaseTermAbstract" nillable="true" substitutionGroup="xbrli:item" type="xbrli:stringItemType" xbrli:periodType="duration" />
+</xsd:schema>
