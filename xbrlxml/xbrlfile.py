@@ -23,6 +23,7 @@ class XbrlFile(object) :
         self.fye = None
         self.contexts = None
         self.root = None
+        self.company_name = None
         
         self.numfacts = {'facts': None,
                          'units': None,
@@ -48,6 +49,7 @@ class XbrlFile(object) :
         if failed raise XbrlException()
         """
         self.__init__()        
+        self.company_name = record['company_name']
         
         #read xbrl file into xmltree object        
         root = utils.opensmallxmlfile(files.xbrl)
@@ -170,6 +172,11 @@ class XbrlFile(object) :
     def read_text_blocks(self, text_blocks) -> None:
         parser = xbrlfp.XbrlParser()
         self.text_blocks = parser.parse_textblocks(self.root, text_blocks)
+    
+    def any_gaap_fact(self):
+        if self.dfacts is None:
+            return False
+        return 'us-gaap' in self.dfacts['version'].unique()
     
     def __logerror(self, message):
         self.errlog.append(message)

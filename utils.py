@@ -103,7 +103,8 @@ def opensmallxmlfile(file):
 def openbigxmlfile(file):
     root = None
     try:
-        xmlparser = etree.XMLParser(recover=True)
+        #xmlparser = etree.XMLParser(recover=True)
+        xmlparser = etree.XMLParser(huge_tree =True)
         tree = etree.parse(file, parser=xmlparser)
         root = tree.getroot()
     except:

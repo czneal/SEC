@@ -39,8 +39,8 @@ class TestParseHtml(unittest.TestCase):
                   'CONSOLIDATED STATEMENTS OF INCOME/(LOSS) AND COMPREHENSIVE INCOME/(LOSS)',
                   'CONSOLIDATED STATEMENTS OF INCOME/(LOSS) AND COMPREHENSIVE INCOME/(LOSS) (Calc 2)',
                   'CONSOLIDATED STATEMENTS OF CASH FLOWS']
-        s = """{"CONSOLIDATED BALANCE SHEETS": "bs", "CONSOLIDATED STATEMENTS OF CASH FLOWS": "cf", "CONSOLIDATED STATEMENTS OF INCOME/(LOSS) AND COMPREHENSIVE INCOME/(LOSS)": "is"}"""
-        self.assertEqual(json.dumps(ms.select_ms(labels)), 
+        s = json.loads("""{"CONSOLIDATED BALANCE SHEETS": "bs", "CONSOLIDATED STATEMENTS OF CASH FLOWS": "cf", "CONSOLIDATED STATEMENTS OF INCOME/(LOSS) AND COMPREHENSIVE INCOME/(LOSS)": "is"}""")
+        self.assertDictEqual(ms.select_ms(labels), 
                          s, 
                          'Should be {0}'.format(s))
         
@@ -136,6 +136,21 @@ class TestParseHtml(unittest.TestCase):
         self.assertEqual(msl[labels[1]], 'bs')
         self.assertEqual(msl[labels[0]], 'is')
         self.assertEqual(msl[labels[2]], 'cf')
+        
+        labels = ['CONSOLIDATED BALANCE SHEETS (Parenthetical)',
+                'CONSOLIDATED BALANCE SHEETS (LP cube)',
+                'CONSOLIDATED STATEMENTS OF CASH FLOWS (LP cube)',
+                'CONSOLIDATED STATEMENTS OF OPERATIONS (LP cube)',
+                'CONSOLIDATED STATEMENTS OF COMPREHENSIVE LOSS (LP cube)',
+                'CONSOLIDATED STATEMENTS OF CASH FLOWS',
+                'CONSOLIDATED BALANCE SHEETS',
+                'CONSOLIDATED STATEMENTS OF OPERATIONS',
+                'CONSOLIDATED STATEMENTS OF COMPREHENSIVE LOSS'
+                ]
+        priority = [10, 36, 68, 56, 15, 63, 35, 48, 10]
+        msl = ms.select_ms(labels, priority)
+        answer = {'CONSOLIDATED BALANCE SHEETS': 'bs', 'CONSOLIDATED STATEMENTS OF CASH FLOWS': 'cf', 'CONSOLIDATED STATEMENTS OF OPERATIONS': 'is'}
+        self.assertDictEqual(msl, answer)
         
 if __name__ == '__main__':
     unittest.main()

@@ -344,7 +344,7 @@ class XbrlParser(object):
             raise XbrlException('taxonomy doesnt definded')
         
         dei['us-gaap'] = root.nsmap['us-gaap'].split('/')[-1]
-            
+        
         for e in root.iter('{%s}*' % root.nsmap['dei']):
             if e.text is None:
                 continue

@@ -265,7 +265,8 @@ def total_scan():
         for m in range(1, 13):
             update_current_month(y, m)
 
-
+if __name__ == '__main__':
+    fetch_report_files('z:/sec/2013/09/0000086759-0001144204-13-051352.zip')
 #err = log_file.LogFile(Settings.output_dir() + 'err.log', append=False)
 #log = log_file.LogFile(Settings.output_dir() + 'log.log', append=False)
 #

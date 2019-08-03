@@ -7,7 +7,35 @@ from xbrlxml.dataminer import NumericDataMiner
 from xbrlxml.xbrlrss import CustomEnumerator
 from mysqlio.xbrlfileio import ReportToDB
 from log_file import Logs, RepeatFile
-       
+
+def concat_files(filenames, output):
+    with open(output, 'w') as f:
+        for filename in filenames:
+            with open(filename, 'r') as source:
+                f.write(source.read())
+                
+def concat_logs_repeat(logs_dir, output_dir):
+    repeat = []
+    logs = []
+    errs = []
+    warns = []
+    for (root, dirs, filenames) in os.walk(logs_dir):
+        for filename in filenames:
+            if filename.endswith('.err'):
+                errs.append(root + '/' + filename)
+            if filename.endswith('.log'):
+                logs.append(root + '/' + filename)
+            if filename.endswith('.warn'):
+                warns.append(root + '/' + filename)
+            if filename.startswith('repeat'):
+                repeat.append(root + '/' + filename)
+    
+    concat_files(repeat, output_dir + 'repeat.rss')
+    concat_files(logs, output_dir + 'log.log')
+    concat_files(warns, output_dir + 'log.warn')
+    concat_files(errs, output_dir + 'log.err')
+            
+    
 def read(records, repeat, slice_, log_dir, append_log=False):
     logs = Logs(log_dir, append_log=append_log)
     repeat = RepeatFile(repeat)
@@ -70,9 +98,14 @@ if __name__ == '__main__':
 #                      pres = '../test/gen-20121231_pre.xml', 
 #                      defi = '../test/gen-20121231_def.xml', 
 #                      calc = '../test/gen-20121231_cal.xml')
-    filesenum = CustomEnumerator('outputs/customrss.csv')
-    read(filesenum.filing_records(), 'outputs/repeatrss.csv', slice(0, 3), 'outputs/')
+    filesenum = CustomEnumerator('outputs/testrss.csv')
+    read(filesenum.filing_records(), 
+         'outputs/repeatrss.csv', 
+         slice(0, None), 
+         'outputs/')
     
 #    multiproc_read()
+#    concat_logs_repeat(logs_dir='z:/Projects/SEC/SEC/Outputs/multiproc/', 
+#                       output_dir='outputs/')
     
     

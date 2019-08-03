@@ -14,12 +14,13 @@ class MainSheets(object):
         self.recf = re.compile('.*cash.*flow.*', re.I)
         self.detail = re.compile('.*\(detail.*\).*', re.I)
         self.rescores = [(re.compile('.*parenth.*', re.I), 1000),                         
-                         (re.compile('.*compre.*', re.I), 10),
-                         (re.compile('.*supplem.*', re.I), 10),
-                         (re.compile('.*retain.*', re.I), 10),
-                         (re.compile('.*\(.+\).*', re.I), 1),
+                         (re.compile('.*compre.*', re.I), 100),
+                         (re.compile('.*supplem.*', re.I), 100),
+                         (re.compile('.*retain.*', re.I), 100),
+                         (re.compile('(?<=\().*?(?=\))', re.I), 10),
                          (re.compile('.+-.+', re.I),10),
                          (re.compile('.*assets.*', re.I), 1),
+                         (re.compile('.*stockhold.*', re.I), 1),
                          (re.compile('.*changes.*', re.I), 1),
                          (re.compile('.*operations.*', re.I), -10)]
         
@@ -51,9 +52,11 @@ class MainSheets(object):
             return True
         return False
     
-    def select_ms(self, labels, priority = None):
+    def select_ms(self, labels, priority=None, indicator=None):
         if priority is None:
             priority = [1 for l in labels]
+        if indicator is not None:
+            self.rescores.append([re.compile(indicator, re.I), -1])            
         assert len(labels) == len(priority)
         
         scores = []
@@ -68,22 +71,20 @@ class MainSheets(object):
             
             if sheet == '': continue
         
-            label_loss = re.sub('\(loss\)', 'Loss', label, flags=re.I)
-            
             score = 0
             for reg, w in self.rescores:
-                if reg.match(label_loss): score += w
+                score += w * len(reg.findall(label))
                 
             scores.append([label, sheet, score, p])
         
         df = pd.DataFrame(scores, columns=['label', 'sheet', 'score', 'p'])
-        mins = df.groupby(by='sheet')['score'].min()
-        maxs = df.groupby(by='sheet')['p'].max()
+        mins = df.groupby(by='sheet')['score'].min()        
         main = {}
         for sheet in mins.index:
             f = df[(df['sheet'] == sheet) & 
-                   (df['score'] == mins.loc[sheet]) &
-                   (df['p'] == maxs.loc[sheet])]
+                   (df['score'] == mins.loc[sheet])]
+            
+            f = f[f['p'] == f['p'].max()]
             
             for index, row in f.iterrows():
                 main[row['label']] = sheet
@@ -91,13 +92,14 @@ class MainSheets(object):
         return main
     
 if __name__ == '__main__':
+    import json
+    
     ms = MainSheets()
-    labels = ["CONSOLIDATED BALANCE SHEET (Unaudited)",
-                    "CONSOLIDATED BALANCE SHEET (Parenthetical)",
-                    "CONSOLIDATED STATEMENTS OF INCOME (Unaudited)",
-                   "CONSOLIDATED STATEMENTS OF COMPRENENSIVE INCOME (LOSS) (Unaudited)",
-                    "CONSOLIDATED STATEMENTS OF CHANGES IN SHAREHOLDERS' EQUITY",
-                    "CONSOLIDATED STATEMENTS OF CASH FLOWS (Unaudited)"
-                    ]
-    msl = ms.select_ms(labels)
+    a = json.loads("""[["15 Consolidated Balance Sheets (LLC)", 50], ["21 Consolidated Statements of Cash Flows (LLC)", 49], ["29 Consolidated Statements of Operations (LLC)", 62], ["30 Consolidated Statements of Operations (MEC)", 42]]""")
+    labels = []
+    priority = []
+    for l, p in a:
+        labels.append(l)
+        priority.append(p)
+    msl = ms.select_ms(labels, priority)
     print(msl)

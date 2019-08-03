@@ -48,9 +48,12 @@ class DataMiner(metaclass=ABCMeta):
     
     def _choose_main_sheets(self):
         self.sheets.choose()
-        for sheet in ['is', 'bs', 'cf']:
-            if sheet not in self.sheets.mschapters:
-                self._logs.warning('"{0}" not found'.format(sheet))
+        if not self.sheets.mschapters:
+            self._logs.warning('couldnt find any main sheet')
+        else:
+            for sheet in ['is', 'bs', 'cf']:
+                if sheet not in self.sheets.mschapters:
+                    self._logs.warning('"{0}" chapter not found'.format(sheet))
     
     def _extend_calc(self):        
         for roleuri in self.sheets.mschapters.values():
@@ -63,10 +66,12 @@ class DataMiner(metaclass=ABCMeta):
         for sheet, roleuri in self.sheets.mschapters.items():
             context = self.cntx.choose(roleuri)
             if context is None:
-                self._logs.warning('for "{0}": {1} context not found'.format(
-                        sheet, roleuri))
-            self.extentions.append({'roleuri': roleuri,
-                                    'context': context})
+                self._logs.warning(
+                        'for "{0}": {1} context not found'.format(
+                                        sheet, roleuri))
+            else:
+                self.extentions.append({'roleuri': roleuri,
+                                        'context': context})
             
     def _gather_numeric_facts(self):
         frames = []
@@ -79,6 +84,14 @@ class DataMiner(metaclass=ABCMeta):
             frame = frame[(frame['name'].isin(tags)) & 
                           (frame['context'] == e['context'])]
             frames.append(frame)
+        
+        if not frames:
+            if self.sheets.mschapters and self.xbrlfile.any_gaap_fact():
+                raise XbrlException('couldnt find any facts to write')
+            else:
+                self._logs.warning('couldnt find any us-gaap fact')
+                self.numeric_facts = None
+                return
             
         self.numeric_facts = pd.concat(frames)
         self.numeric_facts = self.numeric_facts[
@@ -90,6 +103,10 @@ class DataMiner(metaclass=ABCMeta):
                         lambda x: 'I' if pd.isna(x) else 'D')
                 )
         self.numeric_facts.rename(columns={'edate':'ddate'}, inplace=True)
+        
+        if self.numeric_facts.shape[0] == 0:
+            self._logs.warning('only null facts found')
+            self.numeric_facts = None
     
     def _read_text_blocks(self):
         raise XbrlException('_read_text_blocks is not implemented')

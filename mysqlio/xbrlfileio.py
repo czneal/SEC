@@ -56,13 +56,16 @@ class ReportToDB(object):
         
     
     def write_nums(self, cur, record, miner):
+        if miner.numeric_facts is None:
+            return
+        
         if not self.nums.write_df(df=miner.numeric_facts,
                                   cur=cur):
             raise XbrlException('couldnt write to mysql.mgnums table')
     
     def write_company(self, cur, record):
         company = {'company_name': record['company_name'],
-                   'sic': record['sic'],
+                   'sic': record['sic'] if record['sic'] is not None else 0,
                    'cik': record['cik']
                     }
         if not self.companies.write(company, cur):
@@ -82,11 +85,9 @@ class ReportToDB(object):
                     retry -= 1
                 
         except XbrlException as e:
-            self.__logs.error(str(e))
-            self.__repeat.repeat()
+            self.__logs.error(str(e))            
         except:
-            self.__logs.traceback()
-            self.__repeat.repeat()
+            self.__logs.traceback()            
         finally:
             if not good:
                 self.__logs.error('problems with writing into mysql database')

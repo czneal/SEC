@@ -17,22 +17,26 @@ class ChapterChooser(object):
         xsd = self.xbrlfile.schemes['xsd']
         pres = self.xbrlfile.schemes['pres']
         
-        mschapters = {xsd[roleuri].label:roleuri 
-                     for roleuri in pres
-                         if xsd[roleuri].sect == 'sta'}        
+        mschapters = {str(index) + ' ' + xsd[roleuri].label: roleuri 
+                     for index, roleuri in enumerate(pres)
+                         if roleuri in xsd and xsd[roleuri].sect == 'sta'
+                             and pres[roleuri].gettags()}
         ms = MainSheets()
         priority, labels = [], []
         for label, roleuri in mschapters.items():
             labels.append(label)
             priority.append(len(pres[roleuri].gettags()))
             
-        labels = ms.select_ms(labels, priority)
+        labels = ms.select_ms(labels, 
+                              priority=priority,
+                              indicator=self.xbrlfile.company_name)
         
         if len(labels) > 3:
-            msg = '\n'.join(mschapters.keys())
+            msg = json.dumps(list(zip(mschapters.keys(), priority)))
             raise XbrlException('count of main sheets > 3' + '\n' + msg)
             
-        self.mschapters = {labels[label]:mschapters[label] for label in labels}
+        self.mschapters = {labels[label]:mschapters[label] 
+                            for label in labels}
         pass
 
 class ContextChooser(object):
@@ -49,7 +53,7 @@ class ContextChooser(object):
         
         defi = self.xbrlfile.schemes['defi'].get(roleuri, pres)        
         
-        chdim = set(defi.dims())
+        chdim = set(pres.dims())
         chcontexts = set([c.contextid 
                           for c in self.xbrlfile.contexts.values() 
                             if len(set(c.dim).difference(chdim)) == 0])
