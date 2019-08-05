@@ -33,7 +33,7 @@ class ChapterChooser(object):
         if true_labels is None:
             labels = ms.select_ms(labels, 
                                   priority=priority,
-                                  indicator=self.xbrlfile.company_name)
+                                  indicator=None)
         else:
             labels = true_labels
         
