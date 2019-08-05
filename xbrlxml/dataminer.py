@@ -3,6 +3,7 @@
 import pandas as pd
 from abc import ABCMeta, abstractmethod
 
+from algos.scheme import enum
 from xbrlxml.xbrlfile import XbrlFile
 from xbrlxml.selectors import ChapterChooser, ContextChooser, ChapterExtender
 from xbrlxml.xbrlzip import XBRLZipPacket
@@ -78,7 +79,18 @@ class DataMiner(metaclass=ABCMeta):
         for e in self.extentions:
             pres = self.xbrlfile.schemes['pres'].get(e['roleuri'])
             calc = self.xbrlfile.schemes['calc'].get(e['roleuri'], pres)
-            tags = set(pres.gettags()).union(set(calc.gettags()))
+            if 'label' in e:
+                tags = set()
+                if e['label'] in pres.nodes:
+                    tags.update([e for [e] in 
+                                     enum(structure=pres.nodes[e['label']], 
+                                          outpattern='c')])
+                if e['label'] in calc.nodes:
+                    tags.update([e for [e] in 
+                                     enum(structure=calc.nodes[e['label']], 
+                                          outpattern='c')])
+            else:
+                tags = set(pres.gettags()).union(set(calc.gettags()))
             
             frame = self.xbrlfile.dfacts
             frame = frame[(frame['name'].isin(tags)) & 

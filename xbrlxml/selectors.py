@@ -5,6 +5,7 @@ from xbrlxml.xbrlexceptions import XbrlException
 from classifiers.mainsheets import MainSheets
 import algos.scheme
 import algos.xbrljson
+import xbrlxml.truevalues as tv
 
 class ChapterChooser(object):
     """Choose only main seets from xbrl schemas    
@@ -13,7 +14,7 @@ class ChapterChooser(object):
         self.xbrlfile = xbrlfile
         self.mschapters = None
         
-    def choose(self) -> None:
+    def choose(self) -> None:            
         xsd = self.xbrlfile.schemes['xsd']
         pres = self.xbrlfile.schemes['pres']
         
@@ -26,10 +27,15 @@ class ChapterChooser(object):
         for label, roleuri in mschapters.items():
             labels.append(label)
             priority.append(len(pres[roleuri].gettags()))
-            
-        labels = ms.select_ms(labels, 
-                              priority=priority,
-                              indicator=self.xbrlfile.company_name)
+        
+        true_labels = (tv.TRUE_VALUES
+                         .get_true_chapters(self.xbrlfile.adsh))
+        if true_labels is None:
+            labels = ms.select_ms(labels, 
+                                  priority=priority,
+                                  indicator=self.xbrlfile.company_name)
+        else:
+            labels = true_labels
         
         if len(labels) > 3:
             msg = json.dumps(list(zip(mschapters.keys(), priority)))

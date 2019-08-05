@@ -8,6 +8,7 @@ from xbrlxml.xsdfile import XSDFile
 from xbrlxml.xbrlchapter import ReferenceParser
 from xbrlxml.xbrlexceptions import XbrlException
 import utils
+import xbrlxml.truevalues as tv
 
 XbrlFiles = namedtuple('XbrlFiles', ['xbrl', 'xsd', 'pres', 'defi', 'calc'])
 
@@ -24,6 +25,7 @@ class XbrlFile(object) :
         self.contexts = None
         self.root = None
         self.company_name = None
+        self.adsh = None
         
         self.numfacts = {'facts': None,
                          'units': None,
@@ -50,6 +52,7 @@ class XbrlFile(object) :
         """
         self.__init__()        
         self.company_name = record['company_name']
+        self.adsh = record['adsh']
         
         #read xbrl file into xmltree object        
         root = utils.opensmallxmlfile(files.xbrl)
@@ -113,10 +116,12 @@ class XbrlFile(object) :
         if failed raise XbrlException()
         """
         
-        period = None
+        period = tv.TRUE_VALUES.get_true_period(self.adsh)
         period_dei, period_rss = None, None
         
-        if 'period' in self.dei and 'period' in record:
+        if (period is None and 
+                'period' in self.dei and 
+                'period' in record):
             data = [(p, context, len(self.contexts[context].dim)) for [p, context] in self.dei['period']]
             data = sorted(data, key=lambda x: x[2])
             
