@@ -10,16 +10,22 @@ def _enum(structure, offset, func):
     if isinstance(structure, Chapter):
         for node in structure.nodes.values():
             if node.parent is None:                
-                yield (structure.roleuri, func(node), 1.0, offset, 
-                        (True if len(node.children) == 0 else False),
-                        node)
+                yield (structure.roleuri, 
+                       func(node), 
+                       1.0, 
+                       offset, 
+                       True if not node.children else False,
+                       node)
                 for item in _enum(node, offset=offset+1, func=func):
                     yield item
     if isinstance(structure, Node):
         for child in structure.children.values():
-            yield (func(structure), func(child), child.arc['weight'], offset,
-                    True if len(child.children) == 0 else False,
-                    child)
+            yield (func(structure), 
+                   func(child), 
+                   child.arc['weight'] if 'weight' in child.arc else 1.0, 
+                   offset,
+                   True if not child.children else False,
+                   child)
             for item in _enum(child, offset=offset+1, func=func):
                 yield item
     if isinstance(structure, dict):

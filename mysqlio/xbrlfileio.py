@@ -72,26 +72,34 @@ class ReportToDB(object):
             raise XbrlException('couldnt write to mysql.companies table')
             
     def write(self, cur, record, miner):
-        retry = 3
-        try:
-            good = False
-            while not good and retry > 0:
-                try:
-                    self.write_company(cur, record)
-                    self.write_report(cur, record, miner)
-                    self.write_nums(cur, record, miner)
-                    good = True
-                except InternalError:
-                    retry -= 1
+        dead_lock_trys = 0
+        while(True):
+            try:
+                self.write_company(cur, record)
+                self.write_report(cur, record, miner)
+                self.write_nums(cur, record, miner)
+                break               
                 
-        except XbrlException as e:
-            self.__logs.error(str(e))            
-        except:
-            self.__logs.traceback()            
-        finally:
-            if not good:
+            except InternalError as e:
+                #if dead lock just repeat again
+                if dead_lock_trys < 100:
+                    dead_lock_trys += 1
+                    continue
+                else:
+                    self.__logs.error(str(e))
+                    self.__logs.error('mysql super dead lock')
+                    self.__repeat.repeat()
+                    break
+            except XbrlException as e:
+                self.__logs.error(str(e))
                 self.__logs.error('problems with writing into mysql database')
+                self.__repeat.record()
+                break
+            except:
+                self.__logs.traceback()
+                self.__logs.error('unexpected problems with writing into mysql database')
                 self.__repeat.repeat()
+                break
     
     def flush(self, cur):
         self.reports.flush(cur)

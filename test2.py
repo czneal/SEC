@@ -1,15 +1,46 @@
-import json
-import pandas as pd
+import time
+from multiprocessing import Pool
+from mysql.connector.errors import InternalError
+import mysqlio.basicio
+from xbrlxml.xbrlexceptions import XbrlException
 
-if __name__ == '__main__':
-    a = json.loads("""[["54 CONSOLIDATED STATEMENTS OF EQUITY (Cloud Peak Energy Inc. and Subsidiaries)", 38], ["79 CONSOLIDATED BALANCE SHEETS (Parenthetical) (Cloud Peak Energy Inc. and Subsidiaries)", 6], ["80 CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME (Cloud Peak Energy Inc. and Subsidiaries)", 38], ["81 CONSOLIDATED BALANCE SHEETS (Cloud Peak Energy Inc. and Subsidiaries)", 45], ["82 CONSOLIDATED STATEMENTS OF CASH FLOWS (Cloud Peak Energy Inc. and Subsidiaries)", 52], ["83 CONSOLIDATED STATEMENTS OF EQUITY (Cloud Peak Energy Resources LLC and Subsidiaries)", 24], ["84 CONSOLIDATED STATEMENTS OF OPERATIONS AND COMPREHENSIVE INCOME (Cloud Peak Energy Resources LLC and Subsidiaries)", 33], ["85 CONSOLIDATED BALANCE SHEETS (Cloud Peak Energy Resources LLC and Subsidiaries)", 45], ["86 CONSOLIDATED STATEMENTS OF CASH FLOWS (Cloud Peak Energy Resources LLC and Subsidiaries)", 53]]
-""")
-    df = pd.DataFrame(data=a, columns=['name', 'p'])
-    df = df.sort_values('p', ascending=False)
-    f = df[(df['name'].str.contains('Energy Inc'))]
+def write(p: int) -> int:
+    sic = [1600, 1623, 1700]
     
+    insert = """insert into companies (cik,isin,company_name,sic) values({0},NULL,'test{0}',{1}) on duplicate key update isin=values(isin),company_name=values(company_name),sic=values(sic)""".format(p, sic[p-1])
     
-    ch = {f.loc[3]['name']: 'bs', 
-          f.loc[2]['name']: 'is', 
-          f.loc[4]['name']: 'cf'}
-    print(json.dumps(ch))
+    count = 0
+    sec_sleep = 3
+    with mysqlio.basicio.OpenConnection() as con:
+        while(True):
+            try:
+                cur = con.cursor(dictionary=True)
+                cur.execute(insert)
+                time.sleep(sec_sleep)
+                con.commit()
+                break
+            except InternalError:
+                sec_sleep = 0
+                count += 1
+                continue
+        
+    return p, count
+
+if __name__ == "__main__":
+#    cpus = 3
+#    
+#    params = [[1], [2], [3]]
+#
+#    with Pool(cpus) as p:
+#        print(p.starmap(write, params))
+    while(True):
+        try:
+            raise XbrlException('message')        
+        except XbrlException:
+            continue
+        except Exception:
+            break
+        finally:            
+            print('finally')
+            break
+        
