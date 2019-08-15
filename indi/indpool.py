@@ -126,25 +126,28 @@ def one_pass(cycles: int) -> datetime.timedelta:
     csv_loader = CSVLoader()
     csv_loader.load()
     
-    with unittest.mock.patch('indi.lstmmodels.Models') as mock_models:
-        instance = mock_models.return_value
-        
-        mock_multi = mock.Mock()
-        mock_multi.predict.side_effect = Data.predict_multi
-        
-        mock_single = mock.Mock()
-        mock_single.predict.side_effect = Data.predict_single_ones
-        
-        models_dict = {}
-        for fmodel, kwargs in csv_loader.models():
-            if kwargs['multi'] == 1:
-                models_dict[fmodel] = mock_multi
-            else:
-                models_dict[fmodel] = mock_single
-        instance.models = models_dict
-        
-        m_pool = ModelsPool()
-        m_pool.load(csv_loader)
+#    with unittest.mock.patch('indi.lstmmodels.Models') as mock_models:
+#        instance = mock_models.return_value
+#        
+#        mock_multi = mock.Mock()
+#        mock_multi.predict.side_effect = Data.predict_multi
+#        
+#        mock_single = mock.Mock()
+#        mock_single.predict.side_effect = Data.predict_single_ones
+#        
+#        models_dict = {}
+#        for fmodel, kwargs in csv_loader.models():
+#            if kwargs['multi'] == 1:
+#                models_dict[fmodel] = mock_multi
+#            else:
+#                models_dict[fmodel] = mock_single
+#        instance.models = models_dict
+#        
+#        m_pool = ModelsPool()
+#        m_pool.load(csv_loader)
+    m_pool = ModelsPool()
+    m_pool.load(csv_loader)
+    
         
     ind_pool = IndicatorPool(class_pool=m_pool,
                              csv_loader=csv_loader)
