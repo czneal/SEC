@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import Dict
 import pandas as pd
+import datetime
 
 from indi.modelspool import ModelsPool
 from indi.indicators import Indicator, create, IndicatorRestated
@@ -114,11 +115,13 @@ class IndicatorPool(object):
         info['sadsh'] = info['sadsh'].fillna(info['adsh'])
         
         return nums, info[columns]
+
+def one_pass(cycles: int) -> datetime.timedelta:
+    assert cycles>0
     
-if __name__ == '__main__':
     import unittest.mock, mock
     from tests.resource_indi import Data
-    import datetime
+    
         
     csv_loader = CSVLoader()
     csv_loader.load()
@@ -147,7 +150,6 @@ if __name__ == '__main__':
                              csv_loader=csv_loader)
     raw_nums = Data.nums()
     raw_nums['name'] =raw_nums['version'] + ':' + raw_nums['tag']
-    years = list(raw_nums['fy'].unique())
     structs = Data.structs()
     
     fy_structures = {}
@@ -157,9 +159,12 @@ if __name__ == '__main__':
     
             
     start = datetime.datetime.now()
-    for i in range(1):
+    for i in range(cycles):
         n, info = ind_pool.calc(raw_nums, fy_structures)
     end = datetime.datetime.now()
-    td = (end - start)/1
-    print(td)
+    td = (end - start)/cycles
+    return(td)
+    
+if __name__ == '__main__':
+    print(one_pass(1))
 
