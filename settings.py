@@ -9,6 +9,7 @@ import json
 import os
 
 class Settings(object):
+    @staticmethod
     def __open():
         try:
             wd = os.path.split(__file__)[0]
@@ -20,21 +21,35 @@ class Settings(object):
             raise
         return settings
     
+    @staticmethod
     def ssl_dir():        
         return Settings.__open()["ssl_dir"]
     
+    @staticmethod
     def root_dir():
         return Settings.__open()["root_dir"]
     
+    @staticmethod
     def host():
         return Settings.__open()["host"]
     
+    @staticmethod
     def select_limit():
         return Settings.__open()["select_limit"]
     
+    @staticmethod
     def years():
         return Settings.__open()["years"]
     
+    @staticmethod
     def output_dir():
         return Settings.__open()["output_dir"]
+    
+    @staticmethod
+    def models_dir():
+        return Settings.__open()["models_dir"]
+    
+    @staticmethod
+    def app_dir():
+        return Settings.__open()["app_dir"]
             

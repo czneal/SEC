@@ -4,7 +4,7 @@ Created on Sat May 25 16:55:50 2019
 
 @author: Asus
 """
-import lxml
+import lxml #type: ignore
 import re
 
 

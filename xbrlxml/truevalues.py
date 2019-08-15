@@ -7,8 +7,6 @@ import os
 
 import utils
 
-TRUE_VALUES = None
-
 class TrueValues(object):
     def __init__(self, source_filenames: Mapping[str, str]):
         self.periods = {} # type: Dict[str, dt.date]
@@ -30,10 +28,9 @@ class TrueValues(object):
     def get_true_chapters(self, adsh: str) -> Optional[Mapping[str, str]]:
         return self.chapters.get(adsh, None)
 
-if TRUE_VALUES is None:    
-    TRUE_VALUES = TrueValues({'periods': (os.path.split(__file__)[0] + 
+TRUE_VALUES = TrueValues({'periods': (os.path.split(__file__)[0] + 
                                           '/truevalues_periods.csv'),
-                              'chapters': (os.path.split(__file__)[0] + 
+                           'chapters': (os.path.split(__file__)[0] + 
                                            '/truevalues_chapters.csv')
                               })
     

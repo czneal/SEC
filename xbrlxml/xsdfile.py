@@ -6,7 +6,7 @@ Created on Mon Jun  3 14:05:20 2019
 """
 
 import re
-import lxml
+import lxml # type: ignore
 from collections import namedtuple
 
 XSDChapter = namedtuple('XSDChapter', 

@@ -8,7 +8,7 @@ Created on Tue Apr 16 17:58:11 2019
 import datetime as dt
 import calendar
 import re
-from lxml import etree
+from lxml import etree #type: ignore
 
 class ProgressBar(object):
     def __init__(self):
@@ -111,4 +111,10 @@ def openbigxmlfile(file):
         file.close()
         
     return root
-    
+
+def class_for_name(module_name, class_name):
+    # load the module, will raise ImportError if module cannot be loaded
+    m = __import__(module_name, globals(), locals(), class_name)
+    # get the class, will raise AttributeError if class cannot be found
+    c = getattr(m, class_name)
+    return c

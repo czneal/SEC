@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 import json
 
 from xbrlxml.xbrlexceptions import XbrlException
@@ -52,7 +52,7 @@ class ContextChooser(object):
         self.xbrlfile = xbrlfile
         
         
-    def choose(self, roleuri: str) -> str:
+    def choose(self, roleuri: str) -> Optional[str]:
         pres = self.xbrlfile.schemes['pres'].get(roleuri, None)
         if pres is None:
             raise XbrlException('unable find context if chapter has not presentation view')
@@ -76,7 +76,7 @@ class ContextChooser(object):
         
         return self._choosecontext(f, thres = 0.5)
     
-    def _choosecontext(self, f, thres = 0.5) -> str:
+    def _choosecontext(self, f, thres = 0.5) -> Optional[str]:
         if f.shape[0] == 0:
             return None
         
@@ -99,13 +99,13 @@ class ContextChooser(object):
                     parent = None
         
         if successor:
-            return successor[0]
+            return str(successor[0])
         if nondim:
-            return nondim[0]
+            return str(nondim[0])
         if parent:
-            return parent[0]
+            return str(parent[0])
         
-        return top[0]
+        return str(top[0])
 
 class ChapterExtender(object):
     """Extend chapter calculation scheme
@@ -115,7 +115,9 @@ class ChapterExtender(object):
         self.extentions = []
         self.roleuri = None
     
-    def check(self, ext_roleuri: str, node_label: str, context: str) -> bool:        
+    def check(self, ext_roleuri: str, 
+              node_label: str, 
+              context: Optional[str]) -> bool:        
         pres = self.xbrlfile.schemes['pres'].get(ext_roleuri, None)
         calc = self.xbrlfile.schemes['calc'].get(ext_roleuri, pres)
         dfacts = self.xbrlfile.dfacts

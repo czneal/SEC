@@ -2,6 +2,7 @@
 
 import pandas as pd
 from abc import ABCMeta, abstractmethod
+from typing import List, Dict
 
 from algos.scheme import enum
 from xbrlxml.xbrlfile import XbrlFile
@@ -44,7 +45,7 @@ class DataMiner(metaclass=ABCMeta):
         self.cik = None
         self.adsh = None
         self.zip_filename = None
-        self.extentions = []
+        self.extentions = [] # type: List[Dict[str, str]]
         self.numeric_facts = None
     
     def _choose_main_sheets(self):

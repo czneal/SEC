@@ -1,0 +1,62 @@
+indicator_name	class_id	fmodel	one_time	type
+mg_r_liabilities	1	liabilities_class_pch_v2019-03-13.h5	0	restated
+mg_r_liabilities_current	1	liabilities_curr_noncurr_v2019-03-13.h5	0	restated
+mg_r_liabilities_noncurrent	0	liabilities_curr_noncurr_v2019-03-13.h5	0	restated
+mg_r_intangibles	1	assets_multiclass_pch_v2019-03-13.h5	0	restated
+mg_r_fixed_assets	2	assets_multiclass_pch_v2019-03-13.h5	0	restated
+mg_r_capitalized_costs	3	assets_multiclass_pch_v2019-03-13.h5	0	restated
+mg_r_assets_current	1	assets_curr_noncurr_pch_v2019-03-13.h5	0	restated
+mg_r_assets_noncurrent	0	assets_curr_noncurr_pch_v2019-03-13.h5	0	restated
+mg_r_income_noncontroling	1	income_st_multiclass_pch_v2019-03-13.h5	0	restated
+mg_r_sales	2	income_st_multiclass_pch_v2019-03-13.h5	0	restated
+mg_r_cost_of_revenue	3	income_st_multiclass_pch_v2019-03-13.h5	0	restated
+mg_r_SGAA_expenses	4	income_st_multiclass_pch_v2019-03-13.h5	0	restated
+mg_r_one_time_events	5	income_st_multiclass_pch_v2019-03-13.h5	0	restated
+mg_r_income_equity_method	6	income_st_multiclass_pch_v2019-03-13.h5	0	restated
+mg_r_unrealized_gain_loss	7	income_st_multiclass_pch_v2019-03-13.h5	0	restated
+mg_r_interest_expenses	8	income_st_multiclass_pch_v2019-03-13.h5	0	restated
+mg_r_dividend_preferred	9	income_st_multiclass_pch_v2019-03-13.h5	0	restated
+mg_r_cash_operating_activities	1	cashflow_st_cashtype_pch_v2019-03-13.h5	0	restated
+mg_r_cash_investing_activities	2	cashflow_st_cashtype_pch_v2019-03-13.h5	0	restated
+mg_r_cash_financing_activities	3	cashflow_st_cashtype_pch_v2019-03-13.h5	0	restated
+mg_r_cash_acquired_realestate	1	cashflow_st_multiclass_pch_v2019-03-14.h5	0	restated
+mg_r_cash_payments_fixed_assets	2	cashflow_st_multiclass_pch_v2019-03-14.h5	0	restated
+mg_r_cash_payments_other_capital	3	cashflow_st_multiclass_pch_v2019-03-14.h5	0	restated
+mg_r_cash_acquired_businesses	4	cashflow_st_multiclass_pch_v2019-03-14.h5	0	restated
+mg_r_cash_dividends_common	5	cashflow_st_multiclass_pch_v2019-03-14.h5	0	restated
+mg_r_cash_dividends_preferred	6	cashflow_st_multiclass_pch_v2019-03-14.h5	0	restated
+mg_r_cash_buybacks	7	cashflow_st_multiclass_pch_v2019-03-14.h5	0	restated
+mg_r_cash_nonrecurring	8	cashflow_st_multiclass_pch_v2019-03-14.h5	0	restated
+mg_r_cash_dividends_minority	9	cashflow_st_multiclass_pch_v2019-03-14.h5	0	restated
+mg_acquired_realestate			0	static
+mg_capitalized_software			0	dynamic
+mg_cash_operating_activities			0	static
+mg_equity			0	dynamic
+mg_income			0	static
+mg_intangibles			0	static
+mg_interest_net			0	static
+mg_invest_fix_assets			0	static
+mg_payments_capital			0	static
+mg_provision_for_losses			0	static
+mg_restructuring_nonrecurring			0	static
+mg_roe			0	static
+mg_roe_average			1	dynamic
+mg_roe_variance			1	dynamic
+mg_r_capitalized_costs_d			0	dynamic
+mg_r_cash_buybacks_yld			1	dynamic
+mg_r_debt_tangible_assets			1	static
+mg_r_dividents_yld			1	dynamic
+mg_r_equity			0	dynamic
+mg_r_free_cashflow			0	static
+mg_r_free_cashflow_yld			1	dynamic
+mg_r_income			0	static
+mg_r_income_corrected			0	static
+mg_r_income_corrected_yld			1	dynamic
+mg_r_income_free_cashflow			1	static
+mg_r_roe			0	static
+mg_r_roe_average			1	dynamic
+mg_r_roe_variance			1	dynamic
+mg_r_sales_growth			0	dynamic
+mg_r_sales_growth_average			1	dynamic
+mg_sales			0	static
+mg_SGAAExpense			0	static

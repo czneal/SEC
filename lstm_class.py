@@ -8,13 +8,8 @@ import numpy as np
 from keras.preprocessing import sequence
 from keras.models import load_model
 import re
-import tree_operations as to
-import json
 import pandas as pd
-import indicators
-import database_operations as do
 import copy
-import indicators2dba as i2d
 
 class ClassifierPool(object):
     def __init__(self):

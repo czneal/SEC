@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import pandas as pd
+import pandas as pd #type: ignore
 from collections import namedtuple
 
 import xbrlxml.xbrlfileparser as xbrlfp

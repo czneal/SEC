@@ -11,6 +11,7 @@ import datetime as dt
 import io
 import sys
 import json
+from typing import List
 
 from algos.xbrljson import ForDBJsonEncoder
 
@@ -67,7 +68,7 @@ class Logs():
         self.__err = LogFile(log_dir + name + '.err', append_log)
         self.__log = LogFile(log_dir + name + '.log', append_log)
         self.__warn = LogFile(log_dir + name + '.warn', append_log)
-        self.header = []
+        self.header = [] # type: List[str]
         
     def set_header(self, header):
         self.header = [h for h in header]

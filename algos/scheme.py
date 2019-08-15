@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+from typing import Dict, List, Tuple
 
 from xbrlxml.xbrlchapter import Chapter, Node
 from xbrlxml.xbrlexceptions import XBRLDictException
@@ -15,7 +16,8 @@ def _enum(structure, offset, func):
                        1.0, 
                        offset, 
                        True if not node.children else False,
-                       node)
+                       node,
+                       node.version)
                 for item in _enum(node, offset=offset+1, func=func):
                     yield item
     if isinstance(structure, Node):
@@ -25,7 +27,8 @@ def _enum(structure, offset, func):
                    child.arc['weight'] if 'weight' in child.arc else 1.0, 
                    offset,
                    True if not child.children else False,
-                   child)
+                   child,
+                   child.version)
             for item in _enum(child, offset=offset+1, func=func):
                 yield item
     if isinstance(structure, dict):
@@ -38,7 +41,7 @@ def enum(structure, leaf=False,
          outpattern = 'pcwol',
          func = lambda x: x.name):
     "unittested"
-    assert re.fullmatch('[pcwoln]+', outpattern)
+    assert re.fullmatch('[pcwolnv]+', outpattern)
     
     for item in _enum(structure, offset = 0, func = func):
         if leaf and not item[4]:
@@ -52,15 +55,18 @@ def enum(structure, leaf=False,
             if c == 'o': retval.append(item[3])
             if c == 'l': retval.append(item[4])
             if c == 'n': retval.append(item[5])
+            if c == 'v': retval.append(item[6])
         yield retval
         
-def find_extentions(roleuri, calc, pres, xsds):
+def find_extentions(roleuri, calc, pres, xsds) -> \
+        Tuple[Dict[str, str], List[str]]:
     """
     try to find extention for calculation scheme roleuri
     return tuple({NodeLabel:roleuri, ...}, list(warning))    
     """
-    extentions = {}
-    warnings = []
+    extentions = {} #type: Dict[str, str]
+    warnings = [] #type: List[str]
+    
     chapter = calc.get(roleuri, None)
     if chapter is None:
         return extentions, warnings

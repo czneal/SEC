@@ -5,8 +5,8 @@ Created on Mon Oct 16 11:14:23 2017
 @author: Asus
 """
 
-import mysql.connector
-import pandas as pd
+import mysql.connector # type :ignore
+import pandas as pd # type: ignore
 from contextlib import contextmanager
 
 from settings import Settings
@@ -198,8 +198,7 @@ def read_reports_attr(years):
     return reports
 
 def read_report_structures(adshs):
-    try:
-        con = OpenConnection()
+    with OpenConnection() as con:         
         cur = con.cursor(dictionary=True)
         cur.execute("create temporary table adshs (adsh VARCHAR(20) CHARACTER SET utf8 not null, PRIMARY KEY (adsh))")
         cur.executemany("insert into adshs (adsh) values (%s)", list((e,) for e in adshs))
@@ -208,39 +207,30 @@ def read_report_structures(adshs):
                         where r.adsh = a.adsh""")
         df = pd.DataFrame(cur.fetchall())
         df.set_index("adsh", inplace=True)
-    finally:
-        con.close()
-
+    
     return df
 
 def read_report_nums(adsh):
-    try:
-        con = OpenConnection()
+    with OpenConnection() as con:
         cur = con.cursor(dictionary=True)
-        cur.execute("select concat(version,':',tag) as tag, value from mgnums where adsh = (%s)",(adsh,))
+        cur.execute("select version, tag, value from mgnums where adsh = (%s)",(adsh,))
         df = pd.DataFrame(cur.fetchall(), columns=["tag","value"]).set_index("tag")
         df["value"] = df["value"].astype('float')
-    finally:
-        con.close()
+    
     return df.sort_index()
 
-def read_reports_nums(adshs):
-    con = None
-    df = None
-    try:
-        con = OpenConnection()
+def read_reports_nums(adshs):    
+    with OpenConnection() as con:        
         cur = con.cursor(dictionary=True)
-        data = []
+        frames = []
         for adsh in adshs:
-            cur.execute("select concat(version,':',tag) as tag, value, fy, adsh from mgnums where adsh = (%s)",(adsh,))
-            data.extend(cur.fetchall())
-
-        df = pd.DataFrame(data, columns=['adsh', 'fy', 'tag','value'])
+            cur.execute("select tag, version, value, fy, adsh from mgnums where adsh = (%s)",(adsh,))
+            frames.append(pd.DataFrame(cur.fetchall()))
+    if frames:
+        df = pd.concat(frames)
         df["value"] = df["value"].astype('float')
         df.sort_values('fy', ascending=False, inplace=True)
-    finally:
-        if con:
-            con.close()
+    
     return df
 
 def getquery(query, dictionary=True):

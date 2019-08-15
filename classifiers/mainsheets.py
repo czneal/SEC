@@ -5,7 +5,7 @@ Created on Mon Jun  3 15:34:47 2019
 @author: Asus
 """
 import re
-import pandas as pd
+import pandas as pd # type: ignore
 
 class MainSheets(object):
     def __init__(self):
