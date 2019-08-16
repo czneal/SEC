@@ -118,3 +118,16 @@ def class_for_name(module_name, class_name):
     # get the class, will raise AttributeError if class cannot be found
     c = getattr(m, class_name)
     return c
+
+def retry(retry, exception_class):
+    def decorator(function):
+        def wrapper(*args, **kwargs):
+            for i in range(retry):
+                try:
+                    return function(*args, **kwargs)            
+                except exception_class as e:
+                    if i + 1 == retry:
+                        print('done {} tryouts'.format(retry))
+                        raise e            
+        return wrapper
+    return decorator

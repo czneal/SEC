@@ -11,7 +11,7 @@ import datetime as dt
 import io
 import sys
 import json
-from typing import List
+from typing import List, Any
 
 from algos.xbrljson import ForDBJsonEncoder
 
@@ -70,8 +70,8 @@ class Logs():
         self.__warn = LogFile(log_dir + name + '.warn', append_log)
         self.header = [] # type: List[str]
         
-    def set_header(self, header):
-        self.header = [h for h in header]
+    def set_header(self, header: List[Any]) -> None:
+        self.header = [str(h) for h in header]
         
     def warning(self, message):
         self.__warn.writemany(*(self.header), info = str(message))

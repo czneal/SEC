@@ -4,8 +4,7 @@ import pandas as pd
 import datetime
 
 from indi.modelspool import ModelsPool
-from indi.indicators import Indicator, create, IndicatorRestated
-from indi.indicators import IndicatorDynamic
+from indi.indicators import Indicator, create
 from indi.loader import CSVLoader
 from indi.exceptions import SortException
 
@@ -116,39 +115,39 @@ class IndicatorPool(object):
         
         return nums, info[columns]
 
-def one_pass(cycles: int) -> datetime.timedelta:
+def one_pass(cycles: int, use_mock) -> datetime.timedelta:
     assert cycles>0
     
-    import unittest.mock, mock
-    from tests.resource_indi import Data
-    
+    from tests.resource_indi import Data    
         
     csv_loader = CSVLoader()
     csv_loader.load()
     
-#    with unittest.mock.patch('indi.lstmmodels.Models') as mock_models:
-#        instance = mock_models.return_value
-#        
-#        mock_multi = mock.Mock()
-#        mock_multi.predict.side_effect = Data.predict_multi
-#        
-#        mock_single = mock.Mock()
-#        mock_single.predict.side_effect = Data.predict_single_ones
-#        
-#        models_dict = {}
-#        for fmodel, kwargs in csv_loader.models():
-#            if kwargs['multi'] == 1:
-#                models_dict[fmodel] = mock_multi
-#            else:
-#                models_dict[fmodel] = mock_single
-#        instance.models = models_dict
-#        
-#        m_pool = ModelsPool()
-#        m_pool.load(csv_loader)
-    m_pool = ModelsPool()
-    m_pool.load(csv_loader)
-    
-        
+    if use_mock:
+        import unittest.mock, mock
+        with unittest.mock.patch('indi.lstmmodels.Models') as mock_models:
+            instance = mock_models.return_value
+            
+            mock_multi = mock.Mock()
+            mock_multi.predict.side_effect = Data.predict_multi
+            
+            mock_single = mock.Mock()
+            mock_single.predict.side_effect = Data.predict_single_ones
+            
+            models_dict = {}
+            for fmodel, kwargs in csv_loader.models():
+                if kwargs['multi'] == 1:
+                    models_dict[fmodel] = mock_multi
+                else:
+                    models_dict[fmodel] = mock_single
+            instance.models = models_dict
+            
+            m_pool = ModelsPool()
+            m_pool.load(csv_loader)
+    else:        
+        m_pool = ModelsPool()
+        m_pool.load(csv_loader)
+            
     ind_pool = IndicatorPool(class_pool=m_pool,
                              csv_loader=csv_loader)
     raw_nums = Data.nums()
@@ -166,8 +165,10 @@ def one_pass(cycles: int) -> datetime.timedelta:
         n, info = ind_pool.calc(raw_nums, fy_structures)
     end = datetime.datetime.now()
     td = (end - start)/cycles
-    return(td)
+    
+    return(td, n, info)
     
 if __name__ == '__main__':
-    print(one_pass(1))
+    td, n, info = one_pass(cycles=1, use_mock=False)
+    print(td)
 

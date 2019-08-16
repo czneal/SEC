@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import zipfile
+from typing import Dict, Tuple
 
 from xbrlxml.xbrlexceptions import XbrlException
 
@@ -15,7 +16,7 @@ class XBRLZipPacket(object):
                       'cal': None,
                       'def': None}        
         
-    def open_packet(self, zip_filename):
+    def open_packet(self, zip_filename) -> None:
         self.__init__()
         self.zip_filename = zip_filename
                 
@@ -26,26 +27,37 @@ class XBRLZipPacket(object):
             
         
         files = z_file.namelist()
-        files = [f for f in files if f.endswith('.xml') or f.endswith('.xsd')]
-
+        files = [f for f in files 
+                     if f.endswith('.xml') or f.endswith('.xsd')]
         
         for name in files:
-            if name.endswith('.xsd'):
+            low = name.lower()
+            if low.endswith('.xsd'):
                 self.files['xsd'] = name
-            elif name.endswith('cal.xml'):
+            elif low.endswith('cal.xml'):
                 self.files['cal'] = name
-            elif name.endswith('pre.xml'):
+            elif low.endswith('pre.xml'):
                 self.files['pre'] = name
-            elif name.endswith('lab.xml'):
+            elif low.endswith('lab.xml'):
                 self.files['lab'] = name
-            elif name.endswith('def.xml'):
+            elif low.endswith('def.xml'):
                 self.files['def'] = name                    
-            elif (not name.endswith('def.xml') and
-                  not name.endswith('ref.xml')):
+            elif (not low.endswith('def.xml') and
+                  not low.endswith('ref.xml')):
                 self.files['xbrl'] = name
                 
         z_file.close()
         
+    def save_packet(self, 
+                    files: Dict[str, Tuple[str, bytes]], 
+                    zip_filename: str) -> None:
+        """
+        store files into zip_filename archive
+        """
+        with zipfile.ZipFile(zip_filename, mode='w') as zip_file:
+            for type_, (filename, data) in files.items():
+                self.files[type_] = filename
+                zip_file.writestr(filename, data)            
     
     def getfile(self, filetype):
         assert filetype in self.files
