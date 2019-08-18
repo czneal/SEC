@@ -62,6 +62,15 @@ class XBRLZipPacket(object):
         except OSError as e:
             raise XbrlException('problem with saving files to {}\n'.format(
                     zip_filename) + str(e))
+            
+    def extract_to(self, temp_dir: str) -> None:
+        try:
+            with zipfile.ZipFile(self.zip_filename) as zfile:
+                for name in self.files.values():
+                    zfile.extract(name, temp_dir)
+        except OSError as e:
+            XbrlException('problem with extracting files to {}\n'.format(
+                    temp_dir) + str(e))
     
     def getfile(self, filetype):
         assert filetype in self.files

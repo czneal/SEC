@@ -8,6 +8,7 @@ import xml.etree.ElementTree as ET
 import xbrlxml.xbrlexceptions
 from xbrlxml.xbrlzip import XBRLZipPacket
 from urltools import fetch_urlfile
+from utils import clear_dir
 from settings import Settings
 
 def download_files_from_sec(
@@ -85,26 +86,31 @@ def check_zip_file(filename: str) -> None:
 def check_zip_file_deep(filename: str) -> None:
     if not os.path.exists(filename):
         raise xbrlxml.xbrlexceptions.XbrlException('zip file doesnt exist')
-        
+    
+    tmp_dir = os.path.join(Settings.root_dir(), 'tmp/')
+    
     packet = XBRLZipPacket()
     packet.open_packet(filename)
+    packet.extract_to(tmp_dir)
     messages = []
     
-    for type_, file in packet.files.items():
+    for type_, filename in packet.files.items():
         try:
-            if file is None:
+            if filename is None:
                 continue
             
-#            parser = lxml.etree.XMLParser(collect_ids=False)
-#            tree = lxml.etree.parse(packet.getfile(type_),
-#                                    parser=parser)
-#            tree.getroot().clear()
-#            del tree
-            ET.parse(packet.getfile(type_))
+            lxml.etree.parse(
+                    os.path.join(tmp_dir, filename))
+#            ET.parse(packet.getfile(type_))
         except lxml.etree.ParseError as e:
             messages.append(str(e))
         except ET.ParseError as e:
             messages.append(str(e))
+    try:
+        clear_dir(tmp_dir)
+    except OSError as e:
+        messages.append(str(e))
+        
     if messages:
         raise xbrlxml.xbrlexceptions.XbrlException(
                 '\n'.join(messages))

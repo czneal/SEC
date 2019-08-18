@@ -8,6 +8,7 @@ Created on Tue Apr 16 17:58:11 2019
 import datetime as dt
 import calendar
 import re
+import os
 from lxml import etree #type: ignore
 
 class ProgressBar(object):
@@ -131,3 +132,11 @@ def retry(retry, exception_class):
                         raise e            
         return wrapper
     return decorator
+
+def clear_dir(target_dir):
+    for [root, dirs, filenames] in os.walk(target_dir):
+        for filename in filenames:
+            os.remove(os.path.join(root, filename))
+
+if __name__ == '__main__':
+    clear_dir('z:/sec/tmp')
