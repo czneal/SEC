@@ -67,6 +67,8 @@ class XBRLZipPacket(object):
         try:
             with zipfile.ZipFile(self.zip_filename) as zfile:
                 for name in self.files.values():
+                    if name is None:
+                        continue
                     zfile.extract(name, temp_dir)
         except OSError as e:
             XbrlException('problem with extracting files to {}\n'.format(
