@@ -94,12 +94,13 @@ def check_zip_file_deep(filename: str) -> None:
         try:
             if file is None:
                 continue
-            parser = lxml.etree.XMLParser(collect_ids=False)
-            tree = lxml.etree.parse(packet.getfile(type_),
-                                    parser=parser)
-            tree.getroot().clear()
-            del tree
-            #ET.parse(packet.getfile(type_))
+            
+#            parser = lxml.etree.XMLParser(collect_ids=False)
+#            tree = lxml.etree.parse(packet.getfile(type_),
+#                                    parser=parser)
+#            tree.getroot().clear()
+#            del tree
+            ET.parse(packet.getfile(type_))
         except lxml.etree.ParseError as e:
             messages.append(str(e))
         except ET.ParseError as e:

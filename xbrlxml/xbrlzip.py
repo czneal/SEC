@@ -60,7 +60,7 @@ class XBRLZipPacket(object):
                     self.files[type_] = filename
                     zip_file.writestr(filename, data)
         except OSError as e:
-            raise XbrlException('problem with saving files to {}'.format(
+            raise XbrlException('problem with saving files to {}\n'.format(
                     zip_filename) + str(e))
     
     def getfile(self, filetype):
