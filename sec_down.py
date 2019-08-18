@@ -15,16 +15,16 @@ def download(years: List[int],
              refresh_rss: bool) -> None:
     logs = Logs(Settings.root_dir(), append_log=append_log, name='down_log')
     
-    logs.log('download rss file(s)...')
-    for year, month in itertools.product(years, months):
-        try:
-            if refresh_rss:
+    if refresh_rss:
+        logs.log('download rss file(s)...')
+        for year, month in itertools.product(years, months):
+            try:
                 dwn.download_rss(year, month)
-        except XbrlException as e:
-            logs.set_header([year, month])
-            logs.error(str(e))
-    logs.log('download rss file(s)...ok')
-        
+            except XbrlException as e:
+                logs.set_header([year, month])
+                logs.error(str(e))
+        logs.log('download rss file(s)...ok')
+
     sec = SecEnumerator(years, months)
     records = list(sec.filing_records())
     

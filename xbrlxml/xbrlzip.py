@@ -54,10 +54,14 @@ class XBRLZipPacket(object):
         """
         store files into zip_filename archive
         """
-        with zipfile.ZipFile(zip_filename, mode='w') as zip_file:
-            for type_, (filename, data) in files.items():
-                self.files[type_] = filename
-                zip_file.writestr(filename, data)            
+        try:
+            with zipfile.ZipFile(zip_filename, mode='w') as zip_file:
+                for type_, (filename, data) in files.items():
+                    self.files[type_] = filename
+                    zip_file.writestr(filename, data)
+        except OSError as e:
+            raise XbrlException('problem with saving files to {}'.format(
+                    zip_filename) + str(e))
     
     def getfile(self, filetype):
         assert filetype in self.files
