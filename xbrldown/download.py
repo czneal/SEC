@@ -2,7 +2,8 @@
 import os
 from typing import Dict, Tuple
 from bs4 import BeautifulSoup
-import lxml
+import lxml.etree
+import xml.etree.ElementTree as ET
 
 import xbrlxml.xbrlexceptions
 from xbrlxml.xbrlzip import XBRLZipPacket
@@ -94,10 +95,14 @@ def check_zip_file_deep(filename: str) -> None:
             if file is None:
                 continue
             
-            lxml.etree.parse(packet.getfile(type_))
+            tree = lxml.etree.parse(packet.getfile(type_))
+            tree.getroot().clear()
+            del tree
+            #ET.parse(packet.getfile(type_))
         except lxml.etree.ParseError as e:
             messages.append(str(e))
-    
+        except ET.ParseError as e:
+            messages.append(str(e))
     if messages:
         raise xbrlxml.xbrlexceptions.XbrlException(
                 '\n'.join(messages))
