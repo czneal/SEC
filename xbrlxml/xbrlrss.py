@@ -5,6 +5,7 @@ import datetime as dt
 import re
 import json
 import os
+from typing import List
 
 import utils
 from algos.xbrljson import ForDBJsonEncoder
@@ -136,13 +137,18 @@ class CustomEnumerator(RecordsEnumerator):
                 
         return records
 
-def makecustomrss() :
-    with open('../outputs/customrss.csv', 'w') as f:
-        rss = SecEnumerator([2018], months=[m for m in range(1,13)])
+def makecustomrss(years: List[int], 
+                  months: List[int], 
+                  rss_name: str) -> None:
+    filename = os.path.join(Settings.app_dir(), 
+                            Settings.output_dir(), 
+                            rss_name)
+    with open(filename, 'w') as f:
+        rss = SecEnumerator(years=years, months=months)
         for (record, filename) in rss.filing_records():            
             f.write(json.dumps(record, cls=ForDBJsonEncoder))
             f.write('\t' + filename + '\n')
             
 if __name__ == "__main__":
-    makecustomrss()
+    makecustomrss([2018], [1,2], 'onemonth.csv')
     

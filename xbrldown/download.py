@@ -87,29 +87,28 @@ def check_zip_file_deep(filename: str) -> None:
     if not os.path.exists(filename):
         raise xbrlxml.xbrlexceptions.XbrlException('zip file doesnt exist')
     
-    tmp_dir = os.path.join(Settings.root_dir(), 'tmp/')
+#    tmp_dir = os.path.join(Settings.root_dir(), 'tmp/')
     
     packet = XBRLZipPacket()
     packet.open_packet(filename)
-    packet.extract_to(tmp_dir)
-    messages = []
     
+    messages = []    
     for type_, filename in packet.files.items():
         try:
             if filename is None:
                 continue
             
-            lxml.etree.parse(
-                    os.path.join(tmp_dir, filename))
-#            ET.parse(packet.getfile(type_))
+#            lxml.etree.parse(
+#                    os.path.join(tmp_dir, filename))
+            ET.parse(packet.getfile(type_))
         except lxml.etree.ParseError as e:
             messages.append(str(e))
         except ET.ParseError as e:
             messages.append(str(e))
-    try:
-        clear_dir(tmp_dir)
-    except OSError as e:
-        messages.append(str(e))
+#    try:
+#        clear_dir(tmp_dir)
+#    except OSError as e:
+#        messages.append(str(e))
         
     if messages:
         raise xbrlxml.xbrlexceptions.XbrlException(
