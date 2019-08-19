@@ -1,14 +1,29 @@
 import os
 from multiprocessing import Pool
+from typing import List
 
 import utils
 import mysqlio.basicio
+from indi.types import TRecordPair
 from xbrlxml.dataminer import NumericDataMiner
 from xbrlxml.xbrlrss import CustomEnumerator
 from mysqlio.xbrlfileio import ReportToDB
 from log_file import Logs, RepeatFile
 from settings import Settings
 
+
+def concat_records(r1: List[TRecordPair],
+                   r2: List[TRecordPair]) -> List[TRecordPair]:
+    index = set()
+    new_list : List[TRecordPair] = []
+    for r, filename in r1 + r2:
+        if filename in index:
+            continue
+        index.add(filename)
+        new_list.append([r, filename])
+    
+    return new_list
+                   
 def concat_files(filenames, output):
     with open(output, 'w') as f:
         for filename in filenames:
@@ -38,7 +53,7 @@ def concat_logs_repeat(logs_dir, output_dir):
             
     
 def read(records, repeat, slice_, log_dir, append_log=False):
-    logs = Logs(log_dir, append_log=append_log)
+    logs = Logs(log_dir, append_log=append_log, name='parse_log')
     repeat = RepeatFile(repeat)
     
     miner = NumericDataMiner(logs=logs,

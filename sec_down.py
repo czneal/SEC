@@ -52,6 +52,7 @@ def download(years: List[int],
         print('\r' + pb.message(), end='')
         
     print()
+    logs.close()
     
 
 if __name__ == '__main__':

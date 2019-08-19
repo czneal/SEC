@@ -93,6 +93,9 @@ def str2date(datestr, pattern='ymd'):
     return retval
 
 def opensmallxmlfile(file):
+    if file is None:
+        return None
+    
     root = None
     try:
         root = etree.parse(file).getroot()
@@ -102,6 +105,9 @@ def opensmallxmlfile(file):
     return root
 
 def openbigxmlfile(file):
+    if file is None:
+        return None
+            
     root = None
     try:
         #xmlparser = etree.XMLParser(recover=True)
