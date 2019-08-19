@@ -7,6 +7,7 @@ from xbrlxml.dataminer import NumericDataMiner
 from xbrlxml.xbrlrss import CustomEnumerator
 from mysqlio.xbrlfileio import ReportToDB
 from log_file import Logs, RepeatFile
+from settings import Settings
 
 def concat_files(filenames, output):
     with open(output, 'w') as f:
@@ -46,8 +47,8 @@ def read(records, repeat, slice_, log_dir, append_log=False):
                               repeat=repeat)
     
     pb = utils.ProgressBar()
-    pb.start(len(records))    
-    
+    pb.start(len(records[slice_]))
+        
     with mysqlio.basicio.OpenConnection() as con:
         cur = con.cursor(dictionary=True)
         for record, filename in records[slice_]:
@@ -67,19 +68,33 @@ def read(records, repeat, slice_, log_dir, append_log=False):
     logs.close()    
     repeat.close()
     
-def multiproc_read():
+    return(pb.n)
+    
+def multiproc_read(rss_filename):
     cpus = os.cpu_count() - 1
     print('run {0} proceses'.format(cpus))
     
     params = []
-    filesenum = CustomEnumerator('outputs/customrss.csv')
+    filename = os.path.join(Settings.app_dir(), 
+                            Settings.output_dir(), 
+                            rss_filename)
+    filesenum = CustomEnumerator(filename)
     records = filesenum.filing_records()
+    
+    multiproc_dir = os.path.join(Settings.app_dir(), 
+                           Settings.output_dir(),
+                           'multiproc/')
+                           
+    if not os.path.exists(multiproc_dir):
+        os.mkdir(multiproc_dir)
+        
     records_per_cpu = int(len(records)/cpus) + 1
     for i, start in enumerate(range(0, len(records), records_per_cpu)):
         args = [records,
-                'outputs/multiproc/repeat{0}.csv'.format(i),
+                os.path.join(multiproc_dir, 'repeat{0}.csv'.format(i)),
                 slice(start, start + records_per_cpu),
-                'outputs/multiproc/logs{0}/'.format(i)]
+                os.path.join(multiproc_dir, 'logs{0}/'.format(i))
+               ]
         params.append(args)
         
         if not os.path.exists(args[3]):
@@ -98,13 +113,13 @@ if __name__ == '__main__':
 #                      pres = '../test/gen-20121231_pre.xml', 
 #                      defi = '../test/gen-20121231_def.xml', 
 #                      calc = '../test/gen-20121231_cal.xml')
-    filesenum = CustomEnumerator('outputs/testrss.csv')
-    read(filesenum.filing_records(), 
-         'outputs/repeatrss.csv', 
-         slice(0, None), 
-         'outputs/')
+#    filesenum = CustomEnumerator('outputs/testrss.csv')
+#    read(filesenum.filing_records(), 
+#         'outputs/repeatrss.csv', 
+#         slice(0, None), 
+#         'outputs/')
     
-#    multiproc_read()
-#    concat_logs_repeat(logs_dir='z:/Projects/SEC/SEC/Outputs/multiproc/', 
-#                       output_dir='outputs/') 
+    multiproc_read('all.csv')
+    concat_logs_repeat(logs_dir='/home/victor/sec/outputs/multiproc/', 
+                       output_dir='/home/victor/sec/outputs/') 
     

@@ -56,7 +56,7 @@ def download(years: List[int],
 
 if __name__ == '__main__':
     download(years=[y for y in range(2015,2016)], 
-             months=[m for m in range(1,2)], 
+             months=[m for m in range(1,13)], 
              append_log=False,
              refresh_rss=False)
 	
