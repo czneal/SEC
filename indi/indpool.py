@@ -8,11 +8,11 @@ from indi.indicators import Indicator, create
 from indi.loader import CSVLoader
 from indi.exceptions import SortException
 
-class IndicatorPool(object):
+class IndicatorsPool(object):
     def __init__(self, class_pool: ModelsPool,
                        csv_loader: CSVLoader):
-        self.indicators = {} #type: Dict[str, Indicator]
-        self.class_pool = class_pool #type: ModelPool
+        self.indicators: Dict[str, Indicator] = {} 
+        self.class_pool = class_pool #type: ModelsPool
         self._init_indicators(class_pool,
                               csv_loader)
         
@@ -63,7 +63,6 @@ class IndicatorPool(object):
         max_year = max(fy_structure)
         
         data = []
-        print('part A')
         for fy, (adsh, structure) in fy_structure.items():
             self.class_pool.predict_all(structure)            
             for ind in [self.indicators[o] for o in self.indicator_order]:                
@@ -74,17 +73,17 @@ class IndicatorPool(object):
                 
                 value, n = ind.calc(nums, fy, adsh)
                 info.append(n)
-                data.append({'adsh': adsh,
+                data.append(pd.DataFrame([{'adsh': adsh,
                                     'fy': fy,
                                     'value': value,
                                     'tag': ind.name,
                                     'version': '',
-                                    'name': ind.name})
-        nums = nums.append(data, ignore_index=True)
+                                    'name': ind.name}]))
+        nums = nums.append(data, ignore_index=True, sort=False)
         
-        data = []
-        print('part B')
-        for fy, (adsh, structure) in fy_structure.items():
+        years = sorted(fy_structure.keys())
+        for fy in years:
+            (adsh, structure) = fy_structure[fy]
             for ind in [self.indicators[o] for o in self.indicator_order]:                
                 if ind.one_time and fy != max_year:
                     continue
@@ -93,18 +92,18 @@ class IndicatorPool(object):
                                                 
                 value, n = ind.calc(nums, fy, adsh)
                 info.append(n)
-                nums = nums.append([{'adsh': adsh,
+                nums = nums.append(pd.Series({'adsh': adsh,
                                     'fy': fy,
                                     'value': value,
                                     'tag': ind.name,
                                     'version': '',
-                                    'name': ind.name}],
+                                    'name': ind.name}),
                                     ignore_index=True)
         
         info = pd.concat(info, sort=False)
         info.fillna(value={'l': True}, inplace=True)
         
-        columns = info.columns.tolist() + ['value'] + ['sadsh']
+        columns = info.columns.tolist() + ['sadsh']
         info = (pd.merge(info, nums[['fy', 'name', 'value', 'adsh']],
                          left_on=['sname','fy'], right_on=['name', 'fy'],
                          how='left',
@@ -169,6 +168,17 @@ def one_pass(cycles: int, use_mock) -> datetime.timedelta:
     return(td, n, info)
     
 if __name__ == '__main__':
+    import indicators2dba as indio
+    
     td, n, info = one_pass(cycles=1, use_mock=False)
-    print(td)
+    info.to_csv('../outputs/mgparams.csv')
+    n.to_csv('../outputs/mgnums.csv')
+    
+#    n = pd.read_csv('../outputs/mgnums.csv').set_index('index')
+#    info = pd.read_csv('../outputs/mgparams.csv').set_index('index')
+    
+    indio.write_report(nums=n, cik=1467858, adsh='0001467858-19-000033')
+    indio.write_mg_nums(n)
+    indio.write_params(info)
+    
 

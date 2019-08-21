@@ -5,21 +5,28 @@ Created on Mon Oct 16 11:14:23 2017
 @author: Asus
 """
 
+import datetime
 import mysql.connector # type :ignore
 import pandas as pd # type: ignore
 from contextlib import contextmanager
 
 from settings import Settings
+from exceptions import MySQLTypeError, MySQLSyntaxError
 
 @contextmanager
-def OpenConnection(host=Settings.host()):
-    hosts = {"server":"192.168.88.113", "remote":"95.31.1.243","localhost":"localhost"}
+def OpenConnection(host=Settings.host(), port=3306):
+    hosts = {"server":"192.168.88.113", 
+             "remote":"95.31.1.243",
+             "localhost":"localhost"}
+    if host == 'remote':
+        port = 3456
     con = mysql.connector.connect(user="app", password="Burkina!7faso",
                               host=hosts[host], database="reports",
+                              port=port,
                               ssl_ca = Settings.ssl_dir()+"ca.pem",
                               ssl_cert = Settings.ssl_dir()+"client-cert.pem",
                               ssl_key = Settings.ssl_dir()+"client-key.pem",
-                              connection_timeout = 1000)
+                              connection_timeout = 30)
     try:
         yield con
     finally:
@@ -54,6 +61,56 @@ class Table(object):
     def truncate(self, con):
         cur = con.cursor()
         cur.execute("truncate table " + self.table_name)
+        con.commit()
+    
+    @staticmethod    
+    def create(con: mysql.connector.connection,
+               name: str,
+               fields: list) -> None:
+        
+        cmd = 'drop table if exists `{}`;\n'.format(name)            
+        cmd += "create table `{0}` (\n".format(name)
+        columns = []
+        primary = []
+        try:
+            for field in fields:
+                column = '`{fname}` {ftype}{fsize} {not_null}'
+                if issubclass(field['type'], str):
+                    ftype = 'varchar'
+                    fsize = '({})'.format(field['size'])
+                elif issubclass(field['type'], int):
+                    ftype = 'int'
+                    fsize = '(11)'
+                elif issubclass(field['type'], float):
+                    ftype = 'decimal'
+                    fsize = '(24,4)'
+                elif issubclass(field['type'], datetime.date):
+                    ftype = 'date'
+                    fsize = ''
+                else:
+                    raise MySQLTypeError('Field type doesnt supported')
+                
+                if field['notnull']:
+                    not_null = 'not null'
+                else:
+                    not_null = ''
+                columns.append(column.format(fname=field['name'],
+                                             ftype=ftype, 
+                                             fsize=fsize, 
+                                             not_null=not_null))
+                
+                if field['primary']:
+                    primary.append('`{}`'.format(field['name']))            
+        except KeyError as e:
+            raise MySQLSyntaxError('Fields list is not acceptable, ' + str(e))
+        
+        cmd += ',\n'.join(columns)
+        cmd += ',\nprimary key ({})\n'.format(', '.join(primary))
+        cmd += ') ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;'
+        
+        cur = con.cursor()
+        for result in cur.execute(cmd, multi=True):
+            pass
         con.commit()
 
     def __insert_command(self, fields=None):
@@ -202,7 +259,7 @@ def read_report_structures(adshs):
         cur = con.cursor(dictionary=True)
         cur.execute("create temporary table adshs (adsh VARCHAR(20) CHARACTER SET utf8 not null, PRIMARY KEY (adsh))")
         cur.executemany("insert into adshs (adsh) values (%s)", list((e,) for e in adshs))
-        cur.execute("""select r.adsh, structure
+        cur.execute("""select r.adsh as adsh, structure, r.fin_year as fy
                         from reports r, adshs a
                         where r.adsh = a.adsh""")
         df = pd.DataFrame(cur.fetchall())
@@ -224,13 +281,11 @@ def read_reports_nums(adshs):
         cur = con.cursor(dictionary=True)
         frames = []
         for adsh in adshs:
-            cur.execute("select tag, version, value, fy, adsh from mgnums where adsh = (%s)",(adsh,))
+            cur.execute("select tag, version, value, fy, adsh, uom from mgnums where adsh = (%s)",(adsh,))
             frames.append(pd.DataFrame(cur.fetchall()))
     if frames:
         df = pd.concat(frames)
-        df["value"] = df["value"].astype('float')
-        df.sort_values('fy', ascending=False, inplace=True)
-    
+        df["value"] = df["value"].astype('float')    
     return df
 
 def getquery(query, dictionary=True):
@@ -256,3 +311,13 @@ def execquery(query):
         raise
     finally:
         if 'con' in locals() and con: con.close()
+        
+if __name__ == '__main__':
+    adshs = ['0001467858-13-000025',
+             '0001467858-14-000043',
+             '0001467858-15-000036',
+             '0001467858-16-000255',
+             '0001467858-17-000028',
+             '0001467858-18-000022',
+             '0001467858-19-000033']
+    n = read_reports_nums(adshs)

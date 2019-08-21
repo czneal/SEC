@@ -44,7 +44,7 @@ class Indicator(metaclass=ABCMeta):
         pass
     
     @abstractmethod
-    def description(self):
+    def description(self) -> str:
         pass
     
 
@@ -86,12 +86,13 @@ class IndicatorStatic(IndicatorProcedural):
         n['fy'] = fy
         n['class'] = 1
         n['adsh'] = adsh
-
+ 
         return result, n[Indicator.header]
 
 class IndicatorDynamic(IndicatorProcedural):
     def calc(self, nums, fy, adsh):
         n = nums.loc[nums['name'].isin(self.dp)]
+        
         n = (n.pivot(index='fy', columns='name', values='value')
                 .reset_index()
                 .sort_values('fy', ascending=False)
@@ -115,7 +116,7 @@ class IndicatorDynamic(IndicatorProcedural):
         n['pname'] = self.name
         n['class'] = 1.0
         n['adsh'] = adsh
-
+            
         return result, n[Indicator.header]
 
 class IndicatorRestated(Indicator):
@@ -126,6 +127,7 @@ class IndicatorRestated(Indicator):
     def calc(self, nums, fy, adsh):
         #merge structure and nums in one table p
         n = nums.loc[nums['fy'] == fy]
+        
         p = self.classifier.predicted
         p = p.merge(n, 'left', left_on=['c', 'v'], right_on=['tag', 'version'])
         
@@ -134,6 +136,7 @@ class IndicatorRestated(Indicator):
         #filter and calc result
         r = p[(p['class'] == self.class_id) & (p['l'] == True)]
         r = r.dropna()
+        
         result = np.nan
         if r.shape[0] != 0:
             r['weighted'] = r['value']*r['w']
@@ -149,9 +152,11 @@ class IndicatorRestated(Indicator):
         return result, p[Indicator.header + ['l']]
 
     def description(self):
-        return (self.name,
-                'class id: {0}\n{1}'.format(self.class_id,
-                                       self.classifier.description()))
+        
+        return 'indicator:{0}\nclass id: {1}\n{2}'.format(
+                self.name,
+                self.class_id,
+                self.classifier.description())
 
 
 def create(ind_name: str,

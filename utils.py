@@ -126,13 +126,13 @@ def class_for_name(module_name, class_name):
     c = getattr(m, class_name)
     return c
 
-def retry(retry, exception_class):
+def retry(retry, exc_cls):
     def decorator(function):
         def wrapper(*args, **kwargs):
             for i in range(retry):
                 try:
                     return function(*args, **kwargs)            
-                except exception_class as e:
+                except exc_cls as e:
                     if i + 1 == retry:
                         print('done {} tryouts'.format(retry))
                         raise e            

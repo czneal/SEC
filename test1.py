@@ -4,88 +4,160 @@ Created on Tue Jan  8 15:23:57 2019
 
 @author: Asus
 """
-import database_operations as do
-import queries as q
-import lstm_class as cl
-import indicators as ind
-import indicators2dba as i2d
 import pandas as pd
 import json
-import log_file as log
+from typing import Tuple, List, Dict, Any, Union
+
+import mysqlio.basicio as do
+import queries as q
+import indicators2dba as i2d
 import settings as gs
-import sys
 
-con = None
-try:
-    print('init models and indicators...', end='')
-    if 'cl_pool' not in locals():
-        cl_pool = cl.ClassifierPool()
-    ind_pool = ind.IndicatorPool(cl_pool)
-    i2d.write_mg_descr(ind_pool)
-    ind.indicator_scripts()    
-    print('ok')
+from utils import ProgressBar
+from algos.xbrljson import custom_decoder
+from log_file import Logs
+from exceptions import XbrlException
+from indi.modelspool import ModelsPool
+from indi.indpool import IndicatorsPool
+from indi.loader import CSVLoader
+
+
+def init_classifiers_indicators_pools(use_mock: bool) -> IndicatorsPool:
+    csv_loader = CSVLoader()
+    csv_loader.load()
     
-    print('read newest reports...', end = '')
-    con = do.OpenConnection()
-    cur = con.cursor(dictionary=True)
+    if use_mock:
+        from tests.resource_indi import Data
+        import unittest.mock, mock
+        with unittest.mock.patch('indi.lstmmodels.Models') as mock_models:
+            instance = mock_models.return_value
+            
+            mock_multi = mock.Mock()
+            mock_multi.predict.side_effect = Data.predict_multi
+            
+            mock_single = mock.Mock()
+            mock_single.predict.side_effect = Data.predict_single
+            
+            models_dict = {}
+            for fmodel, kwargs in csv_loader.models():
+                if kwargs['multi'] == 1:
+                    models_dict[fmodel] = mock_multi
+                else:
+                    models_dict[fmodel] = mock_single
+            instance.models = models_dict
+            
+            m_pool = ModelsPool()
+            m_pool.load(csv_loader)
+    else:        
+        m_pool = ModelsPool()
+        m_pool.load(csv_loader)
+            
+    ind_pool = IndicatorsPool(class_pool=m_pool,
+                             csv_loader=csv_loader)
     
-    cur.execute('truncate table mgreporttable;')
-    cur.execute('truncate table mgparamstype1;')
-    con.commit()
+    return ind_pool
+
+def read_mgnums_structures(adshs: List[str]) -> Tuple[pd.DataFrame,
+                                                      pd.DataFrame]:
+    """
+    nums columns: tag, version, value, fy, adsh, uom, name
+    structures columns: 'adsh', 'fy', 'structure'
+    """
     
-    cur.execute(q.select_newest_reports, {'fy':2017})
-    reports = pd.DataFrame(cur.fetchall(), columns=['adsh', 'cik', 'fy', 'file_date', 'form'])
-    con = con.close()
-    con = None
-    print('ok')
+    nums = do.read_reports_nums(adshs)
+    nums = nums[~(nums['tag'].str.startswith('mg_'))]
+    nums['name'] = nums['version'] + ':' + nums['tag']
+    structures = do.read_report_structures(adshs)
+    return nums, structures
+
+def make_fy_structures(structures: pd.DataFrame) -> Dict[int, List[Union[int, Any]]]:
+    """
+    return dictionary with fy as dict key and list [adsh, structure]
+    structures should have 'adsh' as index and ['fy', 'structure'] columns
+    """
     
-    out = log.LogFile(filename = gs.Settings.output_dir() + '/calc_log.log', append=False)
-    err = log.LogFile(filename = gs.Settings.output_dir() + '/calc_log_err.log', append=False)
-    cik_filter = -1
-    ciks = reports[reports['fy'] == 2017]['cik'].unique()
-    total = len(ciks)
-    for index, cik in enumerate(ciks):
-        if cik != cik_filter and cik_filter != -1:
-            continue
+    fy_structures : Dict[int, List[Union[int, Any]]] = {}
+    for index, row in structures.iterrows():
+        fy_structures[row['fy']] = [index, 
+                                    json.loads(row['structure'],
+                                               object_hook=custom_decoder)]
+                                    
+    return fy_structures
+
+def process_indicators(year: int, 
+                       truncate: bool,
+                       slice_: slice,
+                       logs: Logs) -> None:
+            
+    logs.log('init classifiers and indicators pools...')
+    #init classifiers and indicators pools
+    ind_pool = init_classifiers_indicators_pools(use_mock=True)
+    logs.log('ok')
+    
+    logs.log('prepare tables and data...')
+    #truncate tables if needed
+    if truncate:
+        with do.OpenConnection() as con:
+            cur = con.cursor()
+            cur.execute('truncate table mgreporttable;')
+            cur.execute('truncate table mgparamstype1;')
+            con.commit()
         
-        print('cik: {0}'.format(cik), "{0} of {1}".format(index+1, total))
+    #read latest reports for this year
+    with do.OpenConnection() as con:
+        cur = con.cursor(dictionary=True)
+        cur.execute(q.select_newest_reports, {'fy': year})
+        reports = pd.DataFrame(cur.fetchall(), 
+                               columns=['adsh', 'cik', 'fy', 
+                                        'file_date', 'form'])
+    logs.log('ok')        
+        
+    
+    ciks = list(reports[reports['fy'] == year]['cik'].unique())
+    
+    pb = ProgressBar()
+    pb.start(len(ciks[slice_]))
+    
+    for cik in ciks[slice_]:
         try:
-            r = reports[reports['cik'] == cik]            
-                        
-            out.write2(cik, 'read nums')
-            adshs = r['adsh'].unique()
-            nums = do.read_reports_nums(adshs)
-            if nums.shape[0] == 0:
-                err.write2(cik, 'fail to read nums')                
-                continue
+            logs.set_header([cik])
             
-            fy_structure = {}
-            data = []
-            for adsh in adshs:
-                fy = int(nums[nums['adsh'] == adsh].iloc[0]['fy'])
-                fy_structure[fy] = [json.loads(do.read_report_structures([adsh]).loc[adsh]['structure']),
-                                    adsh]
-                data.append({'adsh':adsh, 'fy':fy, 'tag':'us-gaap:mg_tax_rate', 'value':0.2})
+            r = reports[reports['cik'] == cik]
+            
+            nums, structs = read_mgnums_structures(list(r['adsh'].unique()))
+            fy_structures = make_fy_structures(structs)
+            mgnums, info = ind_pool.calc(nums, fy_structures)
+            
+            i2d.write_mg_descr(ind_pool)
+            i2d.write_mg_nums(mgnums)
+            i2d.write_params(info)
+            i2d.write_report(mgnums, cik, adsh = fy_structures[max(fy_structures)][0])
+        
+        except Exception as e:
+            logs.error(str(e))
+            logs.traceback()
+            
+        print('\r' + pb.message(), end='')
+        pb.measure()
+    print()
     
-            nums = nums.append(data, ignore_index=True)            
+    logs.log('finish')
+        
+if __name__ == '__main__':
+    try:
+        logs = Logs(log_dir = 'outputs/',#gs.Settings.root_dir(),
+                    append_log=False,
+                    name='calc_log')
+        
+        process_indicators(year=2018,
+                           truncate=True,
+                           slice_=slice(0,1),
+                           logs=logs)
+        
+    except Exception as e:
+        logs.error(str(e))
+        logs.traceback()
+        raise e
+    finally:
+        logs.close()
     
-            out.write2(cik, 'calculate')
-            df, dep = ind_pool.calc(nums, fy_structure)
-            
-    
-            out.write2(cik, 'write to database')
-            i2d.write_gaap_descr(list(dep[dep['sname'].str.find(':')!=-1]['sname'].unique()))
-            
-            i2d.write_params(dep)
-            i2d.write_report(df, cik, fy_structure[max(fy_structure)][1])
-            
-        except:
-            err.write_tb2(cik, sys.exc_info())
-            
-    out.close()
-    err.close()            
-except:
-    raise
-finally:
-    if con: con.close()
-
