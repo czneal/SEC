@@ -10,6 +10,7 @@ from typing import List
 import utils
 from algos.xbrljson import ForDBJsonEncoder
 from settings import Settings
+from utils import add_root_dir
 
 class FilingRSS(object):
     def __init__(self):
@@ -130,6 +131,7 @@ class CustomEnumerator(RecordsEnumerator):
         with open(self.__filename) as f:
             for line in f.readlines():
                 jstr, filename = re.sub('\n*', '', line).split('\t')
+                filename = add_root_dir(filename)
                 record = json.loads(jstr)
                 record['file_date'] = utils.str2date(record['file_date'])
                 record['period'] = utils.str2date(record['period'])

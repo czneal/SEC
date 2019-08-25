@@ -13,6 +13,7 @@ import sys
 import json
 from typing import List, Any
 
+import exceptions as errors
 from algos.xbrljson import ForDBJsonEncoder
 
 class LogFile(object):
@@ -65,9 +66,13 @@ class LogFile(object):
             
 class Logs():
     def __init__(self, log_dir: str, append_log=False, name='log'):
-        self.__err = LogFile(log_dir + name + '.err', append_log)
-        self.__log = LogFile(log_dir + name + '.log', append_log)
-        self.__warn = LogFile(log_dir + name + '.warn', append_log)
+        try:
+            self.__err = LogFile(log_dir + name + '.err', append_log)
+            self.__log = LogFile(log_dir + name + '.log', append_log)
+            self.__warn = LogFile(log_dir + name + '.warn', append_log)
+        except OSError as e:
+            raise errors.XbrlException(str(e))
+            
         self.header = [] # type: List[str]
         
     def set_header(self, header: List[Any]) -> None:

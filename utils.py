@@ -9,7 +9,10 @@ import datetime as dt
 import calendar
 import re
 import os
+import pathlib
 from lxml import etree #type: ignore
+
+from settings import Settings
 
 class ProgressBar(object):
     def __init__(self):
@@ -143,6 +146,38 @@ def clear_dir(target_dir):
     for [root, dirs, filenames] in os.walk(target_dir):
         for filename in filenames:
             os.remove(os.path.join(root, filename))
+            
+def remove_common_path(common: str, path: str) -> str:
+    path = os.path.normcase(os.path.normpath(path))
+    try:
+        common = os.path.commonpath([common, path])
+        common = os.path.normcase(os.path.normpath(common) + '/')        
+        path = path.replace(common, '')
+    except ValueError:
+        pass
+    
+    return pathlib.PurePath(path).as_posix()
+
+def remove_root_dir(path: str) -> str:
+    return remove_common_path(Settings.root_dir(), path)
+
+def remove_app_dir(path: str) -> str:
+    return remove_common_path(Settings.app_dir(), path)
+
+def add_root_dir(path: str) -> str:
+    root_dir = os.path.normcase(Settings.root_dir())
+    path = os.path.normcase(path)
+    
+    return pathlib.PurePath(
+            os.path.join(root_dir, path)).as_posix()
+
+def add_app_dir(path: str) -> str:
+    app_dir = os.path.normcase(Settings.app_dir())
+    path = os.path.normcase(path)
+    
+    return pathlib.PurePath(
+            os.path.join(app_dir, path)).as_posix()
+    
 
 if __name__ == '__main__':
-    clear_dir('z:/sec/tmp')
+    print(remove_root_dir('z:/sec/EdgarDownload///file.py'))

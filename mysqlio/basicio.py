@@ -9,12 +9,14 @@ import datetime
 import mysql.connector # type :ignore
 import pandas as pd # type: ignore
 from contextlib import contextmanager
+from typing import List, Optional
 
 from settings import Settings
 from exceptions import MySQLTypeError, MySQLSyntaxError
+import queries as q
 
 @contextmanager
-def OpenConnection(host=Settings.host(), port=3306):
+def OpenConnection(host: str=Settings.host(), port: int=3306):
     hosts = {"server":"192.168.88.113", 
              "remote":"95.31.1.243",
              "localhost":"localhost"}
@@ -254,40 +256,66 @@ def read_reports_attr(years):
 
     return reports
 
-def read_report_structures(adshs):
+def read_report_structures(adshs: List[str]) -> pd.DataFrame:
+    """
+    read reports table
+    return pandas.DataFrame object with columns [adsh, structure, fy]
+    if adshs list is empty return empty DataFrame
+    """
     with OpenConnection() as con:         
         cur = con.cursor(dictionary=True)
-        cur.execute("create temporary table adshs (adsh VARCHAR(20) CHARACTER SET utf8 not null, PRIMARY KEY (adsh))")
-        cur.executemany("insert into adshs (adsh) values (%s)", list((e,) for e in adshs))
+        cur.execute(q.create_tmp_adsh_table)
+        cur.executemany("insert into tmp_adshs (adsh) values (%s)", list((e,) for e in adshs))
         cur.execute("""select r.adsh as adsh, structure, r.fin_year as fy
-                        from reports r, adshs a
+                        from reports r, tmp_adshs a
                         where r.adsh = a.adsh""")
-        df = pd.DataFrame(cur.fetchall())
+        df = pd.DataFrame(cur.fetchall(), columns=['adsh', 'structure', 'fy'])
         df.set_index("adsh", inplace=True)
     
     return df
 
-def read_report_nums(adsh):
-    with OpenConnection() as con:
-        cur = con.cursor(dictionary=True)
-        cur.execute("select version, tag, value from mgnums where adsh = (%s)",(adsh,))
-        df = pd.DataFrame(cur.fetchall(), columns=["tag","value"]).set_index("tag")
-        df["value"] = df["value"].astype('float')
+def read_reports_nums(adshs: List[str]) -> pd.DataFrame:
+    """
+    read mgnums table
+    return pd.DataFrame with columns [tag, version, value, fy, adsh, uom]
+    for all report with adsh firld in adshs list
+    if adshs list is empty return empty DataFrame
+    """
     
-    return df.sort_index()
-
-def read_reports_nums(adshs):    
     with OpenConnection() as con:        
         cur = con.cursor(dictionary=True)
-        frames = []
-        for adsh in adshs:
-            cur.execute("select tag, version, value, fy, adsh, uom from mgnums where adsh = (%s)",(adsh,))
-            frames.append(pd.DataFrame(cur.fetchall()))
-    if frames:
-        df = pd.concat(frames)
-        df["value"] = df["value"].astype('float')    
+        cur.execute(q.create_tmp_adsh_table)
+        cur.executemany(q.insert_tmp_adsh, [(adsh,) for adsh in adshs])
+        cur.execute("""select tag, version, value, fy, n.adsh, uom 
+                       from mgnums n, tmp_adshs t 
+                       where n.adsh = t.adsh""")
+        df = (pd.DataFrame(cur.fetchall(), 
+                          columns=['tag', 'version', 'value', 
+                                   'fy', 'adsh', 'uom'])
+                .astype({'value': float}))
+        
+        
     return df
 
+def read_reports_by_cik(ciks: List[int],
+                        columns: Optional[List[str]] = None) -> pd.DataFrame:
+    """
+    return pd.DataFrame with specified columns from reports table
+    for all cik in ciks list
+    if columns is None return all columns
+    """
+    if columns is None:
+        c_names = 'r.*'
+    else:
+        c_names = ', '.join(['r.'+c for c in columns])
+    with OpenConnection() as con:
+        cur = con.cursor(dictionary=True)
+        cur.execute(q.create_tmp_cik_table)        
+        cur.executemany(q.insert_tmp_cik,[(cik,) for cik in ciks])
+        cur.execute("""select {c_names} from reports r, tmp_ciks t 
+                       where r.cik=t.cik;""".format(c_names=c_names))
+        return pd.DataFrame(cur.fetchall())
+    
 def getquery(query, dictionary=True):
     try:
         con = OpenConnection()
@@ -313,11 +341,6 @@ def execquery(query):
         if 'con' in locals() and con: con.close()
         
 if __name__ == '__main__':
-    adshs = ['0001467858-13-000025',
-             '0001467858-14-000043',
-             '0001467858-15-000036',
-             '0001467858-16-000255',
-             '0001467858-17-000028',
-             '0001467858-18-000022',
-             '0001467858-19-000033']
-    n = read_reports_nums(adshs)
+    df = read_report_structures(adshs=[''])
+    
+    

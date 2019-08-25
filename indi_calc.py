@@ -13,10 +13,10 @@ import queries as q
 import indicators2dba as i2d
 import settings as gs
 
+from exceptions import XbrlException
 from utils import ProgressBar
 from algos.xbrljson import custom_decoder
 from log_file import Logs
-from exceptions import XbrlException
 from indi.modelspool import ModelsPool
 from indi.indpool import IndicatorsPool
 from indi.loader import CSVLoader
@@ -60,7 +60,7 @@ def init_classifiers_indicators_pools(use_mock: bool) -> IndicatorsPool:
 def read_mgnums_structures(adshs: List[str]) -> Tuple[pd.DataFrame,
                                                       pd.DataFrame]:
     """
-    nums columns: tag, version, value, fy, adsh, uom, name
+    nums columns: 'tag', 'version', 'value', 'fy', 'adsh', 'uom', 'name'
     structures columns: 'adsh', 'fy', 'structure'
     """
     
@@ -68,6 +68,7 @@ def read_mgnums_structures(adshs: List[str]) -> Tuple[pd.DataFrame,
     nums = nums[~(nums['tag'].str.startswith('mg_'))]
     nums['name'] = nums['version'] + ':' + nums['tag']
     structures = do.read_report_structures(adshs)
+    
     return nums, structures
 
 def make_fy_structures(structures: pd.DataFrame) -> Dict[int, List[Union[int, Any]]]:
@@ -84,47 +85,82 @@ def make_fy_structures(structures: pd.DataFrame) -> Dict[int, List[Union[int, An
                                     
     return fy_structures
 
-def process_indicators(year: int, 
-                       truncate: bool,
-                       slice_: slice,
-                       logs: Logs) -> None:
-            
-    logs.log('init classifiers and indicators pools...')
-    #init classifiers and indicators pools
-    ind_pool = init_classifiers_indicators_pools(use_mock=True)
-    logs.log('ok')
+def read_newest_reports(ciks: List[int], year: int) -> pd.DataFrame:
+    """
+    return pd.DataFrame with columns: 
+        adsh, cik, fy, file_date, form 
+        from reports table        
+    read newest reports for specified year and every cik in ciks list
+    if ciks empty return all reports    
+    """
     
-    logs.log('prepare tables and data...')
-    #truncate tables if needed
-    if truncate:
-        with do.OpenConnection() as con:
-            cur = con.cursor()
-            cur.execute('truncate table mgreporttable;')
-            cur.execute('truncate table mgparamstype1;')
-            con.commit()
-        
-    #read latest reports for this year
     with do.OpenConnection() as con:
         cur = con.cursor(dictionary=True)
-        cur.execute(q.select_newest_reports, {'fy': year})
-        reports = pd.DataFrame(cur.fetchall(), 
-                               columns=['adsh', 'cik', 'fy', 
-                                        'file_date', 'form'])
-    logs.log('ok')        
+        if ciks:
+            cur.execute(q.create_tmp_cik_table)
+            cur.executemany(q.insert_tmp_cik, [(cik,) for cik in ciks])
+            cur.execute(q.select_newest_reports_ciks, {'fy': year})
+        else:
+            cur.execute(q.select_newest_reports, {'fy': year})
         
+        df = pd.DataFrame(cur.fetchall())
+        
+    return df
+
+def clear_calc_tables(adshs: List[str]) -> None:
+    """
+    remove calculated params from tables 
+    mgnums, mgreporttable, mgparamstype1 for specified adshs
+    if adshs is empty remove all calculated params
+    """
+    with do.OpenConnection() as con:
+        cur = con.cursor()
+        if adshs:
+            cur.execute(q.create_tmp_adsh_table)
+            cur.executemany(q.insert_tmp_adsh, [(adsh,) for adsh in adshs])
+            [result for result in cur.execute(q.clear_calc_tables_adsh, 
+                                              multi=True)]
+        else:
+            [result for result in cur.execute(q.clear_calc_tables, 
+                                              multi=True)]
+        con.commit()
+        
+def process_indicators(year: int,
+                       ciks: List[int],
+                       logs: Logs) -> None:
     
-    ciks = list(reports[reports['fy'] == year]['cik'].unique())
+    logs.set_header([])
+    
+    logs.log('init classifiers and indicators pools...')    
+    ind_pool = init_classifiers_indicators_pools(use_mock=True)
+    logs.log('init classifiers and indicators pools...ok')
+    
+    logs.log('read newest reports for year: {}'.format(year))
+    reports = read_newest_reports(ciks=ciks, year=year)
+    ciks = list(reports['cik'].unique())
+    logs.log('read newest reports...ok')
+    
+    logs.log('clear calculated data...')
+    clear_calc_tables(list(reports['adsh'].unique()))
+    logs.log('clear calculated data...ok')
     
     pb = ProgressBar()
-    pb.start(len(ciks[slice_]))
+    pb.start(len(ciks))
     
-    for cik in ciks[slice_]:
+    for cik in ciks:
         try:
             logs.set_header([cik])
             
             r = reports[reports['cik'] == cik]
+            if r.shape[0] == 0:
+                logs.warning('no reports for this filer')
+                continue
             
             nums, structs = read_mgnums_structures(list(r['adsh'].unique()))
+            if nums.shape[0] == 0:
+                logs.warning('no data for this filer')
+                continue
+            
             fy_structures = make_fy_structures(structs)
             mgnums, info = ind_pool.calc(nums, fy_structures)
             
@@ -132,32 +168,39 @@ def process_indicators(year: int,
             i2d.write_mg_nums(mgnums)
             i2d.write_params(info)
             i2d.write_report(mgnums, cik, adsh = fy_structures[max(fy_structures)][0])
+            
+            logs.log('calculated')
         
         except Exception as e:
             logs.error(str(e))
             logs.traceback()
-            
-        print('\r' + pb.message(), end='')
+        
         pb.measure()
+        print('\r' + pb.message(), end='')
+        
     print()
     
+    logs.set_header([])
     logs.log('finish')
         
 if __name__ == '__main__':
     try:
         logs = Logs(log_dir = 'outputs/',#gs.Settings.root_dir(),
                     append_log=False,
-                    name='calc_log')
+                    name='test_log')
         
         process_indicators(year=2018,
-                           truncate=True,
-                           slice_=slice(0,1),
+                           ciks=[1457543],
                            logs=logs)
+    except XbrlException as e:
+        print(str(e))
         
     except Exception as e:
         logs.error(str(e))
         logs.traceback()
         raise e
+        
     finally:
-        logs.close()
+        if 'logs' in locals(): logs.close()
+    
     

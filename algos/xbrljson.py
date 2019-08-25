@@ -71,6 +71,9 @@ def custom_decoder(obj):
     
     if 'roleuri' in obj:
         c = CalcChapter(roleuri=obj['roleuri'])
+        if 'nodes' not in obj:
+            return c
+        
         c.nodes = obj['nodes']        
         nodes = {name: obj for name, obj in enum(c, outpattern='cn')}
         c.nodes = nodes
@@ -90,3 +93,9 @@ def custom_decoder(obj):
 
 def loads(strin):
     return json.loads(strin, object_hook = custom_decoder)
+
+if __name__ == '__main__':
+    string = """{"bs": {"name": "simple_name", 
+                        "chapter": {"roleuri": "roleuri1"}}}"""
+    
+    c = json.loads(string, object_hook=custom_decoder)

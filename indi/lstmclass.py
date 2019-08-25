@@ -60,8 +60,11 @@ class ModelClassifier(metaclass=ABCMeta):
 
     def _to_vector(self, tag: str, x: np.ndarray, row: int, pos: int) -> None:
         words = re.findall('[A-Z][^A-Z]*', tag)
-        for i, word in enumerate(words):
-            x[row, pos + i] = self.tag_to_code.get(word, 1)
+        try:
+            for i, word in enumerate(words):            
+                x[row, pos + i] = self.tag_to_code.get(word, 1)
+        except IndexError:
+            pass
     
     @abstractmethod    
     def _vectorize(self, parent: str, child: str, 
@@ -82,6 +85,7 @@ class ModelClassifier(metaclass=ABCMeta):
         if self.start_chapter not in structure:
             return
         start = structure[self.start_chapter]['chapter']
+        
         if self.start_tag is not None:
             if self.start_tag not in start.nodes:
                 return

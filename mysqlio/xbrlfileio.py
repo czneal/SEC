@@ -5,12 +5,15 @@ Created on Wed Jul 31 18:28:09 2019
 @author: Asus
 """
 import json
+import os
 from mysql.connector.errors import InternalError
 
 import mysqlio.basicio
 import algos.xbrljson
 from xbrlxml.xbrlexceptions import XbrlException
 from log_file import Logs, RepeatFile
+from settings import Settings
+from utils import remove_root_dir
 
 class ReportToDB(object):
     def __init__(self, logs: Logs, repeat: RepeatFile):
@@ -26,7 +29,9 @@ class ReportToDB(object):
         structure = {}
         for sheet, roleuri in miner.sheets.mschapters.items():
             xsd_chapter = miner.xbrlfile.schemes['xsd'].get(roleuri, None)
-            calc_chapter = miner.xbrlfile.schemes['calc'].get(roleuri, {})            
+            calc_chapter = (miner.xbrlfile
+                            .schemes['calc']
+                            .get(roleuri, {"roleuri": roleuri}))
             structure[sheet] = {
                     'label': xsd_chapter.label,
                     'chapter': calc_chapter
@@ -38,6 +43,7 @@ class ReportToDB(object):
         return json.dumps(miner.extentions)
     
     def write_report(self, cur, record, miner):
+        file_link = remove_root_dir(miner.zip_filename)
         report = {'adsh': miner.adsh,
                   'cik': miner.cik,
                   'period': miner.xbrlfile.period,
@@ -46,7 +52,7 @@ class ReportToDB(object):
                   'form': record['form_type'],
                   'quarter': 0,
                   'file_date': record['file_date'],
-                  'file_link': miner.zip_filename,
+                  'file_link': file_link,
                   'trusted': 1,
                   'structure': self._dumps_structure(miner),
                   'contexts': self._dums_contexts(miner)

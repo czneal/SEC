@@ -1,8 +1,8 @@
 import os
+import pandas as pd
 from multiprocessing import Pool
 from typing import List
 
-import utils
 import mysqlio.basicio
 from indi.types import TRecordPair
 from xbrlxml.dataminer import NumericDataMiner
@@ -10,7 +10,7 @@ from xbrlxml.xbrlrss import CustomEnumerator
 from mysqlio.xbrlfileio import ReportToDB
 from log_file import Logs, RepeatFile
 from settings import Settings
-
+from utils import ProgressBar, remove_root_dir
 
 def concat_records(r1: List[TRecordPair],
                    r2: List[TRecordPair]) -> List[TRecordPair]:
@@ -61,14 +61,15 @@ def read(records, repeat, slice_, log_dir, append_log=False):
     mysql_writer = ReportToDB(logs=logs,
                               repeat=repeat)
     
-    pb = utils.ProgressBar()
+    pb = ProgressBar()
     pb.start(len(records[slice_]))
         
     with mysqlio.basicio.OpenConnection() as con:
         cur = con.cursor(dictionary=True)
         for record, filename in records[slice_]:
-            logs.set_header([record['cik'], record['adsh'], filename])
-            repeat.set_state(record, filename)
+            logs.set_header([record['cik'], record['adsh'], 
+                             remove_root_dir(filename)])
+            repeat.set_state(record, remove_root_dir(filename))
             
             if miner.feed(record, filename):
                 mysql_writer.write(cur, record, miner)
@@ -120,6 +121,28 @@ def multiproc_read(rss_filename):
     
     with Pool(cpus) as p:
         print(p.starmap(read, params))
+        
+def make_cond_rss(query: str, 
+                  rss_to: str,
+                  rss_from: str) -> None:
+    """
+    only for internal use
+    query must contain columns adsh, file_link
+    """
+    from utils import remove_common_path
+    
+    with mysqlio.basicio.OpenConnection() as con:
+        cur = con.cursor(dictionary=True)
+        cur.execute(query)
+        files = pd.DataFrame(cur.fetchall())
+        if files.shape[0] == 0:
+            return
+    
+    files['file_link'] = files['file_link'].apply(
+            lambda x: remove_common_path('d:/sec', x))
+    df = pd.read_csv(rss_from, sep='\t', names=['record', 'filename'])
+    f = df[df['filename'].isin(files['file_link'].unique())]
+    f.to_csv(rss_to, sep='\t', header=False, index=False, quotechar="[")
     
 
 if __name__ == '__main__':        
@@ -128,13 +151,19 @@ if __name__ == '__main__':
 #                      pres = '../test/gen-20121231_pre.xml', 
 #                      defi = '../test/gen-20121231_def.xml', 
 #                      calc = '../test/gen-20121231_cal.xml')
-#    filesenum = CustomEnumerator('outputs/testrss.csv')
-#    read(filesenum.filing_records(), 
-#         'outputs/repeatrss.csv', 
-#         slice(0, None), 
-#         'outputs/')
+    filesenum = CustomEnumerator('outputs/customrss.csv')
+    read(filesenum.filing_records(), 
+         'outputs/repeatrss.csv', 
+         slice(0, None), 
+         'outputs/')
     
-    multiproc_read('all.csv')
-    concat_logs_repeat(logs_dir='/home/victor/sec/outputs/multiproc/', 
-                       output_dir='/home/victor/sec/outputs/') 
+#    make_cond_rss("""select adsh, file_link from reports
+#                     where structure like '%"roleuri": "roleuri"%'
+#                     """,
+#                  rss_from='outputs/all.csv',
+#                  rss_to='outputs/customrss.csv')
+    
+#    multiproc_read('all.csv')
+#    concat_logs_repeat(logs_dir='/home/victor/sec/outputs/multiproc/', 
+#                       output_dir='/home/victor/sec/outputs/') 
     
