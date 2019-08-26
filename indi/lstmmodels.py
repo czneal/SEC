@@ -8,7 +8,7 @@ from settings import Settings
 class Models():
     __models = None
     def __init__(self):
-        if self.__models is None:
+        if Models.__models is None:
             Models.__models = load_models()
     
     @property        

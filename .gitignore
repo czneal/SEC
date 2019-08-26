@@ -123,3 +123,6 @@ Outputs
 *.tar
 *.zip
 .settings
+MGparams/~$Bingo problems.xlsx
+MGparams/Bingo problems.xlsx
+MGparams/Скрипты и классификаторы.xlsx

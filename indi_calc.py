@@ -132,7 +132,7 @@ def process_indicators(year: int,
     logs.set_header([])
     
     logs.log('init classifiers and indicators pools...')    
-    ind_pool = init_classifiers_indicators_pools(use_mock=True)
+    ind_pool = init_classifiers_indicators_pools(use_mock=False)
     logs.log('init classifiers and indicators pools...ok')
     
     logs.log('read newest reports for year: {}'.format(year))
@@ -190,7 +190,7 @@ if __name__ == '__main__':
                     name='test_log')
         
         process_indicators(year=2018,
-                           ciks=[1457543],
+                           ciks=[80661, 16875, 24491, 37808, 70858],
                            logs=logs)
     except XbrlException as e:
         print(str(e))

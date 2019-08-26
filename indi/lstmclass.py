@@ -56,7 +56,6 @@ class ModelClassifier(metaclass=ABCMeta):
     def _load_model(self, filename: str) -> None:
         m = indi.lstmmodels.Models().models            
         self.model = m[filename]
-#        self.model = indi.lstmmodels.MODELS[filename]
 
     def _to_vector(self, tag: str, x: np.ndarray, row: int, pos: int) -> None:
         words = re.findall('[A-Z][^A-Z]*', tag)
@@ -65,6 +64,42 @@ class ModelClassifier(metaclass=ABCMeta):
                 x[row, pos + i] = self.tag_to_code.get(word, 1)
         except IndexError:
             pass
+        
+    def _update_leaf(self):
+        def skip_subtree(i: int, p: pd.DataFrame) -> int:
+            off = p.iloc[i]['o']
+            for i in range(i+1, p.shape[0]):
+                if p.iloc[i]['o'] <= off:
+                    return i-1
+            return i
+        
+        if self.leaf:
+            return        
+        #we should update leaf field in self.predicted,
+        #because dependant classifiers relay on this field
+        p: pd.DataFrame = self.predicted
+        for i in range(0, p.shape[0]):
+            row = p.iloc[i]
+            off = row['o']
+            #if class != 1 should skip all sub tree
+            if row['class'] != 1:
+                skip_subtree(i, p)
+                w = (p['p'] == row['c']) & (p['o'] > off)
+                p.loc[w, 'class'] = 0
+                continue
+            
+            #check whether all direct children has class == 1
+            f = p[(p['p'] == row['c']) & (p['o'] == (off+1))]
+            if f['class'].sum() == f.shape[0]:
+                #go on and check grand children
+                continue
+            
+            index = p.iloc[i].name            
+            p.loc[index, 'l'] = True
+            w = (p['p'] == row['c']) & (p['o'] > off)
+            p.loc[w, 'class'] = 0
+            
+            skip_subtree(i, p)
     
     @abstractmethod    
     def _vectorize(self, parent: str, child: str, 
@@ -125,6 +160,8 @@ class ModelClassifier(metaclass=ABCMeta):
 
         self.predicted['class'] = np.nan
         self.predicted.loc[self.w, 'class'] = y
+        
+        self._update_leaf()
         
     def predict_all(self, structure) -> None:
         '''
