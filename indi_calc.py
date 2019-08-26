@@ -137,15 +137,18 @@ def process_indicators(year: int,
     
     logs.log('read newest reports for year: {}'.format(year))
     reports = read_newest_reports(ciks=ciks, year=year)
-    ciks = list(reports['cik'].unique())
     logs.log('read newest reports...ok')
     
     logs.log('clear calculated data...')
-    clear_calc_tables(list(reports['adsh'].unique()))
+    if ciks:
+        clear_calc_tables(list(reports['adsh'].unique()))
+    else:
+        clear_calc_tables([])
     logs.log('clear calculated data...ok')
     
     pb = ProgressBar()
     pb.start(len(ciks))
+    ciks = list(reports['cik'].unique())
     
     for cik in ciks:
         try:
