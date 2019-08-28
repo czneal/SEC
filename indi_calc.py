@@ -63,11 +63,24 @@ def read_mgnums_structures(adshs: List[str]) -> Tuple[pd.DataFrame,
     nums columns: 'tag', 'version', 'value', 'fy', 'adsh', 'uom', 'name'
     structures columns: 'adsh', 'fy', 'structure'
     """
+    tax_rate = 0.2
+    
+    structures = do.read_report_structures(adshs)
     
     nums = do.read_reports_nums(adshs)
     nums = nums[~(nums['tag'].str.startswith('mg_'))]
+        
+    #add tax rate
+    f = nums[['adsh', 'fy']].drop_duplicates()
+    data = []
+    for _, row in f.iterrows():
+        data.append(['TaxRate', 'us-gaap', tax_rate, 
+                     row['fy'], row['adsh'], ''])
+    tax = pd.DataFrame(data, 
+                       columns = ['tag', 'version', 'value', 
+                                  'fy', 'adsh', 'uom'])
+    nums = pd.concat([nums, tax])
     nums['name'] = nums['version'] + ':' + nums['tag']
-    structures = do.read_report_structures(adshs)
     
     return nums, structures
 

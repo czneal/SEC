@@ -1,8 +1,9 @@
-from typing import List, Optional
+from typing import List, Optional, Set
 import json
 
 from xbrlxml.xbrlexceptions import XbrlException
 from classifiers.mainsheets import MainSheets
+from xbrlxml.xbrlfile import XbrlFile
 import algos.scheme
 import algos.xbrljson
 import xbrlxml.truevalues as tv
@@ -10,7 +11,7 @@ import xbrlxml.truevalues as tv
 class ChapterChooser(object):
     """Choose only main seets from xbrl schemas    
     """
-    def __init__(self, xbrlfile):
+    def __init__(self, xbrlfile: XbrlFile):
         self.xbrlfile = xbrlfile
         self.mschapters = None
         
@@ -44,13 +45,32 @@ class ChapterChooser(object):
         self.mschapters = {labels[label]:mschapters[label] 
                             for label in labels}
         pass
+    
+class SharesChapterChooser(object):
+    """Choose shares chapters from statement
+    """
+    def __init__(self, xbrlfile: XbrlFile):
+        self.xbrlfile = xbrlfile
+        self.share_chapters: Set[str] = set()
+    
+    def choose(self) -> None:
+        self.share_chapters = set()
+        
+        ms = MainSheets()
+        xsd = self.xbrlfile.schemes['xsd']        
+        
+        for roleuri, chapter in xsd.items():
+            if chapter.sect == 'sta':                
+                if (ms.match_se(chapter.label) and
+                    'parent' not in chapter.label.lower()):
+                    self.share_chapters.add(roleuri)
+        
 
 class ContextChooser(object):
     """Choose context for specific roleuri    
     """
     def __init__(self, xbrlfile):
-        self.xbrlfile = xbrlfile
-        
+        self.xbrlfile = xbrlfile        
         
     def choose(self, roleuri: str) -> Optional[str]:
         pres = self.xbrlfile.schemes['pres'].get(roleuri, None)

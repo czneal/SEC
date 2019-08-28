@@ -5,14 +5,13 @@ Created on Wed Jul 31 18:28:09 2019
 @author: Asus
 """
 import json
-import os
 from mysql.connector.errors import InternalError
 
 import mysqlio.basicio
 import algos.xbrljson
 from xbrlxml.xbrlexceptions import XbrlException
+from xbrlxml.dataminer import SharesDataMiner
 from log_file import Logs, RepeatFile
-from settings import Settings
 from utils import remove_root_dir
 
 class ReportToDB(object):
@@ -24,6 +23,7 @@ class ReportToDB(object):
             self.reports = mysqlio.basicio.Table('reports', con, buffer_size=1)
             self.companies = mysqlio.basicio.Table('companies', con, buffer_size=1)
             self.nums = mysqlio.basicio.Table('mgnums', con, buffer_size=1000)
+            self.shares = mysqlio.basicio.Table('raw_shares', con, buffer_size=1000)
             
     def _dumps_structure(self, miner):
         structure = {}
@@ -106,6 +106,12 @@ class ReportToDB(object):
                 self.__logs.error('unexpected problems with writing into mysql database')
                 self.__repeat.repeat()
                 break
+            
+    def write_shares(self, cur, record, miner: SharesDataMiner) -> None:
+        if miner.shares_facts.shape[0] == 0:
+            return
+        
+        self.shares.write_df(miner.shares_facts, cur)
     
     def flush(self, cur):
         self.reports.flush(cur)

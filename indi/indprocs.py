@@ -344,7 +344,10 @@ class mg_r_cash_buybacks_yld(CalcDynamic):
 
 class mg_r_debt_tangible_assets(CalcStatic):
     def __init__(self):
-        self._dp = {'us-gaap:Assets', 'mg_r_capitalized_costs', 'mg_r_intangibles', 'mg_r_liabilities'}
+        self._dp = {'us-gaap:Assets', 
+                    'mg_r_capitalized_costs', 
+                    'mg_r_intangibles', 
+                    'mg_r_liabilities'}
 
     def run_it(self, params, fy):
         ns = [params['us-gaap:Assets'], -params['mg_r_intangibles'], -params['mg_r_capitalized_costs']]
@@ -428,7 +431,11 @@ class mg_r_free_cashflow_yld(CalcDynamic):
 
 class mg_r_income(CalcStatic):
     def __init__(self):
-        self._dp = {'us-gaap:ProfitLoss', 'us-gaap:NetIncomeLoss', 'mg_r_capitalized_costs_d', 'mg_r_income_noncontroling', 'mg_r_dividend_preferred'}
+        self._dp = {'us-gaap:ProfitLoss', 
+                    'us-gaap:NetIncomeLoss', 
+                    'mg_r_capitalized_costs_d', 
+                    'mg_r_income_noncontroling', 
+                    'mg_r_dividend_preferred'}
 
     def run_it(self, params, fy):
         result = params["us-gaap:NetIncomeLoss"]
@@ -444,7 +451,10 @@ class mg_r_income(CalcStatic):
 
 class mg_r_income_corrected(CalcStatic):
     def __init__(self):
-        self._dp = {'mg_r_income', 'mg_r_one_time_events', 'mg_r_income_equity_method', 'mg_r_unrealized_gain_loss'}
+        self._dp = {'mg_r_income', 
+                    'mg_r_one_time_events', 
+                    'mg_r_income_equity_method', 
+                    'mg_r_unrealized_gain_loss'}
 
     def run_it(self, params, fy):
         result = -np.nansum([params['mg_r_one_time_events'], params['mg_r_income_equity_method'],

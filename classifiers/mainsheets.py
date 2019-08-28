@@ -12,6 +12,7 @@ class MainSheets(object):
         self.rebs = re.compile('.*balance.*sheet.*|.*financial.*position.*|.*finanical.*position.*|.*financial.*condition.*|.*statement.*condition.*|.*assets.*liabilities.*|.*statement.*assets.*', re.I)
         self.reis = re.compile('.*income.*statement.*|.*statement.*income.*|.*statement.*operation.*|.*statement.*earning.*|.*statement.*loss.*|.*result.*operation.*|.*comprehensive.*income.*|.*comprehensive.*loss.*', re.I)
         self.recf = re.compile('.*cash.*flow.*', re.I)
+        self.rese = re.compile('.*stockhold.*|.*statement.*equit.*|.*shareholder.*|.*partner.*capital.*', re.I)
         self.detail = re.compile('.*\(detail.*\).*', re.I)
         self.rescores = [(re.compile('.*parenth.*', re.I), 1000),                         
                          (re.compile('.*compre.*', re.I), 100),
@@ -42,6 +43,13 @@ class MainSheets(object):
         if self.detail.match(label):
             return False
         if self.recf.match(label):
+            return True
+        return False
+    
+    def match_se(self, label):
+        if self.detail.match(label):
+            return False
+        if self.rese.match(label):
             return True
         return False
 
