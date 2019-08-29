@@ -5,9 +5,10 @@ Created on Wed Jul 31 18:28:09 2019
 @author: Asus
 """
 import json
-from mysql.connector.errors import InternalError
+from mysql.connector.errors import InternalError, Error
 
 import mysqlio.basicio
+import queries as q
 import algos.xbrljson
 from xbrlxml.xbrlexceptions import XbrlException
 from xbrlxml.dataminer import SharesDataMiner
@@ -69,19 +70,26 @@ class ReportToDB(object):
                                   cur=cur):
             raise XbrlException('couldnt write to mysql.mgnums table')
     
-    def write_company(self, cur, record):
+    @staticmethod
+    def write_company(cur, record):
         company = {'company_name': record['company_name'],
                    'sic': record['sic'] if record['sic'] is not None else 0,
-                   'cik': record['cik']
-                    }
-        if not self.companies.write(company, cur):
+                   'cik': record['cik'],
+                   'updated': record['file_date']}
+        insert = q.insert_update_companies
+        try:
+            mysqlio.basicio.tryout(5, InternalError,
+                                   cur.execute, insert, company)
+        except InternalError as err:
+            raise err
+        except Error:
             raise XbrlException('couldnt write to mysql.companies table')
             
     def write(self, cur, record, miner):
         dead_lock_trys = 0
         while(True):
             try:
-                self.write_company(cur, record)
+                ReportToDB.write_company(cur, record)
                 self.write_report(cur, record, miner)
                 self.write_nums(cur, record, miner)
                 break               

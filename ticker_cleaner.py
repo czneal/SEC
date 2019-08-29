@@ -5,10 +5,8 @@ Created on Wed Apr 11 13:10:55 2018
 @author: Asus
 """
 
-import database_operations as do
-import sys
+import mysqlio.basicio as do
 import numpy as np
-import traceback
 
 def clear_name(name):
     words = {"the ":"", 
@@ -141,6 +139,83 @@ def nasdaqtraded_update_ciks2(thres = 0.5):
         con.close()
         raise
         
-#nasdaqtraded_clear_sec_name()
-nasdaqtraded_update_ciks2()
-#comparision()
+from typing import List
+import pandas as pd
+import re
+
+from mysqlio.basicio import OpenConnection
+
+def split_company_name(company_name: str) -> List[str]:
+    company_name = re.sub('\.+|\'+', '', company_name)
+    symbols = {',':' ','.':'','/':' ','&':' ','-':' ',
+               '\\':' ','\'':'','(':' ',')':' ','#':' ',
+               ':':' ','!':' ', ' ': ' '}
+               
+    parts = [company_name]
+    for symbol in symbols:
+        new_parts = []
+        for part in parts:
+            new_parts.extend([p.strip().lower() for p in part.split(symbol)
+                                            if p.strip()])
+        parts = new_parts
+        
+    return set(parts)
+        
+if __name__ == '__main__':
+    import numpy as np
+    
+#    with OpenConnection() as con:
+#        cur = con.cursor(dictionary=True)
+#        cur.execute('select c.cik, c.company_name from companies c, ' +
+#                    '(select cik, max(file_date) as file_date from reports ' +
+#                    'group by cik) r ' +
+#                    'where c.cik = r.cik ' +
+#                    "	and r.file_date >= '2018-06-01';")
+#        companies = pd.DataFrame(cur.fetchall()).set_index('cik')
+#        
+#    df1 = (pd.read_csv('c:/users/asus/downloads/companylist.csv', sep=',')
+#            )
+#    df2 = (pd.read_csv('c:/users/asus/downloads/companylist_nyse.csv', sep=',')
+#            )
+#    df3 = (pd.read_csv('c:/users/asus/downloads/companylist_amex.csv', sep=',')
+#            )
+#    nasdaq = pd.concat([df1, df2, df3]).drop_duplicates().set_index('Symbol')
+#    
+#    
+#    data = []
+#    for cik, row in companies.iterrows():
+#        company_name = row['company_name']
+#        parts = split_company_name(company_name)
+#        data.extend([[cik, company_name, p] for p in parts])
+#        
+#    companies = pd.DataFrame(data, columns=['cik', 'name', 'word'])
+#    g1 = companies.groupby('word')['cik'].count().sort_values(ascending=False)
+#    
+#    data = []
+#    for symbol, row in nasdaq.iterrows():
+#        parts = split_company_name(row['Name'])
+#        data.extend([[symbol, row['Name'], p] for p in parts])
+#    nasdaq = pd.DataFrame(data, columns=['symbol', 'name', 'word'])
+#    nasdaq.loc[nasdaq['word'] == 'corporation', 'word'] = 'corp'
+#    nasdaq.loc[nasdaq['word'] == 'company', 'word'] = 'co'
+#    g2 = nasdaq.groupby('word')['name'].count().sort_values(ascending=False)
+#    
+#    nasdaq['cik'] = np.nan
+#    for symbol in list(nasdaq['symbol'].unique()):
+#        words = list(nasdaq[nasdaq['symbol'] == symbol]['word'].unique())
+#        f = (companies[companies['word'].isin(words)]
+#                .groupby('cik')['cik']
+#                .count()
+#                .sort_values(ascending=False))
+#        f = f[f>=f.max()]
+#        if f.shape[0] == 1:
+#            nasdaq.loc[nasdaq['symbol'] == symbol, 'cik'] = f.index
+            
+    from xbrlxml.xbrlrss import SecEnumerator
+    rss = SecEnumerator(years=[2019], months=[3])
+    df = pd.DataFrame([[r['cik'], r['company_name'], 
+                        r['file_date'], r['form_type']] 
+                            for (r, _) in rss.filing_records(all_types=True)], 
+                      columns=['cik', 'company_name', 
+                               'file_date', 'form_type'])
+        

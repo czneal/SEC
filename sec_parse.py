@@ -151,7 +151,7 @@ if __name__ == '__main__':
 #                      pres = '../test/gen-20121231_pre.xml', 
 #                      defi = '../test/gen-20121231_def.xml', 
 #                      calc = '../test/gen-20121231_cal.xml')
-    filesenum = CustomEnumerator('outputs/customrss.csv')
+    filesenum = CustomEnumerator('outputs/shares_test.csv')
     read(filesenum.filing_records(), 
          'outputs/repeatrss.csv', 
          slice(0, None), 

@@ -11,6 +11,7 @@ import os
 
 import sec_parse
 import sec_down
+import sec_companies
 from xbrlxml.xbrlrss import SecEnumerator, CustomEnumerator
 from settings import Settings
 
@@ -21,6 +22,10 @@ if __name__ == '__main__':
     sec_down.download(years=[d.year], months=[d.month],
                       append_log=True,
                       refresh_rss=True)
+    
+    #update companies
+    sec_companies.update_companies(years=[d.year], months=[d.month],
+                                   refresh_rss=False)
     
     #read unsuccessfull reports from repeat.rss
     repeat_filename = os.path.join(Settings.root_dir(),'repeat.rss')

@@ -33,6 +33,15 @@ def OpenConnection(host: str=Settings.host(), port: int=3306):
         yield con
     finally:
         con.close()
+        
+def tryout(times, exc_cls, what, *args, **kwargs):
+    for i in range(times):
+        try:
+            return what(*args, **kwargs)            
+        except exc_cls as e:
+            if i + 1 == times:
+                print('done {} tryouts'.format(times))
+                raise e
 
 class Table(object):
     def __init__(self, name, con, db_name="reports", buffer_size = 1000):

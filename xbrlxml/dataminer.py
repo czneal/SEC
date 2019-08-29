@@ -80,7 +80,7 @@ class DataMiner(metaclass=ABCMeta):
             self.extentions.extend(self.extender.extentions)
             
     def _find_main_sheet_contexts(self):
-        self.extentions = set()
+        self.extentions = []
         
         for sheet, roleuri in self.sheets.mschapters.items():
             context = self.cntx.choose(roleuri)

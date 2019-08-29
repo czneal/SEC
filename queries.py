@@ -74,3 +74,13 @@ delete mgparamstype1
 from mgparamstype1, tmp_adshs
 where mgparamstype1.adsh = tmp_adshs.adsh;
 """
+
+insert_update_companies = """
+INSERT INTO companies (company_name, cik, sic, updated)
+VALUES (%(company_name)s, %(cik)s, %(sic)s, %(updated)s)
+ON DUPLICATE KEY UPDATE
+company_name = IF(values(updated) >= updated, values(company_name), company_name),
+cik = IF(values(updated) >= updated, values(cik), cik),
+sic = IF(values(updated) >= updated, values(sic), sic),
+updated = IF(values(updated) >= updated, values(updated), updated);
+"""

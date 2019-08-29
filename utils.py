@@ -24,6 +24,7 @@ class ProgressBar(object):
     def start(self, total):
         self.__init__()
         self.total = total
+        print()
                 
     def measure(self):
         delta = dt.datetime.now() - self.before

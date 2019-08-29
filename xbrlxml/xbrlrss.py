@@ -5,7 +5,8 @@ import datetime as dt
 import re
 import json
 import os
-from typing import List
+from typing import List, Set
+from abc import ABCMeta, abstractmethod
 
 import utils
 from algos.xbrljson import ForDBJsonEncoder
@@ -24,7 +25,7 @@ class FilingRSS(object):
         except:
             self.tree = None        
     
-    def filing_records(self):
+    def filing_records(self, form_types: Set[str], all_types: bool=False):
         if self.tree is None:
             return []
         
@@ -33,7 +34,7 @@ class FilingRSS(object):
         for item in root.findall(".//item"):
             r = FilingRecord()
             r.read(item)
-            if r.form_type in {'10-K','10-K/A'}:
+            if all_types or (r.form_type.upper() in form_types):
                 records.append(r.asdict())
                 
         return records
@@ -89,9 +90,13 @@ class FilingRecord(object):
     def asdict(self):
         return {a:getattr(self, a) for a in self.__attribs}
     
-class RecordsEnumerator(object):
+class RecordsEnumerator(metaclass=ABCMeta):
+    @abstractmethod    
     def filing_records(self):
         pass
+    
+    def all_form_types(self) -> Set[str]:
+        return set(['10-K', '10-K/A', '20-F', '10-Q', '10-Q/A'])
     
     
 class SecEnumerator(RecordsEnumerator):
@@ -104,7 +109,12 @@ class SecEnumerator(RecordsEnumerator):
         self.years = [y for y in years]
         self.months = [m for m in months]
         
-    def filing_records(self):
+    def filing_records(self,
+                       all_types: bool=False,
+                       form_types: Set[str]={'10-K', '10-K/A'}):
+        if all_types:
+            form_types = self.all_form_types()
+            
         rss = FilingRSS()
         for y in self.years:
             for m in self.months:
@@ -114,19 +124,26 @@ class SecEnumerator(RecordsEnumerator):
                             str(y).zfill(4), str(m).zfill(2))
                 rss.open_file(filedir + filename)
                         
-                for record in rss.filing_records():
-                    if record['form_type'] not in {'10-K', '10-K/A'}:
-                        continue
-                    yield record, '{0}{1}-{2}.zip'.format(filedir,
-                                   str(record['cik']).zfill(10), 
-                                   record['adsh'])
+                for record in rss.filing_records(form_types=form_types,
+                                                 all_types=all_types):
+                    zip_filepath = '{0}-{1}'.format(
+                                        str(record['cik']).zfill(10), 
+                                        record['adsh'])
+                    zip_filepath = os.path.join(filedir, zip_filepath)
+                    zip_filepath = utils.remove_root_dir(zip_filepath)
+                    yield (record, zip_filepath)
                     
 class CustomEnumerator(RecordsEnumerator):
     def __init__(self, filename):
         assert os.path.exists(filename)
         self.__filename = filename
     
-    def filing_records(self):
+    def filing_records(self, 
+                       all_types: bool=False,
+                       form_types: Set[str]={'10-K', '10-K/A'}):
+        if all_types:
+            form_types = self.all_form_types()
+            
         records = []
         with open(self.__filename) as f:
             for line in f.readlines():
@@ -135,7 +152,8 @@ class CustomEnumerator(RecordsEnumerator):
                 record = json.loads(jstr)
                 record['file_date'] = utils.str2date(record['file_date'])
                 record['period'] = utils.str2date(record['period'])
-                records.append([record, filename])
+                if record['form_type'].upper() in form_types:
+                    records.append([record, filename])
                 
         return records
 
