@@ -42,6 +42,7 @@ def update_companies(years: List[int], months: List[int],
             con.commit()
             pb.measure()
             print('\r' + pb.message(), end='')
-            
-update_companies(years=[2019], months=[1,2,3,4,5,6,7], refresh_rss=True)
+
+if __name__ == "__name__" :
+    update_companies(years=[2019], months=[1,2,3,4,5,6,7], refresh_rss=True)
         

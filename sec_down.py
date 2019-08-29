@@ -6,6 +6,7 @@ import xbrldown.download as dwn
 from xbrlxml.xbrlrss import SecEnumerator
 from xbrlxml.xbrlexceptions import XbrlException
 from utils import ProgressBar
+from utils import add_root_dir
 from log_file import Logs
 from settings import Settings
 
@@ -31,6 +32,7 @@ def download(years: List[int],
     pb = ProgressBar()
     pb.start(len(records))
     for record, zip_filename in records:
+        zip_filename = add_root_dir(zip_filename)
         logs.set_header([record['cik'], record['adsh'], zip_filename])
         
         try:
