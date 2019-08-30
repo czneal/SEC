@@ -4,9 +4,13 @@ Created on Wed Apr 11 13:10:55 2018
 
 @author: Asus
 """
+import numpy as np
+import pandas as pd
+import re
+
+from typing import List, Set
 
 import mysqlio.basicio as do
-import numpy as np
 
 def clear_name(name):
     words = {"the ":"", 
@@ -139,58 +143,45 @@ def nasdaqtraded_update_ciks2(thres = 0.5):
         con.close()
         raise
         
-from typing import List
-import pandas as pd
-import re
-
-from mysqlio.basicio import OpenConnection
-
-def split_company_name(company_name: str) -> List[str]:
-    company_name = re.sub('\.+|\'+', '', company_name)
-    symbols = {',':' ','.':'','/':' ','&':' ','-':' ',
-               '\\':' ','\'':'','(':' ',')':' ','#':' ',
-               ':':' ','!':' ', ' ': ' '}
-               
-    parts = [company_name]
-    for symbol in symbols:
-        new_parts = []
-        for part in parts:
-            new_parts.extend([p.strip().lower() for p in part.split(symbol)
-                                            if p.strip()])
-        parts = new_parts
-        
-    return set(parts)
-        
-if __name__ == '__main__':
-    import numpy as np
+       
+def measure(words1: Set[str], words2: Set[str]) -> float:
+    words1.discard('etf')
+    words2.discard('etf')
+    words1.discard('the')
+    words2.discard('the')
     
-#    with OpenConnection() as con:
-#        cur = con.cursor(dictionary=True)
-#        cur.execute('select c.cik, c.company_name from companies c, ' +
-#                    '(select cik, max(file_date) as file_date from reports ' +
-#                    'group by cik) r ' +
-#                    'where c.cik = r.cik ' +
-#                    "	and r.file_date >= '2018-06-01';")
-#        companies = pd.DataFrame(cur.fetchall()).set_index('cik')
-#        
-#    df1 = (pd.read_csv('c:/users/asus/downloads/companylist.csv', sep=',')
-#            )
-#    df2 = (pd.read_csv('c:/users/asus/downloads/companylist_nyse.csv', sep=',')
-#            )
-#    df3 = (pd.read_csv('c:/users/asus/downloads/companylist_amex.csv', sep=',')
-#            )
-#    nasdaq = pd.concat([df1, df2, df3]).drop_duplicates().set_index('Symbol')
-#    
-#    
-#    data = []
-#    for cik, row in companies.iterrows():
-#        company_name = row['company_name']
-#        parts = split_company_name(company_name)
-#        data.extend([[cik, company_name, p] for p in parts])
-#        
-#    companies = pd.DataFrame(data, columns=['cik', 'name', 'word'])
-#    g1 = companies.groupby('word')['cik'].count().sort_values(ascending=False)
-#    
+    inter = words1.intersection(words2)
+    union = words1.union(words2)
+    L = sum([len(w) for w in union])    
+    l = sum([len(w) for w in inter])
+    
+    return float(l)/L
+
+        
+if __name__ == '__main__':    
+    
+        
+    nasdaq = [] 
+    nasdaq.append(pd.read_csv('c:/users/asus/downloads/companylist.csv', 
+                              sep=','))
+    nasdaq.append(pd.read_csv('c:/users/asus/downloads/companylist_nyse.csv', 
+                              sep=','))
+    nasdaq.append(pd.read_csv('c:/users/asus/downloads/companylist_amex.csv', 
+                              sep=','))
+    nasdaq = pd.concat(nasdaq).drop_duplicates().set_index('Symbol')
+        
+    data = []
+    for cik, row in companies.iterrows():
+        company_name = row['company_name']
+        parts = split_company_name(company_name)
+        data.extend([[cik, company_name, p] for p in parts])
+        
+    company_words = pd.DataFrame(data, columns=['cik', 'name', 'word'])
+    company_words['wlen'] = company_words['word'].str.len()
+    g1 = (company_words.groupby('word')['cik']
+                       .count()
+                       .sort_values(ascending=False))
+    
 #    data = []
 #    for symbol, row in nasdaq.iterrows():
 #        parts = split_company_name(row['Name'])
@@ -199,23 +190,36 @@ if __name__ == '__main__':
 #    nasdaq.loc[nasdaq['word'] == 'corporation', 'word'] = 'corp'
 #    nasdaq.loc[nasdaq['word'] == 'company', 'word'] = 'co'
 #    g2 = nasdaq.groupby('word')['name'].count().sort_values(ascending=False)
-#    
-#    nasdaq['cik'] = np.nan
-#    for symbol in list(nasdaq['symbol'].unique()):
-#        words = list(nasdaq[nasdaq['symbol'] == symbol]['word'].unique())
-#        f = (companies[companies['word'].isin(words)]
-#                .groupby('cik')['cik']
-#                .count()
-#                .sort_values(ascending=False))
-#        f = f[f>=f.max()]
-#        if f.shape[0] == 1:
-#            nasdaq.loc[nasdaq['symbol'] == symbol, 'cik'] = f.index
-            
-    from xbrlxml.xbrlrss import SecEnumerator
-    rss = SecEnumerator(years=[2019], months=[3])
-    df = pd.DataFrame([[r['cik'], r['company_name'], 
-                        r['file_date'], r['form_type']] 
-                            for (r, _) in rss.filing_records(all_types=True)], 
-                      columns=['cik', 'company_name', 
-                               'file_date', 'form_type'])
+    
+    nasdaq['cik'] = int(0)
+    
+    for symbol in nasdaq.index:
+        name = nasdaq.loc[symbol]['Name']
+        words = split_company_name(name)            
+        f = (company_words[company_words['word'].isin(words)]
+                .groupby('cik')
+                .agg({'word': 'count', 'wlen': 'sum'}))
+        f['w'] = f['word'] + f['wlen']/len(name)
+        f = f.sort_values('w', ascending=False)
+        f = f[f['w']>=f['w'].max()]
         
+        for cik in f.index:
+            c_words = set(company_words[company_words['cik'] == cik]['word'].unique())
+            if c_words == words:
+                nasdaq.loc[symbol, 'cik'] = cik
+                break
+            
+            if measure(words, c_words) > 0.9:
+                nasdaq.loc[symbol, 'cik'] = cik
+                break
+            
+    n = n.sort_values('cap', ascending=False)
+    n = n[n['cap']>=100000000]
+    for ticker, row in n.iterrows():
+        cik = get_cik_by_ticker(ticker)
+        print(cik, ticker, row['Name'])
+        if cik != 0:
+            nasdaq.loc[ticker, 'cik'] = cik            
+        
+            
+            

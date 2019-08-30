@@ -24,8 +24,11 @@ def fetch_urlfile(url_text, filename = None, log=None, tryout = 3):
 
     while tryout>0:
         try:
-            http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED',
-                                       ca_certs=certifi.where())
+            user_agent = {'user-agent': 'Mozilla/5.0 (Windows NT 6.3; rv:36.0) ..'}
+            http = urllib3.PoolManager(10,
+                                       cert_reqs='CERT_REQUIRED',
+                                       ca_certs=certifi.where(),
+                                       headers=user_agent)
             req = http.request('GET', url_text)            
             body = req.data            
             good_read = True
