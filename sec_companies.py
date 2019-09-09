@@ -124,7 +124,7 @@ def get_companies_sec(lock: Lock,
             finally:
                 lock.release()        
     
-    frames.append(pd.DataFrame(data))
+    frames[os.getpid()] = pd.DataFrame(data)
 
 if __name__ == "__main__":
     with OpenConnection() as con:
@@ -140,24 +140,20 @@ if __name__ == "__main__":
         print('run {0} proceses'.format(cpus))        
         
         processes = []
-        frames = manager.list()
+        frames = manager.dict()
         lock = manager.Lock()
         records_per_cpu = int(len(ciks)/cpus) + 1
         for i, start in enumerate(range(0, len(ciks), records_per_cpu)):
              p = Process(target=get_companies_sec,
-                         args=(lock, ciks[start: start + records_per_cpu], frames))
+                         args=(lock, 
+                               ciks[start: start + records_per_cpu], 
+                               frames))
              p.start()
              processes.append(p)             
             
         for p in processes:
             p.join()        
         
-        df = pd.concat(frames)    
-        df.to_csv('outputs/companies_search_sec.csv')
-    
-    
-    
-    
-    
-    
-    
+        print(len(frames))
+        df = pd.concat(frames.values(), ignore_index=True)
+        df.to_csv('outputs/companies_search_sec.csv')  
