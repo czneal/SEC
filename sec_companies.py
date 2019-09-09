@@ -7,11 +7,12 @@ Created on Thu Aug 29 17:43:57 2019
 import pandas as pd
 import numpy as np
 import re
-from typing import List, Tuple, Dict, Union
+import os
+from typing import List, Tuple, Dict, Union, Any
 from itertools import product
 from bs4 import BeautifulSoup
+from multiprocessing import Manager, Pool, Process, Lock
 
-import queries as q
 from mysqlio.basicio import OpenConnection
 from mysqlio.xbrlfileio import ReportToDB
 from xbrlxml.xbrlrss import SecEnumerator
@@ -50,7 +51,7 @@ def get_record_by_cik(cik: int) -> Dict[str, Union[str, int]]:
     
     return record
 
-def get_company_sec(cik: int) -> Tuple[str, int]:
+def get_company_sec(cik: int) -> Dict[str, Union[str, int]]:
     url = 'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={}'
     bs = BeautifulSoup(fetch_urlfile(url.format(cik)), features='lxml')
     try:
@@ -103,51 +104,56 @@ def update_companies(years: List[int], months: List[int],
         print()
         print('ok')
 
-def update_companies_from_sec_fomrs() -> None:
-    with OpenConnection() as con:
-        cur = con.cursor(dictionary=True)
-        cur.execute(q.select_compaines_from_sec_forms)
-        df = pd.DataFrame(cur.fetchall()).set_index('cik')
+def get_companies_sec(lock: Lock, 
+                      ciks: List[int], 
+                      frames: List[Any]) -> pd.DataFrame:
+    data = []
+    
+    pb = ProgressBar()
+    pb.start(len(ciks))
+    
+    for index, cik in enumerate(ciks):
+        data.append(get_company_sec(cik))
+        pb.measure()
         
-    return df
+        if ((index+1) % 10 == 0) or (index + 1 == len(ciks)):
+            lock.acquire()
+            try:
+                print('{0}: {1}'.format(
+                        os.getpid(), pb.message()))
+            finally:
+                lock.release()        
+    
+    frames.append(pd.DataFrame(data))
 
 if __name__ == "__main__":
-#    df = update_companies_from_sec_fomrs()
-#    df['sic'] = np.nan
-#    
-#    pb = ProgressBar()
-#    pb.start(df.shape[0])
-#    
-#    for cik, row in df.iterrows():
-#        company_name, sic = get_company_name_by_cik(cik)
-#        if company_name:
-#            df.loc[cik, ['company_name', 'sic']] = (company_name, sic)
-#        
-#        pb.measure()
-#        print('\r' + pb.message(), end='')
-#    print()
-#    
-#    df.to_csv('outputs/companies.csv')
-    
-    data = []
     with OpenConnection() as con:
         cur = con.cursor(dictionary=True)
-        cur.execute('select distinct cik from sec_forms where cik not in (select distinct cik from companies)')
+        cur.execute('select distinct cik from sec_forms ' +  
+                    'where cik not in ' + 
+                    '(select distinct cik from companies) limit 200')
         df = pd.DataFrame(cur.fetchall())
+    ciks = list(df['cik'].unique())
+    
+    with Manager() as manager:
+        cpus = os.cpu_count() - 1
+        print('run {0} proceses'.format(cpus))        
         
-    pb = ProgressBar()
-    pb.start(len(df['cik'].unique()))
-    for index, row in df[0:100].iterrows():        
-        record = get_company_sec(row['cik'])
-        data.append(record)
+        processes = []
+        frames = manager.list()
+        lock = manager.Lock()
+        records_per_cpu = int(len(ciks)/cpus) + 1
+        for i, start in enumerate(range(0, len(ciks), records_per_cpu)):
+             p = Process(target=get_companies_sec,
+                         args=(lock, ciks[start: start + records_per_cpu], frames))
+             p.start()
+             processes.append(p)             
+            
+        for p in processes:
+            p.join()        
         
-        pb.measure()
-        print('\r' + pb.message(), end='')
-        
-    print()
-        
-    df = pd.DataFrame(data)
-    df.to_csv('outputs/companies_search_sec.csv')
+        df = pd.concat(frames)    
+        df.to_csv('outputs/companies_search_sec.csv')
     
     
     
