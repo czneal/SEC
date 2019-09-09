@@ -33,7 +33,7 @@ class ProgressBar(object):
         
     def message(self):
         s2 = str(self.one_step*(self.total-self.n)).split('.')[0]
-        s3 = str(self.one_step).split('.')[0]
+        s3 = str(self.one_step)
         return 'processed {0} of {1}, time remains: {2}, time per step: {3}'.format(
                 self.n, self.total, s2, s3)
 

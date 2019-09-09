@@ -1,0 +1,10 @@
+ticker	quote	company_name	market_cap	sector	industry	cik	checked
+A	https://www.nasdaq.com/symbol/amzn	Amazon.com, Inc.	8.8536E+11	Consumer Services	Catalog/Specialty Distribution	100	1
+B	https://www.nasdaq.com/symbol/googl	Alphabet Inc. Something	8.1096E+11	Technology	Computer Software: Programming, Data Processing	200	1
+C	https://www.nasdaq.com/symbol/goog	Alphabet Inc.	8.1016E+11	Technology	Computer Software: Programming, Data Processing	300	0
+D	https://www.nasdaq.com/symbol/fb	Facebook, Inc.	5.2035E+11	Technology	Computer Software: Programming, Data Processing		0
+E	https://www.nasdaq.com/symbol/baba	Alibaba Group Holding Limited	4.4888E+11	Miscellaneous	Business Services		0
+F	https://www.nasdaq.com/symbol/v	Visa Inc.	4.0148E+11	Miscellaneous	Business Services		1
+G	https://www.nasdaq.com/symbol/jpm	J P Morgan Chase & Co	3.4712E+11	Finance	Major Banks		1
+I	https://www.nasdaq.com/symbol/jnj	Johnson & Johnson	3.3977E+11	Health Care	Major Pharmaceuticals		0
+J	https://www.nasdaq.com/symbol/jnj	company 1					0

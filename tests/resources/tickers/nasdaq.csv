@@ -1,0 +1,15 @@
+ticker	quote	company_name	norm_name	market_cap	sector	industry
+MSFT	https://www.nasdaq.com/symbol/msft	Microsoft Corporation	microsoft corp	1.03872E+12	Technology	Computer Software: Prepackaged Software
+AAPL	https://www.nasdaq.com/symbol/aapl	Apple Inc.	apple inc	9.296E+11	Technology	Computer Manufacturing
+RAPT	https://www.nasdaq.com/symbol/rapt	RAPT Therapeutics, Inc.	rapt therapeutics inc			
+CPTI	https://www.nasdaq.com/symbol/cpti	ConversionPoint Holdings, Inc.	conversionpoint holdings inc			
+A	https://www.nasdaq.com/symbol/amzn	Amazon.com, Inc.	amazon com inc	8.8536E+11	Consumer Services	Catalog/Specialty Distribution
+B	https://www.nasdaq.com/symbol/googl	Alphabet Inc.	alphabet inc	8.1096E+11	Technology	Computer Software: Programming, Data Processing
+C	https://www.nasdaq.com/symbol/goog	Alphabet Inc.	alphabet inc	8.1016E+11	Technology	Computer Software: Programming, Data Processing
+D	https://www.nasdaq.com/symbol/fb	Facebook, Inc.	facebook inc	5.2035E+11	Technology	Computer Software: Programming, Data Processing
+E	https://www.nasdaq.com/symbol/baba	Alibaba Group Holding Limited	alibaba group holding ltd	4.4888E+11	Miscellaneous	Business Services
+F	https://www.nasdaq.com/symbol/v	Visa Inc.	visa inc	4.0148E+11	Miscellaneous	Business Services
+G	https://www.nasdaq.com/symbol/jpm	J P Morgan Chase & Co	j p morgan chase co	3.4712E+11	Finance	Major Banks
+H	https://www.nasdaq.com/symbol/jnj	Johnson & Johnson	johnson johnson	3.3977E+11	Health Care	Major Pharmaceuticals
+I	https://www.nasdaq.com/symbol/jnj	company 1	company 1			
+J	https://www.nasdaq.com/symbol/jnj	company 2	company 2			
