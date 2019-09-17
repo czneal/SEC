@@ -4,7 +4,7 @@ import unittest
 import json
 
 import algos.scheme
-import algos.xbrljson
+from algos.xbrljson import ForTestJsonEncoder
 import resource_chapters as res
 
 class TestExtention(unittest.TestCase):
@@ -40,8 +40,8 @@ class TestNodeCopy(unittest.TestCase):
                              node)
             self.assertEqual(node.children['NodeLabel1'].children['NodeLabel3'].parent,
                              node.children['NodeLabel1'])
-            self.assertEqual(json.dumps(n, cls = algos.xbrljson.ForTestJsonEncoder),
-                             json.dumps(node, cls = algos.xbrljson.ForTestJsonEncoder))
+            self.assertEqual(json.dumps(n, cls=ForTestJsonEncoder),
+                             json.dumps(node, cls=ForTestJsonEncoder))
         with self.subTest(i='raise AssertionError'):
             self.assertRaises(AssertionError, algos.scheme.makenodecopy, 'asd')
 

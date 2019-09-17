@@ -50,13 +50,14 @@ class ReportToDB(object):
                   'period': miner.xbrlfile.period,
                   'period_end': miner.xbrlfile.fye,
                   'fin_year': miner.xbrlfile.fy,
+                  'taxonomy': miner.xbrlfile.dei['us-gaap'],
                   'form': record['form_type'],
                   'quarter': 0,
                   'file_date': record['file_date'],
                   'file_link': file_link,
                   'trusted': 1,
                   'structure': self._dumps_structure(miner),
-                  'contexts': self._dums_contexts(miner)
+                  'contexts': self._dums_contexts(miner)                  
                 }
         if not self.reports.write(report, cur):
             raise XbrlException('couldnt write to mysql.reports table')

@@ -7,6 +7,8 @@ Created on Sat May 25 16:55:50 2019
 import lxml #type: ignore
 import re
 
+from typing import Optional, Dict
+
 
 class Node():
     """
@@ -29,6 +31,11 @@ class Node():
     def getname(self):
         "unittested"
         return '{0}:{1}'.format(self.version, self.tag)
+    
+    def getweight(self) -> int:
+        if self.arc is not None:
+            return self.arc.get('weight', 1)
+        return 1
     
     def asdict(self):
         "unittested"
@@ -93,12 +100,12 @@ class Chapter(object):
         self.roleuri = roleuri
         self.nodes = {}
         
-    def update_arc(self, arc):
+    def update_arc(self, arc, labels: Dict[str, str]):
         "unittested"
-        n_from = self.nodes[arc['from']]
-        n_to = self.nodes[arc['to']]
+        n_from = self.nodes[labels[arc['from']]]
+        n_to = self.nodes[labels[arc['to']]]
         n_to.parent = n_from
-        n_from.children[n_to.label] = n_to
+        n_from.children[n_to.name] = n_to
         n_to.arc = arc['attrib']
         
     def getnodes(self):
@@ -108,6 +115,17 @@ class Chapter(object):
     def gettags(self):
         "unittested"
         return set([n.name for n in self.nodes.values()])
+    
+    def getnode(self, name: str) -> Optional[Node]:
+        node = self.nodes.get(name, None)
+        if node is not None:
+            return node
+        
+        for n in self.nodes.values():
+            if n.name == name:
+                return n
+        
+        return None
     
     def __eq__(self, chapter):
         if (chapter is None):
@@ -137,7 +155,7 @@ class DimChapter(Chapter):
             if not re.match('.*member', n.tag, re.IGNORECASE):
                 continue
             p = n.parent
-            while True or p is None:
+            while True and p is not None:
                 if re.match('.*axis', p.tag, re.I):
                     retval.append([p.name, n.name])
                     break
@@ -147,17 +165,18 @@ class DimChapter(Chapter):
     
     def dims(self):
         "unittested"
-        retval = [None]
-        for n in self.nodes.values():
-            if re.match('.*axis', n.tag, re.I):
-                retval.append(n.name)
-                
-        return retval
+#        retval = [None]
+#        for n in self.nodes.values():
+#            if re.match('.*axis', n.tag, re.I):
+#                retval.append(n.name)                
+#        return retval
+        retval = set([dim for [dim, _] in self.dimmembers()])
+        return list(retval)
         
 class ReferenceParser(object):
     def __init__(self, ref_type):
         """
-        ref_type = {calculation, presentation, definition}
+        ref_type = {'calculation', 'presentation', 'definition'}
         """
         self.__ref_type = None
         self.setreftype(ref_type)
@@ -184,16 +203,19 @@ class ReferenceParser(object):
         """
         return Chapter object
         """
+        labels: Dict[str: str] = {}
         chapter = ChapterFactory.chapter(self.__ref_type)
         chapter.roleuri = link.attrib['{%s}role' % link.nsmap['xlink']]
         
         for loc in link.findall('{*}' + 'loc'):
             node = self.parse_node(loc)
-            chapter.nodes[node.label] = node
+            labels[node.label] = node.name
+            node.label = node.name
+            chapter.nodes[node.name] = node
             
         for arc in link.findall('{*}' + self.__ref_type + 'Arc'):
             arc = self.parse_arc(arc)
-            chapter.update_arc(arc)
+            chapter.update_arc(arc, labels)
             
         return chapter
     

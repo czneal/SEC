@@ -88,6 +88,9 @@ class Context():
         self.dim = [None]
         self.member = [None]
     
+    def axises(self):
+        return len(self.dim) - 1
+    
     def isinstant(self):
         "unittested"
         if self.sdate is None:
@@ -102,8 +105,8 @@ class Context():
             retval.append({'context':self.contextid,
                            'sdate':self.sdate,
                            'edate':self.edate,
-                           'dim':d,
-                           'member':m})
+                           'dim': d,
+                           'member': m})
         return retval
     
     def asdict(self):
@@ -388,7 +391,8 @@ class XbrlParser(object):
             
         return(data)
     
-class xbrltrans():        
+class xbrltrans():
+    @staticmethod        
     def transform_facts(facts):
         tfacts = {}
         for f in facts:
@@ -399,6 +403,7 @@ class xbrltrans():
                 tfacts[key] = f
         return tfacts
     
+    @staticmethod
     def transform_fn(facts, footnotes):
         fn = {}
         for key, f in facts.items():

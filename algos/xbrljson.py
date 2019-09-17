@@ -21,7 +21,7 @@ class CustomJsonEncoder(json.JSONEncoder, metaclass=ABCMeta):
         elif isinstance(obj, Node):            
             return self.node_json(obj)
         else:
-            return super().default(self, obj)
+            return json.JSONEncoder.default(super(), obj)
     
     @abstractmethod
     def chapter_json(self, obj):     

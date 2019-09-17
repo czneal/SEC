@@ -60,7 +60,7 @@ class XbrlFile(object) :
             root = utils.openbigxmlfile(files.xbrl)
         if root is None:
             raise XbrlException('unable open xbrl file') 
-            
+        
         #read data and setup properties
         self.root = root    
         self.__read_scheme_files(files)

@@ -18,7 +18,7 @@ import json
 import resource_referenceparser as resource
 import deepdiff as dd
 
-class TestChapterFactory(unittest.TestCase):
+class TestChapterFactory(unittest.TestCase):    
     def test_chapter(self):        
         with self.assertRaises(AssertionError):
             ChapterFactory.chapter('def')
@@ -34,27 +34,35 @@ class TestChapterFactory(unittest.TestCase):
                               DimChapter)
         
 class TestChapter(unittest.TestCase):
-    def test_updatearc(self):
-        s = """{"roleuri": "roleuri1", "nodes": {"nodelabel1": {"tag": "tag1", "version": "us-gaap", "arc": null, "children": {"nodelabel2": {"tag": "tag2", "version": "us-gaap", "arc": {"wegth": 1.0, "order": 1}, "children": null}}}}}"""
-                
+    def make_chapter(self):
         chapter = Chapter(roleuri='roleuri1')
-        n1 = Node()
-        n1.label = 'nodelabel1'
+        
+        n1 = Node()        
         n1.tag = 'tag1'
         n1.version = 'us-gaap'
         n1.name = n1.getname()
-        n2 = Node()
-        n2.label = 'nodelabel2'
+        n1.label = n1.name
+        
+        n2 = Node()        
         n2.tag = 'tag2'
         n2.version = 'us-gaap'
         n2.name = n2.getname()
+        n2.label = n2.name
         chapter.nodes[n1.label] = n1
         chapter.nodes[n2.label] = n2
         
+        labels = {'nodelabel1': 'us-gaap:tag1',
+                  'nodelabel2': 'us-gaap:tag2'}
+        return chapter, labels
+    
+    def test_updatearc(self):
+        s = """{"roleuri": "roleuri1", "nodes": {"us-gaap:tag1": {"tag": "tag1", "version": "us-gaap", "arc": null, "children": {"us-gaap:tag2": {"tag": "tag2", "version": "us-gaap", "arc": {"wegth": 1.0, "order": 1}, "children": null}}}}}"""
+                
+        chapter, labels = self.make_chapter()        
         arc = {'from': 'nodelabel1', 'to':'nodelabel2',
                'attrib':{'wegth':1.0, 'order':1}}
-    
-        chapter.update_arc(arc)
+        
+        chapter.update_arc(arc, labels)
         self.maxDiff = None
         self.assertEqual(s, json.dumps(chapter, cls=ForTestJsonEncoder))
         
@@ -63,46 +71,22 @@ class TestChapter(unittest.TestCase):
         s = """[{"tag": "us-gaap:tag1"}, {"tag": "us-gaap:tag2", "wegth": 1.0, "order": 1}]"""
         j = json.loads(s)
         
-        chapter = Chapter()
-        n1 = Node()
-        n1.label = 'nodelabel1'
-        n1.tag = 'tag1'
-        n1.version = 'us-gaap'
-        n1.name = n1.getname()
-        n2 = Node()
-        n2.label = 'nodelabel2'
-        n2.tag = 'tag2'
-        n2.version = 'us-gaap'
-        n2.name = n2.getname()
-        chapter.nodes[n1.label] = n1
-        chapter.nodes[n2.label] = n2
+        chapter, labels = self.make_chapter()
         
         arc = {'from': 'nodelabel1', 'to':'nodelabel2',
                'attrib':{'wegth':1.0, 'order':1}}
-    
-        chapter.update_arc(arc)
+                
+        chapter.update_arc(arc, labels)
         diff = dd.DeepDiff(chapter.getnodes(), j)
         self.assertEqual(diff, {}, diff)
         
     def test_gettags(self):
-        chapter = Chapter()
-        n1 = Node()
-        n1.label = 'nodelabel1'
-        n1.tag = 'tag1'
-        n1.version = 'us-gaap'
-        n1.name = n1.getname()
-        n2 = Node()
-        n2.label = 'nodelabel2'
-        n2.tag = 'tag2'
-        n2.version = 'us-gaap'
-        n2.name = n2.getname()
-        chapter.nodes[n1.label] = n1
-        chapter.nodes[n2.label] = n2
+        chapter, labels = self.make_chapter()
         
         arc = {'from': 'nodelabel1', 'to':'nodelabel2',
                'attrib':{'wegth':1.0, 'order':1}}
     
-        chapter.update_arc(arc)
+        chapter.update_arc(arc, labels)
         self.assertEqual(chapter.gettags(), {'us-gaap:tag1','us-gaap:tag2'})
         
     def test_DimChapter_dimmembers(self):
@@ -113,12 +97,14 @@ class TestChapter(unittest.TestCase):
                 
                 with self.subTest(i='answer[0]'):
                     dimmems = chapters["http://www.aa.com/role/ConsolidatedBalanceSheets"].dimmembers()
-                    diff = dd.DeepDiff(dimmems, json.loads(case['answers'][0]))
+                    diff = dd.DeepDiff(dimmems, json.loads(case['answers'][0]),
+                                       ignore_order=True)
                     self.assertEqual(diff, {}, diff)
                 
                 with self.subTest(i='answer[1]'):                    
                     dimmems = chapters["http://www.aa.com/role/FairValueMeasurementsAndOtherInvestmentsSummaryOfAssetsMeasuredAtFairValueOnRecurringBasisDetails"].dimmembers()
-                    diff = dd.DeepDiff(dimmems, json.loads(case['answers'][1]))
+                    diff = dd.DeepDiff(dimmems, json.loads(case['answers'][1]),
+                                       ignore_order=True)
                     self.assertEqual(diff, {}, diff)
                     
     def test_DimChapter_dims(self):
@@ -129,12 +115,14 @@ class TestChapter(unittest.TestCase):
                 
                 with self.subTest(i='answer[2]'):
                     dims = chapters["http://www.aa.com/role/ConsolidatedBalanceSheets"].dims()
-                    diff = dd.DeepDiff(dims, json.loads(case['answers'][2]))
+                    diff = dd.DeepDiff(dims, json.loads(case['answers'][2]),
+                                       ignore_order=True)
                     self.assertEqual(diff, {}, diff)
                 
                 with self.subTest(i='answer[3]'):                    
                     dims = chapters["http://www.aa.com/role/FairValueMeasurementsAndOtherInvestmentsSummaryOfAssetsMeasuredAtFairValueOnRecurringBasisDetails"].dims()
-                    diff = dd.DeepDiff(dims, json.loads(case['answers'][3]))
+                    diff = dd.DeepDiff(dims, json.loads(case['answers'][3]),
+                                       ignore_order=True)
                     self.assertEqual(diff, {}, diff)
             
 class TestReferenceParser(unittest.TestCase):
@@ -184,8 +172,7 @@ class TestReferenceParser(unittest.TestCase):
                 parser = ReferenceParser(case['ref_type'])
                 
                 arcs = [arc for arc in root.iter('{*}'+case['ref_type'] + 'Arc')]
-                index = [1, 100, 56, 34, 78]
-                
+                index = [1, 100, 56, 34, 78]                
                 
                 for index, arc in enumerate([arcs[i] for i in index]):
                     arcdict = parser.parse_arc(arc)                
@@ -193,7 +180,6 @@ class TestReferenceParser(unittest.TestCase):
                     self.assertEqual(dd.DeepDiff(arcdict, answer), {})
                     
     def test_parse_chapter(self):
-        
         for case in resource.chapter_test_cases:
             with self.subTest(i=case['filename']):
                 root = lxml.etree.parse(case['filename'])
@@ -204,9 +190,9 @@ class TestReferenceParser(unittest.TestCase):
                 for index, link in enumerate([link[i] for i in index]):
                     chapter = parser.parse_chapter(link)
                     answer = case['answers'][index]
-                    self.assertEqual(json.dumps(chapter, 
-                                                cls=ForTestJsonEncoder), 
-                                     answer)
+                    chapter_str = json.dumps(chapter, cls=ForTestJsonEncoder)
+                    
+                    self.assertEqual(chapter_str, answer)
                     
 if __name__ == '__main__':    
     unittest.main(verbosity=0)

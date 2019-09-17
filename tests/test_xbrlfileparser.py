@@ -53,7 +53,9 @@ class TestFact(unittest.TestCase):
              'unitid':'usd',
              'value':'1000000000.00',
              'context':'somecontext',
-             'factid':'Fact01'}
+             'factid':'Fact01',
+             'tag': 'Assets',
+             'version': 'us-gaap'}
         diff = dd.DeepDiff(f.asdict(), j)
         self.assertEqual(diff, {}, diff)
         
@@ -159,11 +161,21 @@ class TestContext(unittest.TestCase):
     def test_asdictdim(self):
         with self.subTest(i='dim == 0'):
             c = self.simple_context()
-            j = [{'context': 'context1', 'sdate': None, 'edate': dt.date(2019, 1, 1), 'dim': None, 'member': None}]
+            j = [{'context': 'context1', 
+                  'sdate': None, 
+                  'edate': dt.date(2019, 1, 1), 
+                  'dim': None, 'member': None}]
             self.assertListEqual(c.asdictdim(), j, msg=c.asdictdim())
         with self.subTest(i='dim == 2'):
             c = self.dim_context()
-            j = [{'context': 'context1', 'sdate': None, 'edate': dt.date(2019, 1, 1), 'dim': None, 'member': None}, {'context': 'context1', 'sdate': None, 'edate': dt.date(2019, 1, 1), 'dim': 'FirstAxis', 'member': 'FirstAxisMember'}, {'context': 'context1', 'sdate': None, 'edate': dt.date(2019, 1, 1), 'dim': 'SecondAxis', 'member': 'SecondAxisMember'}]
+            j = [{'context': 'context1', 
+                  'sdate': None, 
+                  'edate': dt.date(2019, 1, 1), 
+                  'dim': None, 'member': None}, 
+                 {'context': 'context1', 
+                  'sdate': None, 
+                  'edate': dt.date(2019, 1, 1), 
+                  'dim': 'FirstAxis', 'member': 'FirstAxisMember'}, {'context': 'context1', 'sdate': None, 'edate': dt.date(2019, 1, 1), 'dim': 'SecondAxis', 'member': 'SecondAxisMember'}]
             self.assertListEqual(c.asdictdim(), j, msg=c.asdictdim())
         with self.subTest(i='dim == 0 and sdate=2018-01-01'):
             c = self.simple_context()
