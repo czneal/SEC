@@ -13,67 +13,6 @@ from xbrlxml.xbrlzip import XBRLZipPacket
 from algos.scheme import enum
 from algos.xbrljson import custom_decoder
 
-def check_structure(structure: dict, nums: pd.DataFrame,
-                    tres: float=0.02) -> List[str]:
-    tree = pd.DataFrame(data=[e for e in enum(structure, outpattern='pcwo')],
-                        columns=list('pcwo'))
-    tree = tree.merge(nums, how='left', left_on='c', right_on='name')
-    tree['v*w'] = tree['value']*tree['w']
-    parent_tags = list(tree['p'].unique())
-    group = tree.groupby('p')['v*w'].sum()
-    
-    data = []
-    for tag in parent_tags:
-        try:
-            tag_value = tree[tree['c'] == tag].iloc[0]['value']
-            if pd.isna(tag_value):
-                continue
-        except IndexError:
-            continue
-        
-        try:
-            group_value = group[tag]
-        except IndexError:
-            group_value = None
-            
-        if group_value is None:
-            data.append([tag, tag_value, None, None])
-            
-        diff = abs(group_value - tag_value)
-        mean = (abs(group_value) + abs(tag_value))/2
-        if ( diff > 0 and diff/mean > tres):
-            data.append([tag, tag_value, group_value, diff])
-            
-    return data
-
-def check_tag_value(tag: Node,
-                    context: str, 
-                    dfacts: pd.DataFrame) -> bool:        
-    try:
-        tag_value = dfacts[(dfacts['name'] == tag.name) &
-                          (dfacts['context'] == context)].iloc[0]['value']
-    except IndexError:
-        return True
-    
-    if not tag.children:
-        return True
-    
-    sum_tag_value = 0
-    values = dfacts[dfacts['context'] == context]
-    children = pd.DataFrame(data=[[c.name, c.getweight()] 
-                                    for c in tag.children.values()],
-                            columns=['name', 'weight'])
-    values = pd.merge(values, children,
-                      how='inner',
-                      left_on='name', right_on='name')
-    values = values.astype({'value': 'float', 'weight': 'float'})
-    if values.shape[0] > 0:
-        sum_tag_value = (values['weight']*values['value']).sum()
-    else:
-        sum_tag_value = None
-    
-    return tag_value == sum_tag_value
-
 def calc_missing_value(name: str, 
                context: str, 
                dfacts: pd.DataFrame,
@@ -106,15 +45,34 @@ def calc_missing_value(name: str,
             
     return cntx.groupby(['dim', 'edate', 'uom'])['value'].sum().reset_index()
 
-def find_missing_values(tag: Node,
-                        context: str, 
-                        dfacts: pd.DataFrame) -> List[str]:
-    tags = set([c.name for c in tag.children.values()])
-    f = dfacts[(dfacts['context'] == context) &
-               (dfacts['name'].isin(tags))]
-    fact_tags = f['name'].unique()
+def find_missed_values(tag: Node, facts: Dict[str, float]) -> List[str]:    
+    tags = set([c.name for c in tag.children.values()])    
+    return list(tags.difference(facts.keys()))
+
+def check_structure(structure: dict, 
+                    facts: Dict[str, float],
+                    none_sum_err: bool,
+                    thres: float) -> pd.DataFrame:
+    miscalc = calc_structure(structure, facts, none_sum_err, thres)
+    frames = []
+    for index, row in miscalc.iterrows():
+        chapter = structure[row['sheet']]['chapter']
+        missed = find_missed_values(tag=chapter.getnode(row['name']),
+                                    facts=facts)
+        if not missed:
+            missed = [None]
+        df = pd.DataFrame(missed, columns=['missed'])
+        df['name'] = row['name']
+        frames.append(df)
     
-    return list(tags.difference(fact_tags))
+    if frames:
+        missed = pd.concat(frames, ignore_index=True, sort=False)
+    else:
+        missed = pd.DataFrame([], columns=['name', 'missed'])
+        
+    miscalc = miscalc.merge(missed, left_on='name', right_on='name')
+    
+    return miscalc
 
 def repair_value(adsh: str, value_name: str, sheet: str) -> float:
     from utils import add_root_dir
@@ -218,7 +176,7 @@ def make_tree(adsh: str, structure: Optional[dict]) -> pd.DataFrame:
     
     return df[['sheet', 'c', 'value', 'w', 'v*w', 'p']]
 
-def make_tree_from(structure, nums: pd.DataFrame) -> pd.DataFrame:
+def make_tree_from(structure, facts: Dict[str, float]) -> pd.DataFrame:
     frames = []
     for sheet in structure:
         data = [e for e in enum(structure[sheet]['chapter'],
@@ -227,7 +185,8 @@ def make_tree_from(structure, nums: pd.DataFrame) -> pd.DataFrame:
         frame['sheet'] = sheet
         frames.append(frame)
     
-    df = pd.concat(frames)
+    nums = pd.DataFrame(facts.items(), columns=['name', 'value'])
+    df = pd.concat(frames)        
     df = pd.merge(df, nums[['name', 'value']], how='left',
                   left_on='c', right_on='name')
     df['v*w'] = df['value']*df['w']
@@ -236,51 +195,49 @@ def make_tree_from(structure, nums: pd.DataFrame) -> pd.DataFrame:
                                     '|' + x['c'],
                              axis=1)
     return df[['sheet', 'c', 'value', 'w', 'v*w', 'p']]
-    
-def misscalculated(adshs: List[str]) -> pd.DataFrame:
+
+def misscalculated(adshs: List[str]) -> Tuple[List[pd.DataFrame],
+                                              Dict[str, pd.DataFrame]]:
     structures = do.read_report_structures(adshs)
     nums = do.read_reports_nums(adshs)
     nums['name'] = nums['version'] + ':' + nums['tag']
     nums['context'] = 'context'
     
-    data = []
+    frames = []
+    trees = {}
     for adsh in adshs:
         structure = json.loads(structures.loc[adsh]['structure'],
                                object_hook=custom_decoder)
-        dfacts = nums[nums['adsh']==adsh]
-        for sheet in structure:
-            chapter = structure[sheet]['chapter']
-            misscalc = check_structure(chapter, 
-                                       dfacts)
-            for [tag, tag_value, group_value, diff] in misscalc:
-                missing = find_missing_values(chapter.getnode(tag),
-                                              context='context',
-                                              dfacts=dfacts)
-                if missing:
-                    data.extend([[adsh, sheet, 
-                                  tag, tag_value, group_value, diff,
-                                  m] for m in missing])
-                else:
-                    data.append([adsh, sheet,
-                                 tag, tag_value, group_value, diff,
-                                 None])
-    
-    df = pd.DataFrame(data, columns=['adsh', 'sheet', 
-                                     'misscalc', 
-                                     'tag_value', 'group_value', 'diff',
-                                     'missing'])
-    return df
+        dfacts = nums[nums['adsh']==adsh].set_index('name')
+        facts = dfacts['value'].to_dict()
+        
+        miscalc = check_structure(structure=structure,
+                                  facts=facts,
+                                  thres=0.02,
+                                  none_sum_err=False)
+        miscalc['adsh'] = adsh
+        frames.append(miscalc)
+        
+        if miscalc.shape[0] > 0:
+            trees[adsh] = make_tree_from(structure, facts)
+            
+    return (pd.concat(frames, ignore_index=True, sort=False),
+            trees)
 
-def calc_structure(structure: dict, facts: Dict[str, float],
-                   none_sum_err: bool) -> list:
+def calc_structure(structure: dict, 
+                   facts: Dict[str, float],
+                   none_sum_err: bool,
+                   thres: float=0.02) -> pd.DataFrame:
+    
     def calc_one_fact(node: Node, facts: Dict[str, float],
                       none_sum_err: bool,
+                      thres: float,
                       log: list) -> Optional[float]:
         value = facts.get(node.name, None)
         
         s = []
         for child in node.children.values():
-            v = calc_one_fact(child, facts, none_sum_err, log)
+            v = calc_one_fact(child, facts, none_sum_err, thres, log)
             if v is not None:
                 s.append(v*child.getweight())
         if s:
@@ -300,19 +257,29 @@ def calc_structure(structure: dict, facts: Dict[str, float],
             if value_sum != value:
                 if ((value_sum is not None) or
                     (none_sum_err and value_sum is None)):
-                    log.append([node.name, value, value_sum])
+                    if value_sum is None:
+                        log.append([node.name, value, value_sum, None])
+                    else:
+                        diff = abs(value - value_sum)
+                        mean = (abs(value) + abs(value_sum))/2
+                        if ( mean > 0 and diff/mean > thres):
+                            log.append([node.name, value, value_sum, diff])
                                 
         return value
     
-    log = []
+    frames = []
     for sheet in structure:
         chapter = structure[sheet]['chapter']
+        log = []
         for child in chapter.nodes.values():
             if child.parent is not None:
-                continue
-            calc_one_fact(child, facts, none_sum_err, log)
+                continue            
+            calc_one_fact(child, facts, none_sum_err, thres, log)
+        df = pd.DataFrame(log, columns=['name', 'value', 'value_sum', 'diff'])
+        df['sheet'] = sheet
+        frames.append(df)
             
-    return log
+    return pd.concat(frames, ignore_index=True, sort=False)
 
 if __name__ == '__main__':
 #    with do.OpenConnection() as con:
@@ -326,9 +293,11 @@ if __name__ == '__main__':
 #        adsh_cik = pd.DataFrame(cur.fetchall())
 #        adshs = list(adsh_cik['adsh'].unique())
     
-    adshs=['0000034088-19-000010']
-    df = misscalculated(adshs)
-    tree = make_tree(adshs[0], None)
+#    adshs=['0000943819-19-000017']
+#    df, trees = misscalculated(adshs)
+#    df = df.merge(adsh_cik, left_on='adsh', right_on='adsh')
+#    df = df[['adsh', 'cik', 'name', 'value', 'value_sum', 'diff', 'missed']]
+#    tree = make_tree(adshs[0], None)
     
 #    xbrlfile, cntx = open_file(adshs[0])
 #    df = xbrlfile.dfacts
@@ -358,9 +327,9 @@ if __name__ == '__main__':
 #    df = df.merge(adsh_cik, left_on='adsh', right_on='adsh')
 #    tree = make_tree(adshs[0])
 #    
-#    val = repair_value(adshs[0], 
-#                       'us-gaap:ContractWithCustomerLiabilityCurrent',
-#                       'bs')
+    val = repair_value('0000040545-19-000014', 
+                       'us-gaap:SellingGeneralAndAdministrativeExpense',
+                       'is')
     
     
 #    

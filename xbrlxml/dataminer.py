@@ -215,13 +215,8 @@ class DataMiner(metaclass=ABCMeta):
         self._prepare(record, zip_filename)
         
         try:
+            good = False
             self.xbrlzip.open_packet(zip_filename)
-        except XbrlException as e:
-            self._logs.error(e)
-            return False
-        
-        try:
-            good = False            
             self.xbrlfile.prepare(self.xbrlzip, record)
             self.do_job()            
             good = True

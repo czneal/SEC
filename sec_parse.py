@@ -10,7 +10,7 @@ from xbrlxml.xbrlrss import CustomEnumerator
 from mysqlio.xbrlfileio import ReportToDB
 from log_file import Logs, RepeatFile
 from settings import Settings
-from utils import ProgressBar, remove_root_dir
+from utils import ProgressBar, remove_root_dir, add_root_dir
 
 def concat_records(r1: List[TRecordPair],
                    r2: List[TRecordPair]) -> List[TRecordPair]:
@@ -66,7 +66,7 @@ def read(records, repeat, slice_, log_dir, append_log=False):
         
     with mysqlio.basicio.OpenConnection() as con:
         cur = con.cursor(dictionary=True)
-        for record, filename in records[slice_]:
+        for record, filename in records[slice_]:            
             logs.set_header([record['cik'], record['adsh'], 
                              remove_root_dir(filename)])
             repeat.set_state(record, remove_root_dir(filename))
@@ -146,16 +146,15 @@ def make_cond_rss(query: str,
     
 
 if __name__ == '__main__':        
-#    files = XbrlFiles(xbrl = '../test/gen-20121231.xml',
-#                      xsd = '../test/gen-20121231.xsd', 
-#                      pres = '../test/gen-20121231_pre.xml', 
-#                      defi = '../test/gen-20121231_def.xml', 
-#                      calc = '../test/gen-20121231_cal.xml')
-    filesenum = CustomEnumerator('outputs/repeatrss.csv')
-    read(filesenum.filing_records(), 
-         'outputs/repeatrss.csv', 
-         slice(0, None), 
-         'outputs/')
+#    from xbrlxml.xbrlrss import makecustomrss
+#    makecustomrss(years=[2019], months=[1,2,3,4], 
+#                  rss_name='customrss.csv')
+    
+#    filesenum = CustomEnumerator('outputs/customrss.csv')
+#    read(filesenum.filing_records(), 
+#         'outputs/repeatrss.csv', 
+#         slice(0, 10), 
+#         'outputs/')
     
 #    make_cond_rss("""select adsh, file_link from reports
 #                     where structure like '%"roleuri": "roleuri"%'
@@ -163,7 +162,7 @@ if __name__ == '__main__':
 #                  rss_from='outputs/all.csv',
 #                  rss_to='outputs/customrss.csv')
     
-#    multiproc_read('all.csv')
-#    concat_logs_repeat(logs_dir='/home/victor/sec/outputs/multiproc/', 
-#                       output_dir='/home/victor/sec/outputs/') 
+    multiproc_read('customrss.csv')
+    concat_logs_repeat(logs_dir='outputs/multiproc/', 
+                       output_dir='outputs/') 
     

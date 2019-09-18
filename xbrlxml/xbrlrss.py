@@ -11,7 +11,7 @@ from abc import ABCMeta, abstractmethod
 import utils
 from algos.xbrljson import ForDBJsonEncoder
 from settings import Settings
-from utils import add_root_dir
+from utils import add_root_dir, remove_root_dir
 
 class FilingRSS(object):
     def __init__(self):
@@ -111,26 +111,22 @@ class SecEnumerator(RecordsEnumerator):
         
     def filing_records(self,
                        all_types: bool=False,
-                       form_types: Set[str]={'10-K', '10-K/A'}):
-        if all_types:
-            form_types = self.all_form_types()
-            
+                       form_types: Set[str]={'10-K', '10-K/A'}):           
         rss = FilingRSS()
         for y in self.years:
             for m in self.months:
                 filename = 'rss-{0}-{1}.xml'.format(y,str(m).zfill(2))
-                filedir = '{0}{1}/{2}/'.format(
-                            Settings.root_dir(), 
-                            str(y).zfill(4), str(m).zfill(2))
-                rss.open_file(filedir + filename)
+                filedir = '{0}/{1}/'.format(str(y).zfill(4), str(m).zfill(2))
+                filename = add_root_dir(filedir + filename)
+                rss.open_file(filename)
                         
                 for record in rss.filing_records(form_types=form_types,
                                                  all_types=all_types):
-                    zip_filepath = '{0}-{1}'.format(
+                    zip_filepath = '{0}-{1}.zip'.format(
                                         str(record['cik']).zfill(10), 
                                         record['adsh'])
                     zip_filepath = os.path.join(filedir, zip_filepath)
-                    zip_filepath = utils.remove_root_dir(zip_filepath)
+                    zip_filepath = add_root_dir(zip_filepath)
                     yield (record, zip_filepath)
                     
 class CustomEnumerator(RecordsEnumerator):
@@ -167,7 +163,7 @@ def makecustomrss(years: List[int],
         rss = SecEnumerator(years=years, months=months)
         for (record, filename) in rss.filing_records():            
             f.write(json.dumps(record, cls=ForDBJsonEncoder))
-            f.write('\t' + filename + '\n')
+            f.write('\t' + remove_root_dir(filename) + '\n')
             
 if __name__ == "__main__":
     makecustomrss([2018], [1,2], 'onemonth.csv')
