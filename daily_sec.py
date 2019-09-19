@@ -11,9 +11,9 @@ import os
 
 import sec_parse
 import sec_down
-import sec_companies
 from xbrlxml.xbrlrss import SecEnumerator, CustomEnumerator
 from settings import Settings
+from firms_nasdaq import update_forms_companies_nasdaq
 
 if __name__ == '__main__':
     d = datetime.datetime.now()
@@ -23,12 +23,10 @@ if __name__ == '__main__':
                       append_log=True,
                       refresh_rss=True)
     
-    print('update companies')
-    sec_companies.update_companies(years=[d.year], months=[d.month],
-                                   refresh_rss=False)
+    update_forms_companies_nasdaq()
     
     print('read unsuccessfull reports from repeat.rss')
-    repeat_filename = os.path.join(Settings.root_dir(),'repeat.rss')
+    repeat_filename = os.path.join(Settings.root_dir(), 'repeat.rss')
     
     repeat_records = []
     if os.path.exists(repeat_filename):
