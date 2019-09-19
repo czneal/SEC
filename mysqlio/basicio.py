@@ -28,7 +28,7 @@ def OpenConnection(host: str=Settings.host(), port: int=3306):
                               ssl_ca = Settings.ssl_dir()+"ca.pem",
                               ssl_cert = Settings.ssl_dir()+"client-cert.pem",
                               ssl_key = Settings.ssl_dir()+"client-key.pem",
-                              connection_timeout = 30)
+                              connection_timeout = 100)
     try:
         yield con
     finally:

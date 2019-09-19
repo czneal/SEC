@@ -83,8 +83,9 @@ class ReportToDB(object):
                                    cur.execute, insert, company)
         except InternalError as err:
             raise err
-        except Error:
-            raise XbrlException('couldnt write to mysql.companies table')
+        except Error as e:
+            raise XbrlException('couldnt write to mysql.companies table: ' +
+                                str(e))
             
     def write(self, cur, record, miner):
         dead_lock_trys = 0

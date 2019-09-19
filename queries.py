@@ -91,17 +91,12 @@ set ticker=%(new_ticker)s
 where ticker=%(old_ticker)s;
 """
 
-select_compaines_from_sec_forms = """
-select f.cik, f.company_name, max(filed) as updated
-from sec_forms f
+select_new_companies = """
+select distinct f.cik
+from sec_forms f 
 left outer join companies c
 on c.cik = f.cik
-where c.cik is null
-	and owner = f.cik
-    and form not in ('3', '4', '5', '3/A', '4/A', '5/A', 
-					'SC 13G/A', 'SC 13G', 
-                    '13F-NT', '13F-NT/A'
-                    'SC 13D', 'SC 13D/A', 'SC 13D',
-                    '144', '144/A')
-group by f.cik;
+where (c.cik is null or 
+      (c.updated < f.filed and c.company_name <> f.company_name))
+limit 100;
 """

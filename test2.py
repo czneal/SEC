@@ -327,9 +327,9 @@ if __name__ == '__main__':
 #    df = df.merge(adsh_cik, left_on='adsh', right_on='adsh')
 #    tree = make_tree(adshs[0])
 #    
-    val = repair_value('0000040545-19-000014', 
-                       'us-gaap:SellingGeneralAndAdministrativeExpense',
-                       'is')
+    val = repair_value('0000092122-19-000006', 
+                       'us-gaap:DeferredIncomeTaxAssetsNet',
+                       'bs')
     
     
 #    
