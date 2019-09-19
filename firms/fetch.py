@@ -77,7 +77,10 @@ def companies_search_mpc(ciks: List[int]) -> pd.DataFrame:
             params.append([ciks[start: start + records_per_cpu], lock, i+1])
         
         frames = p.starmap(companies_search, params)
-        df = pd.concat(frames, ignore_index=True, sort=False)
+        if frames:
+            df = pd.concat(frames, ignore_index=True, sort=False)
+        else:
+            df = pd.DataFrame([], columns=['cik', 'company_name', 'sic'])
     return df
     
 def get_cik_by_ticker(ticker: str) -> int:

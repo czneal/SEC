@@ -32,12 +32,12 @@ def update_forms_companies_nasdaq() -> None:
         month = today.month
         quarter = int((month-1)/4) + 1
         
-#        print('read SEC new forms...')
-#        sec_forms = f.get_sec_forms(year, quarter)
-#        print('ok')
-#        print('write SEC forms to database...')
-#        fio.write_sec_forms(sec_forms)
-#        print('ok')
+        print('read SEC new forms...')
+        sec_forms = f.get_sec_forms(year, quarter)
+        print('ok')
+        print('write SEC forms to database...')
+        fio.write_sec_forms(sec_forms)
+        print('ok')
         
         print('read new cik...')
         new_companies = fio.get_new_companies()

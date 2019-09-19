@@ -97,6 +97,5 @@ from sec_forms f
 left outer join companies c
 on c.cik = f.cik
 where (c.cik is null or 
-      (c.updated < f.filed and c.company_name <> f.company_name))
-limit 100;
+      (c.updated < f.filed and c.company_name <> f.company_name));
 """

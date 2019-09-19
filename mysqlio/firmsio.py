@@ -39,6 +39,8 @@ def get_new_companies() -> pd.DataFrame:
         cur = con.cursor(dictionary=True)
         cur.execute(q.select_new_companies)
         df = pd.DataFrame(cur.fetchall())
+    if df.shape[0] == 0:
+        df['cik'] = 0
         
     return df
 

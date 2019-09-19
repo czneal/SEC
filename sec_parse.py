@@ -162,7 +162,7 @@ if __name__ == '__main__':
 #                  rss_from='outputs/all.csv',
 #                  rss_to='outputs/customrss.csv')
     
-    multiproc_read('customrss.csv')
+    multiproc_read('all.csv')
     concat_logs_repeat(logs_dir='outputs/multiproc/', 
                        output_dir='outputs/') 
     
