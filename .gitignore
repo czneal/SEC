@@ -130,3 +130,4 @@ MGparams/~$Bingo problems.xlsx
 MGparams/Bingo problems.xlsx
 MGparams/Скрипты и классификаторы.xlsx
 *.xlsx
+.vscode/settings.json
