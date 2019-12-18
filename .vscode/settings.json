@@ -1,4 +1,25 @@
 {
+    "editor.formatOnSave": true,
     "python.linting.enabled": true,
-    "python.pythonPath": "C:\\Users\\Asus\\Anaconda3\\python.exe"
+    "python.linting.lintOnSave": true,
+    "python.formatting.provider": "autopep8",
+    "python.formatting.autopep8Args": [
+        "--max-line-length",
+        "79",
+        "--experimental",
+        "--aggressive",
+        "--aggressive"
+    ],
+    "python.pythonPath": "C:\\Users\\Asus\\Miniconda3\\envs\\sec\\python.exe",
+    "python.linting.mypyEnabled": true,
+    "python.linting.mypyArgs": [
+        "--follow-imports=silent",
+        "--allow-redefinition",
+        "--python-version=3.7"
+    ],
+    "python.linting.mypyCategorySeverity.note": "Hint",
+    "python.linting.pylintEnabled": false,
+    "python.analysis.openFilesOnly": true,
+    "python.terminal.executeInFileDir": true,
+    "python.dataScience.notebookFileRoot": "${workspaceFolder}"
 }

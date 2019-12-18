@@ -2,10 +2,10 @@
 import numpy as np
 import pandas as pd
 from abc import ABCMeta, abstractmethod
-from typing import Union
+from typing import Union, Set, cast, Type
 
 """
-Collection of calculetion procedures
+Collection of calculation procedures
 
 Each class should begin with 'mg_' prefix
 Each class should inherit CalcStatic or CalcDynamic
@@ -28,13 +28,13 @@ test case
 
 class CalcBaseClass(metaclass=ABCMeta):
     def __init__(self):
-        self._dp = set()
+        self._dp: Set[str] = set()
     
-    def dp(self) -> set:
+    def dp(self) -> Set[str]:
         return self._dp.copy()
     
     @abstractmethod
-    def run_it(self, nums, fy: int) -> Union[float, type(np.nan)]:
+    def run_it(self, nums, fy: int) -> Union[float, Type[np.nan]]:
         pass
 
 class CalcStatic(CalcBaseClass):

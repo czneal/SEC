@@ -140,3 +140,8 @@ class SchemeXSD(object):
                  'type':f.split('-')[-5], 
                  'cal_filename':f, 
                  'doc':doc} for (f, doc) in zip(self.cal_filenames, self.doc)]
+
+if __name__ == '__main__':
+    tax = Taxonomy('2018-01-31')
+    tax.read()
+    df = tax.taxonomy

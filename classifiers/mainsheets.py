@@ -7,12 +7,34 @@ Created on Mon Jun  3 15:34:47 2019
 import re
 import pandas as pd # type: ignore
 
-class MainSheets(object):
-    def __init__(self):
-        self.rebs = re.compile('.*balance.*sheet.*|.*financial.*position.*|.*finanical.*position.*|.*financial.*condition.*|.*statement.*condition.*|.*assets.*liabilities.*|.*statement.*assets.*', re.I)
-        self.reis = re.compile('.*income.*statement.*|.*statement.*income.*|.*statement.*operation.*|.*statement.*earning.*|.*statement.*loss.*|.*result.*operation.*|.*comprehensive.*income.*|.*comprehensive.*loss.*', re.I)
-        self.recf = re.compile('.*cash.*flow.*', re.I)
-        self.rese = re.compile('.*stockhold.*|.*statement.*equit.*|.*shareholder.*|.*partner.*capital.*', re.I)
+from typing import Optional
+
+class MainSheets(object):    
+    sheets_re = (('bs', re.compile('.*balance.*sheet.*|' +
+                                           '.*financial.*position.*|' +
+                                           '.*finanical.*position.*|' + 
+                                           '.*financial.*condition.*|' + 
+                                           '.*statement.*condition.*|' + 
+                                           '.*assets.*liabilities.*|' + 
+                                           '.*statement.*assets.*', re.I)),
+                 ('is', re.compile('.*income.*statement.*|' + 
+                                   '.*statement.*income.*|' + 
+                                   '.*statement.*operation.*|' + 
+                                   '.*statement.*earning.*|' + 
+                                   '.*statement.*loss.*|' + 
+                                   '.*result.*operation.*|' + 
+                                   '.*comprehensive.*income.*|' + 
+                                   '.*comprehensive.*loss.*', re.I)),
+                 ('cf', re.compile('.*cash.*flow.*', re.I)),
+                 ('se', re.compile('.*stockhold.*|' + 
+                                   '.*statement.*equit.*|' + 
+                                   '.*shareholder.*|' + 
+                                   '.*partner.*capital.*', re.I)))
+    @staticmethod
+    def sheets():
+        return [e for e in MainSheets.sheets_re]
+    
+    def __init__(self):        
         self.detail = re.compile('.*\(detail.*\).*', re.I)
         self.rescores = [(re.compile('.*parenth.*', re.I), 1000),                         
                          (re.compile('.*compre.*', re.I), 100),
@@ -25,58 +47,26 @@ class MainSheets(object):
                          (re.compile('.*changes.*', re.I), 1),
                          (re.compile('.*operations.*', re.I), -10)]
         
-    def match_bs(self, label):
-        if self.detail.match(label):
-            return False
-        if self.rebs.match(label):
-            return True
-        return False
-
-    def match_is(self, label):
-        if self.detail.match(label):
-            return False
-        if self.reis.match(label):
-            return True
-        return False
-
-    def match_cf(self, label):
-        if self.detail.match(label):
-            return False
-        if self.recf.match(label):
-            return True
-        return False
-    
-    def match_se(self, label):
-        if self.detail.match(label):
-            return False
-        if self.rese.match(label):
-            return True
-        return False
-
     def match(self, label):
-        if (self.match_bs(label) or
-            self.match_cf(label) or
-            self.match_is(label)):
-            return True
-        return False
+        return self.match_sheet(label) != ''
     
-    def select_ms(self, labels, priority=None, indicator=None):
+    def match_sheet(self, label: str) -> str:        
+        if self.detail.match(label) is not None:
+            return ''
+        for (sheet, match) in self.sheets_re:
+            if match.match(label) is not None:
+                return sheet            
+        return ''
+    
+    def select_ms(self, labels, priority=None):
         if priority is None:
             priority = [1 for l in labels]
-        if indicator is not None:
-            self.rescores.append([re.compile(indicator, re.I), -1])            
+                    
         assert len(labels) == len(priority)
         
         scores = []
         for label, p in zip(labels, priority):
-            sheet = ''
-            if self.match_bs(label):
-                sheet = 'bs'
-            if self.match_is(label):
-                sheet = 'is'
-            if self.match_cf(label):
-                sheet = 'cf'
-            
+            sheet = self.match_sheet(label)            
             if sheet == '': continue
         
             score = 0

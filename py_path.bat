@@ -1,0 +1,1 @@
+set PYTHONPATH=D:/Documents/Python Scripts/EdgarDownload

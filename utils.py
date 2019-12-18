@@ -11,45 +11,46 @@ import re
 import os
 import pathlib
 from lxml import etree #type: ignore
+from typing import Tuple, Optional, cast, Match, Union, IO, Callable, Any, Type
 
 from settings import Settings
 
 class ProgressBar(object):
     def __init__(self):
-        self.total = 0
-        self.one_step = dt.timedelta()
-        self.n = 0
-        self.before = dt.datetime.now()
+        self.total: int = 0
+        self.one_step: dt.timedelta = dt.timedelta()
+        self.n: int = 0
+        self.before: dt.datetime = dt.datetime.now()
         
-    def start(self, total):
-        self.__init__()
+    def start(self, total: int) -> None:
+        ProgressBar.__init__(self)
         self.total = total
                 
-    def measure(self):
+    def measure(self) -> None:
         delta = dt.datetime.now() - self.before
         self.before = dt.datetime.now()
         self.one_step = (self.one_step*self.n + delta)/(self.n+1)
         self.n += 1
         
-    def message(self):
+    def message(self) -> str:
         s2 = str(self.one_step*(self.total-self.n)).split('.')[0]
         s3 = str(self.one_step)
         return 'processed {0} of {1}, time remains: {2}, time per step: {3}'.format(
                 self.n, self.total, s2, s3)
 
        
-def correct_date(y, m, d):
+def correct_date(y: int, m: int, d: int) -> dt.date:
     (_, last) = calendar.monthrange(y, m)
     if d > last: d = last
     return dt.date(y,m,d)
 
-def periodend(fy, m, d):
+def periodend(fy: int, m: int, d: int) -> dt.date:
     if m <= 6: 
         return correct_date(fy + 1, m, d) 
     else:
         return correct_date(fy, m, d)
     
-def calculate_fy_fye(period: dt.date):
+def calculate_fy_fye(period: dt.date) -> Tuple[int, str]:
     fye = str(period.month).zfill(2) + str(period.day).zfill(2)
     if period.month > 6:
         fy = period.year
@@ -58,7 +59,7 @@ def calculate_fy_fye(period: dt.date):
     
     return(fy, fye)
 
-def str2date(datestr, pattern='ymd'):
+def str2date(datestr: Optional[str], pattern: str='ymd') -> Optional[dt.date]:
     if isinstance(datestr, dt.date):
         return datestr
     if isinstance(datestr, dt.datetime):
@@ -74,13 +75,13 @@ def str2date(datestr, pattern='ymd'):
     assert sum([p.match(datestr) is not None for p in patterns]) > 0
     assert pattern in {'ymd', 'mdy'}
     
-    retval = None
+    retval: Optional[dt.date] = None
     try:
         for p in patterns:
             dd = p.search(datestr)
             if dd is not None:
                 break
-        
+        dd = cast(Match[str], dd)
         datestr = dd.group(0).replace('-','').replace('/','')
         if pattern == 'ymd':
             retval = dt.date(int(datestr[0:4]), 
@@ -95,7 +96,7 @@ def str2date(datestr, pattern='ymd'):
     
     return retval
 
-def opensmallxmlfile(file):
+def opensmallxmlfile(file: IO):
     if file is None:
         return None
     
@@ -107,7 +108,7 @@ def opensmallxmlfile(file):
         
     return root
 
-def openbigxmlfile(file):
+def openbigxmlfile(file: IO):
     if file is None:
         return None
             
@@ -122,14 +123,14 @@ def openbigxmlfile(file):
         
     return root
 
-def class_for_name(module_name, class_name):
+def class_for_name(module_name: str, class_name: str) -> Any:
     # load the module, will raise ImportError if module cannot be loaded
     m = __import__(module_name, globals(), locals(), class_name)
     # get the class, will raise AttributeError if class cannot be found
     c = getattr(m, class_name)
     return c
 
-def retry(retry, exc_cls):
+def retry(retry: int, exc_cls: Type[Exception]) -> Any:
     def decorator(function):
         def wrapper(*args, **kwargs):
             for i in range(retry):
@@ -168,8 +169,7 @@ def add_root_dir(path: str) -> str:
     root_dir = os.path.normcase(Settings.root_dir())
     path = os.path.normcase(path)
     
-    return pathlib.PurePath(
-            os.path.join(root_dir, path)).as_posix()
+    return pathlib.PurePath(os.path.join(root_dir, path)).as_posix()
 
 def add_app_dir(path: str) -> str:
     app_dir = os.path.normcase(Settings.app_dir())
@@ -177,7 +177,18 @@ def add_app_dir(path: str) -> str:
     
     return pathlib.PurePath(
             os.path.join(app_dir, path)).as_posix()
-    
+
+def posix_join(path: str, *paths: str) -> str:
+    ret_path = os.path.join(path, *paths)
+    return pathlib.PurePath(ret_path).as_posix()
+
+def year_month_dir(year: int, month: int) -> str:
+    """
+    return full path to current month and year
+    root_dir/year/month
+    """
+    path = '{0}/{1}/'.format(str(year), str(month).zfill(2))
+    return add_root_dir(path)
 
 if __name__ == '__main__':
-    print(remove_root_dir('z:/sec/EdgarDownload///file.py'))
+    print(posix_join('c:\\', 'docs', 'utils'))

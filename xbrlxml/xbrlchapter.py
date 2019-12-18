@@ -34,7 +34,7 @@ class Node():
     
     def getweight(self) -> int:
         if self.arc is not None:
-            return self.arc.get('weight', 1)
+            return int(self.arc.get('weight', 0))
         return 1
     
     def asdict(self):
@@ -80,6 +80,7 @@ class Node():
         return False
 
 class ChapterFactory():
+    @staticmethod
     def chapter(ref_type):
         "unittested"
         assert (ref_type in {'calculation', 'presentation', 'definition'}) 
@@ -98,7 +99,7 @@ class Chapter(object):
     """
     def __init__(self, roleuri = None):
         self.roleuri = roleuri
-        self.nodes = {}
+        self.nodes: Dict[str, Node] = {}
         
     def update_arc(self, arc, labels: Dict[str, str]):
         "unittested"
@@ -180,6 +181,7 @@ class ReferenceParser(object):
         """
         self.__ref_type = None
         self.setreftype(ref_type)
+        self.decimal_re = re.compile(r'[\+,\-]{0,1}\d*(\.\d+)?$')
     
     def setreftype(self, ref_type):
         assert (ref_type in {'calculation', 'presentation', 'definition'})
@@ -199,11 +201,12 @@ class ReferenceParser(object):
         return chapters
         
     def parse_chapter(self, link):
-        "unittested"
         """
         return Chapter object
+        unittested
         """
-        labels: Dict[str: str] = {}
+        
+        labels: Dict[str, str] = {}
         chapter = ChapterFactory.chapter(self.__ref_type)
         chapter.roleuri = link.attrib['{%s}role' % link.nsmap['xlink']]
         
@@ -239,6 +242,7 @@ class ReferenceParser(object):
         return dict of attributes
         """
         arcdict = {'attrib':{}}
+        
         for attr, value in arc.attrib.items():
             attr = re.sub('{.*}', '', attr, re.IGNORECASE)
             
@@ -253,7 +257,10 @@ class ReferenceParser(object):
                 attr == 'preferredLabel'):
                 arcdict['attrib'][attr] = value.split('/')[-1]            
             else:
-                arcdict['attrib'][attr] = value
+                if self.decimal_re.match(value):
+                    arcdict['attrib'][attr] = float(value)
+                else:
+                    arcdict['attrib'][attr] = value
             
         return arcdict
         

@@ -1,12 +1,13 @@
 import pytz
 import datetime
 from typing import List, cast
+import logs
 
 import mysqlio.basicio as do
-from mpcv0 import starter
+from mpc import MpcManager
 from firms.tickers import stock_data, StockData
 from mysqlio.writers import PandasWriter, StocksWriter
-from abstractions import Worker, JobType
+from abstractions import Worker, Writer, JobType, WriterProxy
 
 
 class StocksWorker(Worker):
@@ -14,6 +15,8 @@ class StocksWorker(Worker):
         pass
 
     def feed(self, job: JobType) -> StockData:
+        logger = logs.get_logger(name=__name__)
+        logger.info('request for ticker {}'.format(str(job)))
         return stock_data(cast(str, job))
 
     def flush(self):
@@ -29,10 +32,13 @@ def off_hours(tm: datetime.datetime = datetime.datetime.now()) -> bool:
 
 
 def configure_worker() -> Worker:
+    import logging
+    logging.getLogger(name='urllib3').setLevel(logging.WARNING)
+
     return StocksWorker()
 
 
-def configure_writer() -> StocksWriter:
+def configure_writer() -> Writer:
     return StocksWriter()
 
 
@@ -48,4 +54,13 @@ if __name__ == '__main__':
         tickers: List[str] = [cast(str, ticker)
                               for (ticker,) in cur.fetchall()]
 
-    starter(tickers, StocksWriter, {}, stock_data, 2)
+    manager = MpcManager('file', level=logs.logging.INFO)
+    logger = logs.get_logger()
+    logger.info(
+        msg='download daily tickers from nasdaq to stocks_shares and stock_daily tables')
+    logger.info(msg='start to download {0} tickers'.format(len(tickers)))
+    manager.start(to_do=tickers,
+                  configure_writer=configure_writer,
+                  configure_worker=configure_worker,
+                  n_procs=6)
+    logger.info(msg='finish to download {0} tickers'.format(len(tickers)))

@@ -3,16 +3,21 @@ import re
 import os
 import pandas as pd
 
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Optional, cast
 
 from bs4 import BeautifulSoup
-from multiprocessing import Manager, Pool, Lock
+from multiprocessing import Manager, Pool
+from multiprocessing.synchronize import Lock
+from multiprocessing.managers import SyncManager
 
 from utils import ProgressBar
 from urltools import fetch_urlfile
-from firms.utils import cap, split_company_name
+from firms.futils import cap, split_company_name
 
-class LockStub(object):    
+class LockStub(Lock):
+    def __init__(self):
+        pass
+
     def acquire(self):
         pass
             
@@ -65,11 +70,16 @@ def companies_search(ciks: List[int],
     print()    
     return pd.DataFrame(data)
 
-def companies_search_mpc(ciks: List[int]) -> pd.DataFrame:
-    cpus = os.cpu_count() - 1
+def companies_search_mpc(ciks: List[int], n_procs: int=7) -> pd.DataFrame:
+    cpus = min(n_procs, len(ciks))
+    if cpus == 0:
+        df = pd.DataFrame([], columns=['cik', 'company_name', 'sic'])
+        return df
+        
     print('run {0} proceses'.format(cpus))        
         
     with Manager() as m, Pool(cpus) as p:
+        m = cast(SyncManager, m)
         lock = m.Lock()
         records_per_cpu = int(len(ciks)/cpus) + 1
         params = []
@@ -181,7 +191,9 @@ def get_sec_forms(year: int, quarter: int) -> pd.DataFrame:
                                      'adsh', 'owner'])
     
     eated = False
-    columns = []
+    columns: List[int] = []
+    r = re.compile(r"(?P<name>company name)\s+(?P<type>form type)\s+(?P<cik>cik)\s+(?P<date>date filed)\s+(?P<url>url.*)", 
+                   re.IGNORECASE)
     data = []
     for line in f.readlines():
         try:
@@ -189,23 +201,20 @@ def get_sec_forms(year: int, quarter: int) -> pd.DataFrame:
         except UnicodeDecodeError:
             line = line.decode('cp1250')
             
-            
         line = line.replace('\n', '')
         if eated:
             row = []
             for i in range(len(columns)-1):
                 row.append(line[columns[i]:columns[i+1]].strip())                
             data.append(row)
-            
-        if not eated and re.match(r'company name\s+form type\s+cik\s+date filed\s+url.*', 
-                                  line, re.I):
+            continue
+
+        g = r.match(line)
+        if not eated and g:
             eated = True
-            columns.append(0)                
-            columns.append(re.search(r'form type', line, re.I).start())
-            columns.append(re.search(r'cik', line, re.I).start())
-            columns.append(re.search(r'date filed', line, re.I).start())
-            columns.append(re.search(r'url', line, re.I).start())
-            columns.append(None)
+            columns = [g.start('name'), g.start('type'),
+                       g.start('cik'), g.start('date'),
+                       g.start('url'), -1]
             continue
     
     df = pd.DataFrame(data[1:], columns=['company_name', 'form', 
@@ -258,4 +267,5 @@ def get_sec_forms(year: int, quarter: int) -> pd.DataFrame:
 # =============================================================================
 
 if __name__ == '__main__':
-    df = mpc_companies_search([1133421, 715957])
+    df = get_nasdaq()
+    i=22

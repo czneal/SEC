@@ -6,8 +6,17 @@ Created on Wed May 29 12:18:19 2019
 """
 
 import re
-from xbrlxml.xbrlexceptions import XbrlException
+import datetime
+
+from typing import Optional, List, Dict, Union
+
 import utils
+import logs
+from xbrlxml.xbrlexceptions import XbrlException
+
+TContextAsDictDim = List[Dict[str, Union[Optional[str],
+                                         Optional[datetime.date],
+                                         List[Optional[str]]]]]
 
 class Fact():
     default_decimals = 19
@@ -30,10 +39,10 @@ class Fact():
             try:
                 self.decimals = abs(int(self.decimals))
             except ValueError:
-                self.decimals = self.default_decimals
+                self.decimals = Fact.default_decimals
             
         if self.value is None or self.value == '':
-            self.value = self.default_value
+            self.value = Fact.default_value
         else:
             try:
                 self.value = float(self.value)
@@ -81,26 +90,26 @@ class Fact():
     
 class Context():
     def __init__(self):
-        self.contextid = None
-        self.sdate = None
-        self.edate = None
-        self.entity = None
-        self.dim = [None]
-        self.member = [None]
+        self.contextid: Optional[str] = None
+        self.sdate: Optional[datetime.date] = None
+        self.edate: Optional[datetime.date] = None
+        self.entity: Optional[str] = None
+        self.dim: List[Optional[str]] = [None]
+        self.member: List[Optional[str]] = [None]
     
-    def axises(self):
+    def axises(self) -> int:
         return len(self.dim) - 1
     
-    def isinstant(self):
+    def isinstant(self) -> bool:
         "unittested"
         if self.sdate is None:
             return True
         else:
             return False
         
-    def asdictdim(self):
+    def asdictdim(self) -> TContextAsDictDim:
         "unittested"
-        retval = []
+        retval: TContextAsDictDim = []
         for d, m in zip(self.dim, self.member):
             retval.append({'context':self.contextid,
                            'sdate':self.sdate,
@@ -342,9 +351,13 @@ class XbrlParser(object):
                'fy': [],
                'cik': []}
         if 'dei' not in root.nsmap:
-            raise XbrlException('no dei section in xbrl file')
+            msg='no dei section in xbrl file'
+            logs.get_logger(__name__).error(msg=msg)
+            raise XbrlException(msg=msg)
         if 'us-gaap' not in root.nsmap:
-            raise XbrlException('taxonomy doesnt definded')
+            msg="taxonomy doesn't definded"
+            logs.get_logger(__name__).error(msg=msg)
+            raise XbrlException(msg=msg)
         
         dei['us-gaap'] = root.nsmap['us-gaap'].split('/')[-1]
         
@@ -357,7 +370,7 @@ class XbrlParser(object):
             unit = e.attrib.get('unitRef', None)
             context = e.attrib.get('contextRef', None)
             if unit is not None and units[unit].unitstr() == 'shares':
-                dei['shares'].append([text, context])
+                dei['shares'].append([text, context, tag])
                 continue
             
             if tag == 'DocumentFiscalYearFocus':
@@ -414,7 +427,9 @@ class xbrltrans():
     
 class XbrlCleanUp():
     def __init__(self):
-        self.currencies = [None, 'usd', 'eur', 'cad', 'shares', 'pure']
+        self.currencies = [None, 
+                           'usd', 'eur', 'cad', 'aud',
+                           'shares', 'pure']
         pass
     
     def cleanup(self, facts, units, contexts, footnotes):

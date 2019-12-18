@@ -5,27 +5,71 @@ Created on Wed Jul 31 18:28:09 2019
 @author: Asus
 """
 import json
+import sys
+import atexit
+import pandas as pd
+import mysql.connector
 from mysql.connector.errors import InternalError, Error
+from mysql.connector.cursor import MySQLCursor  # type: ignore
+from abc import ABCMeta, abstractmethod
+from typing import Any, Dict, List, Tuple
 
-import mysqlio.basicio
+import mysqlio.basicio as do
 import queries as q
 import algos.xbrljson
-from xbrlxml.xbrlexceptions import XbrlException
-from xbrlxml.dataminer import SharesDataMiner
-from log_file import Logs, RepeatFile
-from utils import remove_root_dir
+import logs
 
-class ReportToDB(object):
-    def __init__(self, logs: Logs, repeat: RepeatFile):
-        self.__logs = logs
-        self.__repeat = repeat
-        
-        with mysqlio.basicio.OpenConnection() as con:
-            self.reports = mysqlio.basicio.Table('reports', con, buffer_size=1)
-            self.companies = mysqlio.basicio.Table('companies', con, buffer_size=1)
-            self.nums = mysqlio.basicio.Table('mgnums', con, buffer_size=1000)
-            self.shares = mysqlio.basicio.Table('raw_shares', con, buffer_size=1000)
-            
+from xbrlxml.xbrlexceptions import XbrlException
+from xbrlxml.dataminer import SharesDataMiner, DataMiner
+from xbrlxml.xbrlrss import FileRecord
+from utils import remove_root_dir, retry
+
+
+class ReportWriter(metaclass=ABCMeta):
+    @abstractmethod
+    def write(self,
+              record: FileRecord,
+              miner: DataMiner) -> bool:
+        pass
+
+    @abstractmethod
+    def flush(self, commit: bool = True) -> None:
+        pass
+
+
+class ReportToDB(ReportWriter):
+    def __init__(self):
+        self.retrys = 20
+        self.con: mysql.connector.MySQLConnection = do.open_connection()
+        self.cur: MySQLCursor = self.con.cursor(dictionary=True)
+        atexit.register(self.flush)
+
+        self.reports = do.MySQLTable('reports', self.con)
+        self.nums = do.MySQLTable('mgnums', self.con)
+        self.companies = do.MySQLTable('companies', self.con)
+        self.companies.set_insert_if('updated')
+
+        atexit.register(self.close)
+
+    def commit(self) -> None:
+        if self.con.is_connected():
+            self.con.commit()
+
+    def close(self) -> None:
+        if self.con.is_connected():
+            self.con.close()
+
+    def flush(self, commit: bool = True) -> None:
+        try:
+            if commit:
+                self.commit()
+            self.close()
+        except Exception:
+            logger = logs.get_logger(name=__name__)
+            logger.error(
+                'unexpected error while flushing to database',
+                exc_info=True)
+
     def _dumps_structure(self, miner):
         structure = {}
         for sheet, roleuri in miner.sheets.mschapters.items():
@@ -34,16 +78,16 @@ class ReportToDB(object):
                             .schemes['calc']
                             .get(roleuri, {"roleuri": roleuri}))
             structure[sheet] = {
-                    'label': xsd_chapter.label,
-                    'chapter': calc_chapter
-                    }
-            
+                'label': xsd_chapter.label,
+                'chapter': calc_chapter
+            }
+
         return json.dumps(structure, cls=algos.xbrljson.ForDBJsonEncoder)
-    
+
     def _dums_contexts(self, miner):
         return json.dumps(miner.extentions)
-    
-    def write_report(self, cur, record, miner):
+
+    def write_report(self, record: FileRecord, miner: DataMiner):
         file_link = remove_root_dir(miner.zip_filename)
         report = {'adsh': miner.adsh,
                   'cik': miner.cik,
@@ -51,79 +95,62 @@ class ReportToDB(object):
                   'period_end': miner.xbrlfile.fye,
                   'fin_year': miner.xbrlfile.fy,
                   'taxonomy': miner.xbrlfile.dei['us-gaap'],
-                  'form': record['form_type'],
+                  'form': record.form_type,
                   'quarter': 0,
-                  'file_date': record['file_date'],
+                  'file_date': record.file_date,
                   'file_link': file_link,
                   'trusted': 1,
                   'structure': self._dumps_structure(miner),
-                  'contexts': self._dums_contexts(miner)                  
-                }
-        if not self.reports.write(report, cur):
-            raise XbrlException('couldnt write to mysql.reports table')
-        
-    
-    def write_nums(self, cur, record, miner):
+                  'contexts': self._dums_contexts(miner)
+                  }
+        self.reports.write(report, self.cur)
+
+    def write_nums(self, record: FileRecord, miner):
         if miner.numeric_facts is None:
             return
-        
-        if not self.nums.write_df(df=miner.numeric_facts,
-                                  cur=cur):
-            raise XbrlException('couldnt write to mysql.mgnums table')
-    
-    @staticmethod
-    def write_company(cur, record):
-        company = {'company_name': record['company_name'],
-                   'sic': record['sic'] if record['sic'] is not None else 0,
-                   'cik': record['cik'],
-                   'updated': record['file_date']}
-        insert = q.insert_update_companies
+
+        self.nums.write(miner.numeric_facts, self.cur)
+
+    def write_company(self, record: FileRecord) -> None:
+        company = {'company_name': record.company_name,
+                   'sic': record.sic,
+                   'cik': record.cik,
+                   'updated': record.file_date}
+
+        self.companies.write(company, self.cur)
+
+    def write(self, record: FileRecord, miner) -> bool:
+        logger = logs.get_logger(name=__name__)
         try:
-            mysqlio.basicio.tryout(5, InternalError,
-                                   cur.execute, insert, company)
-        except InternalError as err:
-            raise err
-        except Error as e:
-            raise XbrlException('couldnt write to mysql.companies table: ' +
-                                str(e))
-            
-    def write(self, cur, record, miner):
-        dead_lock_trys = 0
-        while(True):
-            try:
-                ReportToDB.write_company(cur, record)
-                self.write_report(cur, record, miner)
-                self.write_nums(cur, record, miner)
-                break               
-                
-            except InternalError as e:
-                #if dead lock just repeat again
-                if dead_lock_trys < 100:
-                    dead_lock_trys += 1
-                    continue
-                else:
-                    self.__logs.error(str(e))
-                    self.__logs.error('mysql super dead lock')
-                    self.__repeat.repeat()
-                    break
-            except XbrlException as e:
-                self.__logs.error(str(e))
-                self.__logs.error('problems with writing into mysql database')
-                self.__repeat.record()
-                break
-            except:
-                self.__logs.traceback()
-                self.__logs.error('unexpected problems with writing into mysql database')
-                self.__repeat.repeat()
-                break
-            
-    def write_shares(self, cur, record, miner: SharesDataMiner) -> None:
-        if miner.shares_facts.shape[0] == 0:
-            return
-        
-        self.shares.write_df(miner.shares_facts, cur)
-    
-    def flush(self, cur):
-        self.reports.flush(cur)
-        self.companies.flush(cur)
-        self.nums.flush(cur)
+            retry(self.retrys, InternalError)(self.write_company)(record)
+            retry(self.retrys, InternalError)(self.write_report)(record, miner)
+            retry(self.retrys, InternalError)(self.write_nums)(record, miner)
+            self.commit()
+            logger.info('report data has been writen')
+            return True
+        except InternalError:
+            logger.error(msg='mysql super dead lock', exc_info=True)
+        except Exception:
+            logger.error(msg='unexpected error', exc_info=True)
+
+        return False
+
+
+def records_to_mysql(records: List[Tuple[FileRecord, str]]) -> None:
+    row_list: List[Dict[str, Any]] = []
+    for (record, zip_filename) in records:
+        row_list.append({
+            'cik': record.cik,
+            'adsh': record.adsh,
+            'file_link': remove_root_dir(zip_filename),
+            'filed': record.file_date,
+            'period': record.period,
+            'fy': record.fy,
+            'record': str(record),
+            'company_name': record.company_name
+        })
+    with do.OpenConnection() as con:
+        cur = con.cursor(dictionary=True)
+        table = do.MySQLTable('sec_xbrl_forms', con)
+        table.write(row_list, cur)
+        con.commit()

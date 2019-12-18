@@ -1,12 +1,22 @@
 # -*- coding: utf-8 -*-
 
 import re
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Callable, Iterator, Union, Any, cast
 
 from xbrlxml.xbrlchapter import Chapter, Node
 from xbrlxml.xbrlexceptions import XBRLDictException
 
-def _enum(structure, offset, func):
+Structure = Union[Chapter, Node, Dict[str, Dict[str, Chapter]]]
+
+def _enum(structure: Structure, 
+          offset: int, 
+          func: Callable[[Node], str]) -> Iterator[Tuple[str,
+                                                         str,
+                                                         float,
+                                                         int,
+                                                         bool,
+                                                         Node,
+                                                         str]]:
     "unittested"
     if isinstance(structure, Chapter):
         for node in structure.nodes.values():
@@ -32,14 +42,15 @@ def _enum(structure, offset, func):
             for item in _enum(child, offset=offset+1, func=func):
                 yield item
     if isinstance(structure, dict):
-        for chapter in structure.values():
-            assert isinstance(chapter, Chapter)
-            for item in _enum(chapter, offset = offset, func=func):
+        for sheet in structure.values():
+            assert isinstance(sheet['chapter'], Chapter)
+            for item in _enum(sheet['chapter'], offset=offset, func=func):
                 yield item
 
-def enum(structure, leaf=False,
-         outpattern = 'pcwol',
-         func = lambda x: x.name):
+def enum(structure: Structure, 
+         leaf: bool=False,
+         outpattern: str = 'pcwol',
+         func: Callable[[Node], str] = lambda x: cast(str, x.name)) -> Iterator[List[Any]]:
     "unittested"
     assert re.fullmatch('[pcwolnv]+', outpattern)
     
@@ -47,7 +58,7 @@ def enum(structure, leaf=False,
         if leaf and not item[4]:
             continue
         
-        retval = []        
+        retval: List[Any] = []
         for c in outpattern:
             if c == 'p': retval.append(item[0])
             if c == 'c': retval.append(item[1])
@@ -57,7 +68,77 @@ def enum(structure, leaf=False,
             if c == 'n': retval.append(item[5])
             if c == 'v': retval.append(item[6])
         yield retval
+
+def _enum_filtered(structure: Structure, 
+                 offset: int, 
+                 nfunc: Callable[[Node], str],
+                 ffunc: Callable[[str, str], bool]) -> Iterator[Tuple[str, str, float, int, bool, Node, str]]:
+    
+    if isinstance(structure, Chapter):
+        for node in structure.nodes.values():
+            if node.parent is None:                
+                yield (structure.roleuri, 
+                       nfunc(node), 
+                       1.0, 
+                       offset, 
+                       True if not node.children else False,
+                       node,
+                       node.version)
+                if not ffunc(structure.roleuri, nfunc(node)):
+                    for item in _enum_filtered(node, 
+                                                offset=offset+1, 
+                                                nfunc=nfunc,
+                                                ffunc=ffunc):
+                        yield item
+    if isinstance(structure, Node):
+        for child in structure.children.values():
+            yield (nfunc(structure), 
+                   nfunc(child), 
+                   child.arc['weight'] if 'weight' in child.arc else 1.0, 
+                   offset,
+                   True if not child.children else False,
+                   child,
+                   child.version)
+            if not ffunc(nfunc(structure), nfunc(child)):
+                for item in _enum_filtered(child, 
+                                            offset=offset+1, 
+                                            nfunc=nfunc,
+                                            ffunc=ffunc):
+                    yield item
+    if isinstance(structure, dict):
+        for sheet in structure.values():
+            assert isinstance(sheet['chapter'], Chapter)
+            for item in _enum_filtered(sheet['chapter'], 
+                                        offset=offset, 
+                                        nfunc=nfunc,
+                                        ffunc=ffunc):
+                yield item
+
+def enum_filtered(structure: Structure, 
+                  leaf: bool=False,
+                  outpattern: str = 'pcwol',
+                  nfunc: Callable[[Node], str] = lambda x: cast(str, x.name),
+                  ffunc: Callable[[str, str], bool] = lambda x, y: False) -> Iterator[List[Any]]:
+    assert re.fullmatch('[pcwolnv]+', outpattern)
+    
+    for item in _enum_filtered(structure, 
+                               offset=0, 
+                               nfunc=nfunc,
+                               ffunc=ffunc):
+        if leaf and not item[4]:
+            continue
         
+        retval: List[Any] = []
+        for c in outpattern:
+            if c == 'p': retval.append(item[0])
+            if c == 'c': retval.append(item[1])
+            if c == 'w': retval.append(item[2])
+            if c == 'o': retval.append(item[3])
+            if c == 'l': retval.append(item[4])
+            if c == 'n': retval.append(item[5])
+            if c == 'v': retval.append(item[6])
+        yield retval
+
 def find_extentions(roleuri, calc, pres, xsds) -> \
         Tuple[Dict[str, str], List[str]]:
     """
@@ -182,3 +263,16 @@ def makenodecopy(node):
         n.children[label].parent = n
         
     return n
+
+
+def cut_one_node(chapter: Chapter, name: str) -> None:
+    for node in chapter.nodes.values():
+        if name in node.children:
+            node.children.pop(name)
+    for child in chapter.nodes[name].children.values():
+        pass
+    
+    raise Exception('not implemented')
+        
+def cut_empty_leafs(chapter: Chapter, facts: Dict[str, float]) -> None:
+    raise Exception('not implemented')

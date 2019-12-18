@@ -1,263 +1,433 @@
 # -*- coding: utf-8 -*-
 
-import pandas as pd
+import datetime
+import re
 from abc import ABCMeta, abstractmethod
-from typing import List, Dict, Set
+from typing import Any, Dict, List, Tuple, Union, Optional, cast
 
-from classifiers.mainsheets import MainSheets
+import pandas as pd
 
+import algos.calc as c
+import logs
 from algos.scheme import enum
-from xbrlxml.xbrlfile import XbrlFile
-from xbrlxml.selectors import ChapterChooser, ContextChooser, ChapterExtender
-from xbrlxml.selectors import SharesChapterChooser
-from xbrlxml.xbrlzip import XBRLZipPacket
+from utils import remove_root_dir
+from xbrlxml.selectors import ChapterChooser, ChapterExtender, ContextChooser
 from xbrlxml.xbrlexceptions import XbrlException
-from log_file import Logs, RepeatFile
+from xbrlxml.xbrlfile import XbrlFile
+from xbrlxml.xbrlfileparser import Context
+from xbrlxml.xbrlzip import XBRLZipPacket
+
 
 class TextBlocks(object):
     def __init__(self):
         self.data = []
-        
-    def extend(self, blocks, record):
+
+    def extend(self, blocks, record) -> None:
         self.data.extend(
-                [{'adsh': record['adsh'],
-                  'cik': record['cik'],
-                  'name': block['name'],
-                  'context': block['context'],
-                  'text': block['value'].replace('&lt;', '<')
-                                         .replace('&gt;', '>')
-                                         .replace('&amp;', '&')}
-                    for block in blocks]
-            )
-    
-    def write(self, filename):
+            [{'adsh': record['adsh'],
+              'cik': record['cik'],
+              'name': block['name'],
+              'context': block['context'],
+              'text': block['value'].replace('&lt;', '<')
+              .replace('&gt;', '>')
+              .replace('&amp;', '&')}
+             for block in blocks]
+        )
+
+    def write(self, filename) -> None:
         df = pd.DataFrame(self.data)
         df.to_csv(filename)
-        
+
+
+class SharesFilter():
+    share_types = re.compile(r'us-gaap:CommonClass[A-Z]{1}Member|'+
+                             r'us-gaap:CapitalUnitClass[A-Z]{1}Member|'+
+                             r'us-gaap:PreferredClass[A-Z]{1}Member')
+    @staticmethod
+    def filter_shares_context(context: Context) -> bool:
+        if len(context.dim) == 1:
+            return True
+        if (len(context.dim) == 2 and
+                SharesFilter.share_types.match(
+                    cast(str, context.member[1]))):
+            return True
+        return False
+
+
 class DataMiner(metaclass=ABCMeta):
-    def __init__(self, logs: Logs, repeat: RepeatFile):
+    chapter_sheets = frozenset(['bs', 'is', 'cf', 'se'])
+    calculated_sheets = frozenset(['bs', 'is', 'cf'])
+
+    def __init__(self):
         self.xbrlfile = XbrlFile()
         self.xbrlzip = XBRLZipPacket()
-        
+
         self.sheets = ChapterChooser(self.xbrlfile)
         self.cntx = ContextChooser(self.xbrlfile)
         self.extender = ChapterExtender(self.xbrlfile)
-        
-        self.shares = SharesChapterChooser(self.xbrlfile)
-        self.shares_contexts: Dict[str, str] = {}
-        
-        self._logs = logs
-        self._repeat = repeat
-        
-        self.cik = None
-        self.adsh = None
-        self.zip_filename = None
-        self.extentions: List[Dict[str, str]] = []
-        self.numeric_facts = None
-        self.shares_facts = None
-    
+
+        self.cik: Optional[int] = None
+        self.adsh: Optional[str] = None
+        self.zip_filename: str = ''
+
+        self.extentions: List[Dict[str, str]] = []  # try to deprecate
+        self.sheet_context: Dict[str, str] = {}  # {roleuri: context}
+        self.numeric_facts: Optional[pd.DataFrame] = None
+        self.shares_facts: Optional[pd.DataFrame] = None
+
+    def _prerequisites(self, func: str) -> None:
+        logger = logs.get_logger(__name__)
+        if func == {'_mine_bs_parent_for_shares',
+                    '_mine_se_for_shares'}:
+            if self.xbrlfile.dfacts is None:
+                det = 'call {0} after xbrlfile.read_units_facts_fn'.format(
+                    func)
+                logger.error(msg='logic error', extra={'details': det})
+                raise XbrlException('logic error')
+
     def _choose_main_sheets(self):
         self.sheets.choose()
+        warning_info = {}
         if not self.sheets.mschapters:
-            self._logs.warning('couldnt find any main sheet')
+            warning_info['details'] = "couldn't find any main sheet"
         else:
-            for sheet in ['is', 'bs', 'cf']:
+            for sheet in DataMiner.chapter_sheets:
                 if sheet not in self.sheets.mschapters:
-                    self._logs.warning('"{0}" chapter not found'.format(sheet))
-    
-    def _choose_shares_sheets(self):
-        self.shares.choose()
-        if not self.shares.share_chapters:
-            self._logs.warning('couldnt find any shares sheet')
-        if len(self.shares.share_chapters) > 1:
-            self._logs.warning('too many shares sheets')                    
-    
-    def _extend_calc(self):        
+                    warning_info['details'] = "couldn't find main sheet"
+                    warning_info[sheet] = 'chapter not found'
+        if warning_info:
+            logs.get_logger(__name__).warning(msg='parse main sheets',
+                                              extra=warning_info)
+
+    def _extend_calc(self):
+        logger = logs.get_logger(__name__)
         for roleuri in self.sheets.mschapters.values():
             warnings = self.extender.find_extentions(roleuri)
-            [self._logs.warning(w) for w in warnings]
+            logger.warning(msg='exdender', extra={'warnings': warnings})
+
             self.extender.extend()
             self.extentions.extend(self.extender.extentions)
-            
+
     def _find_main_sheet_contexts(self):
+        self.sheet_context = {}
         self.extentions = []
-        
+
+        warning_info = {}
         for sheet, roleuri in self.sheets.mschapters.items():
             context = self.cntx.choose(roleuri)
             if context is None:
-                self._logs.warning(
-                        'for "{0}": {1} context not found'.format(
-                                        sheet, roleuri))
+                warning_info['details'] = 'context not found'
+                warning_info[sheet] = roleuri
             else:
                 self.extentions.append({'roleuri': roleuri,
                                         'context': context})
-    
-    def _find_shares_sheet_contexts(self):
-        self.shares_contexts: Dict[str, str] = {}
-        
-        for roleuri in self.shares.share_chapters:
-            context = self.cntx.choose(roleuri)
-            if context is None:
-                self._logs.warning('for shares chapter "{0}" context not found'
-                                  .format(roleuri))
-            else:
-                self.shares_contexts[roleuri] = context
-        
+                self.sheet_context[roleuri] = context
+
+        if warning_info:
+            logs.get_logger(__name__).warning(msg='parse contexts',
+                                              extra=warning_info)
+
+    def _calculate(self):
+        validator = c.Validator(threshold=0.02, none_sum_err=True)
+        logger = logs.get_logger(__name__)
+        new_facts_frames = []
+
+        for sheet in DataMiner.calculated_sheets:
+            if sheet not in self.sheets.mschapters:
+                continue
+            roleuri = self.sheets.mschapters[sheet]
+            if roleuri not in self.sheet_context:
+                continue
+
+            context = self.sheet_context[roleuri]
+
+            calc = self.xbrlfile.schemes['calc'].get(roleuri, None)
+            pres = self.xbrlfile.schemes['pres'].get(roleuri, None)
+
+            if calc is None or pres is None:
+                logger.warning(msg='calculation failed',
+                               extra={'details': 'unable calculate chapter without ' +
+                                      'presentation or calculation scheme',
+                                      sheet: roleuri})
+                continue
+
+            names = calc.gettags().union(pres.gettags())
+
+            facts = c.facts_to_dict(dfacts=self.xbrlfile.dfacts,
+                                    context=context,
+                                    names=names)
+            err = c.Validator(threshold=0.0,
+                              none_sum_err=True)
+            c.calc_chapter(chapter=calc, facts=facts, err=err)
+            missing = c.find_missing(chapter=calc, facts=facts, err=err)
+
+            for name in missing:
+                df = c.calc_from_dim(name=name,
+                                     context=context,
+                                     contexts=self.xbrlfile.contexts,
+                                     dfacts=self.xbrlfile.dfacts,
+                                     pres=pres)
+                if df.shape[0] == 1:
+                    new_facts_frames.append(df)
+                    facts[name] = df.iloc[0]['value']
+                if df.shape[0] == 0:
+                    extra = {'details': 'calc_from_dim returns none',
+                             'fact': name,
+                             'sheet': sheet,
+                             'roleuri': roleuri}
+                    logger.warning(msg='calculation failed',
+                                   extra=extra)
+                if df.shape[0] > 1:
+                    extra = {'details': 'calc_from_dim returns more than ' +
+                             'one value',
+                             'fact': name,
+                             'sheet': sheet,
+                             'roleuri': roleuri}
+                    logger.warning(msg='calculation failed',
+                                   extra=extra)
+
+            c.calc_chapter(chapter=calc, facts=facts, err=validator)
+
+        if new_facts_frames:
+            self.new_facts = pd.concat(new_facts_frames)
+
+        return validator
+
     def _gather_numeric_facts(self):
-        frames = []
+        logger = logs.get_logger(__name__)
+
+        if self.new_facts is not None and self.new_facts.shape[0] > 0:
+            frames = [self.new_facts]
+        else:
+            frames = []
+
         for e in self.extentions:
             pres = self.xbrlfile.schemes['pres'].get(e['roleuri'])
             calc = self.xbrlfile.schemes['calc'].get(e['roleuri'], pres)
             if 'label' in e:
                 tags = set()
                 if e['label'] in pres.nodes:
-                    tags.update([e for [e] in 
-                                     enum(structure=pres.nodes[e['label']], 
-                                          outpattern='c')])
+                    tags.update([e for [e] in
+                                 enum(structure=pres.nodes[e['label']],
+                                      outpattern='c')])
                 if e['label'] in calc.nodes:
-                    tags.update([e for [e] in 
-                                     enum(structure=calc.nodes[e['label']], 
-                                          outpattern='c')])
+                    tags.update([e for [e] in
+                                 enum(structure=calc.nodes[e['label']],
+                                      outpattern='c')])
             else:
                 tags = set(pres.gettags()).union(set(calc.gettags()))
-            
+
             frame = self.xbrlfile.dfacts
-            frame = frame[(frame['name'].isin(tags)) & 
+            frame = frame[(frame['name'].isin(tags)) &
                           (frame['context'] == e['context'])]
             frames.append(frame)
-        
+
         if not frames:
             if self.sheets.mschapters and self.xbrlfile.any_gaap_fact():
-                raise XbrlException('couldnt find any facts to write')
+                logger.error(msg="couldnt find any facts to write")
+                raise XbrlException("couldnt find any facts to write")
             else:
-                self._logs.warning('couldnt find any us-gaap fact')
+                logger.warning(msg="couldn't find any us-gaap fact")
                 self.numeric_facts = None
                 return
-            
-        self.numeric_facts = pd.concat(frames)
+
+        self.numeric_facts = pd.concat(frames, ignore_index=True, sort=False)
         self.numeric_facts = self.numeric_facts[
-                pd.notna(self.numeric_facts['value'])]
+            pd.notna(self.numeric_facts['value'])]
         self.numeric_facts['adsh'] = self.adsh
         self.numeric_facts['fy'] = self.xbrlfile.fy
         self.numeric_facts['type'] = (
-                self.numeric_facts['sdate'].apply(
-                        lambda x: 'I' if pd.isna(x) else 'D')
-                )
-        self.numeric_facts.rename(columns={'edate':'ddate'}, inplace=True)
-        
+            self.numeric_facts['sdate'].apply(
+                lambda x: 'I' if pd.isna(x) else 'D')
+        )
+        self.numeric_facts.rename(columns={'edate': 'ddate'}, inplace=True)
+
         if self.numeric_facts.shape[0] == 0:
-            self._logs.warning('only null facts found')
+            logger.warning(msg='only null facts found')
             self.numeric_facts = None
-            
-    def _gather_shares_facts(self):
-#        frames = []
-#        pres = self.xbrlfile.schemes['pres']
-#        for roleuri, context in self.shares_contexts.items():
-#            frame = self.xbrlfile.dfacts
-#            indexer = ((frame['uom'].str.contains('shares')) &
-#                       (frame['name'].isin(pres[roleuri].gettags())) &
-#                       (frame['context'] == context))
-#            frame = frame[indexer].copy()
-#            frame['roleuri'] = roleuri
-#            frames.append(frame)
-#            
-#        if not frames:
-#            self._logs.warning('couldnt find any share facts')                                
-#            return
-#        
-#        self.shares_facts = pd.concat(frames).dropna(subset=['value'])
-#        
-#        self.shares_facts['adsh'] = self.adsh
-#        self.shares_facts['fy'] = self.xbrlfile.fy
-#        self.shares_facts['type'] = (
-#                self.shares_facts['sdate'].apply(
-#                        lambda x: 'I' if pd.isna(x) else 'D')
-#                )
-#        self.shares_facts.rename(columns={'edate':'ddate'}, inplace=True)
-        frame = self.xbrlfile.dfacts
-        self.shares_facts = frame[frame['uom'].str.contains('shares')].copy()
-        self.shares_facts.dropna(subset=['value'], inplace=True)
-        self.shares_facts['adsh'] = self.adsh
-        self.shares_facts['fy'] = self.xbrlfile.fy
-        self.shares_facts['type'] = (
-                self.shares_facts['sdate'].apply(
-                        lambda x: 'I' if pd.isna(x) else 'D')
-                )
-        self.shares_facts.rename(columns={'edate':'ddate'}, inplace=True)
-        self.shares_facts['member'] = None
-        
-        cntx = self.xbrlfile.contexts
-        for context in list(self.shares_facts['context'].unique()):
-            member = ','.join([d['member'] 
-                                    for d in cntx[context].asdictdim()
-                                        if d['member'] is not None])
-            self.shares_facts.loc[
-                    self.shares_facts['context'] == context, 
-                    'member'
-                    ] = member
-        
+
+    def _mine_dei_for_shares(
+            self) -> List[List[Union[str, int, datetime.date, None]]]:
+        shares = self.xbrlfile.dei.get('shares', None)
+        if shares is None or not shares:
+            logs.get_logger(__name__).warning('dei shares not found')
+            return []
+
+        data: List[List[Union[str, int, datetime.date, None]]] = []
+
+        for shares_count, context_name, shares_tag in shares:
+            context = self.xbrlfile.contexts[context_name]
+            if SharesFilter.filter_shares_context(context):
+                data.append([self.adsh,
+                             'dei:' + shares_tag,
+                             shares_count,
+                             context.sdate,
+                             context.edate,
+                             context.member[-1]])
+
+        return data
+
+    def _mine_se_for_shares(self) -> List[List[Any]]:
+        self._prerequisites("_mine_se_for_shares")
+
+        logger = logs.get_logger(__name__)
+        data: List[List[Any]] = []
+
+        roleuri = self.sheets.mschapters.get('se', None)
+        if roleuri is None:
+            return data
+
+        pres = self.xbrlfile.schemes['pres'].get(roleuri, None)
+        if pres is None:
+            logger.warning(msg='se shares not found')
+            return data
+
+        context_name = self.cntx.choose(roleuri)
+        if context_name is None:
+            logger.warning(msg='se shares not found',
+                           extra={'details': 'context for se not found'})
+            return data
+
+        tags = pres.gettags()
+        context = self.xbrlfile.contexts[context_name]
+        shares = self.xbrlfile.dfacts[
+            self.xbrlfile.dfacts['name'].isin(tags)]
+        shares = shares[shares['uom'] == 'shares']
+        shares = shares[(shares['edate'] == context.edate) &
+                        (shares['sdate'] == context.sdate)]
+
+        for index, row in shares.iterrows():
+            context = self.xbrlfile.contexts[row['context']]
+            if SharesFilter.filter_shares_context(context):
+                data.append([self.adsh,
+                             row['name'],
+                             row['value'],
+                             row['sdate'],
+                             row['edate'],
+                             context.member[-1]])
+        if not data:
+            logger.warning(
+                msg='se shares not found', extra={
+                    'details': "se doesn't contains any shares data"})
+        return data
+
+    def _mine_bs_parent_for_shares(self) -> List[List[Any]]:
+        self._prerequisites("_mine_bs_parent_for_shares")
+
+        logger = logs.get_logger(__name__)
+        data: List[List[Any]] = []
+
+        bs_roleuri = self.sheets.mschapters.get('bs', None)
+        if bs_roleuri is None:
+            logger.warning(msg='bs parentical shares not found')
+            return data
+
+        xsd = self.xbrlfile.schemes['xsd']
+        bs_label = xsd[bs_roleuri].label[0:-2]
+
+        for roleuri, chapter in xsd.items():
+            if ('parent' in chapter.label.lower() and
+                    bs_label in chapter.label):
+                break
+        else:
+            logger.warning(msg='bs parentical shares not found')
+            return data
+
+        pres = self.xbrlfile.schemes['pres'].get(roleuri, None)
+        tags = pres.gettags()
+
+        shares = self.xbrlfile.dfacts[self.xbrlfile.dfacts['name'].isin(tags)]
+        shares = shares[shares['uom'] == 'shares']
+        shares = shares[shares['edate'] == self.xbrlfile.period]
+
+        for index, row in shares.iterrows():
+            context = self.xbrlfile.contexts[row['context']]
+            if SharesFilter.filter_shares_context(context):
+                data.append([self.adsh,
+                             row['name'],
+                             row['value'],
+                             row['sdate'],
+                             row['edate'],
+                             context.member[-1]])
+        if not data:
+            logger.warning(msg='bs parentical shares not found', extra={
+                           'details': "bs doesn't contains any shares data"})
+        return data
+
+        return data
+
+    def _gather_shares_facts(self) -> None:
+        data = self._mine_dei_for_shares() + self._mine_bs_parent_for_shares()
+
+        self.shares_facts = pd.DataFrame(
+            data,
+            columns=[
+                'adsh',
+                'name',
+                'value',
+                'sdate',
+                'edate',
+                'member'])
+
     def _read_text_blocks(self):
-        raise XbrlException('_read_text_blocks is not implemented')
-    
+        raise NotImplementedError('_read_text_blocks is not implemented')
+
     def _prepare(self, record, zip_filename):
         self.extentions = []
         self.numeric_facts = None
+        self.shares_facts = None
+        self.new_facts = None
         self.cik = record['cik']
         self.adsh = record['adsh']
         self.zip_filename = zip_filename
-        pass
-    
+
+        logger = logs.get_logger(__name__)
+
     @abstractmethod
     def do_job(self):
         pass
-    
+
     def feed(self, record, zip_filename):
+        logger = logs.get_logger(__name__)
         self._prepare(record, zip_filename)
-        
+
         try:
             good = False
             self.xbrlzip.open_packet(zip_filename)
             self.xbrlfile.prepare(self.xbrlzip, record)
-            self.do_job()            
+            self.do_job()
             good = True
-            
-            self._logs.log('has been read')            
-        except XbrlException as e:
-            self._logs.error(e)                    
-        except:
-            self._logs.traceback()
-        finally:
-            for line in self.xbrlfile.errlog:
-                self._logs.error(line)
-            for line in self.xbrlfile.warnlog:
-                self._logs.warning(line)
-            if not good:          
-                self._repeat.repeat()
+
+            logger.info('has been read')
+        except XbrlException:
+            pass
+        except Exception:
+            logger.error(msg='unknown error', exc_info=True)
+
         return good
-        
+
+
 class NumericDataMiner(DataMiner):
     def do_job(self):
         self.xbrlfile.read_units_facts_fn()
-        
-        DataMiner._choose_main_sheets(self)        
+
+        DataMiner._choose_main_sheets(self)
         DataMiner._find_main_sheet_contexts(self)
-        DataMiner._extend_calc(self)
+        DataMiner._calculate(self)
+
         DataMiner._gather_numeric_facts(self)
-        
-        #self.numeric_facts.to_csv('outputs/numeric_facts.csv')
-        
-class SharesDataMiner(DataMiner):    
+        DataMiner._gather_shares_facts(self)
+
+
+class SharesDataMiner(DataMiner):
     def do_job(self):
         self.xbrlfile.read_units_facts_fn()
-        
-        self._choose_shares_sheets()
-        self._find_shares_sheet_contexts()
         self._gather_shares_facts()
-        
+
+
 class ChapterNamesMiner(DataMiner):
     def do_job(self):
         self.xbrlfile.read_units_facts_fn()
-         
+
         self._choose_shares_sheets()
         self._gather_shares_facts()
-        

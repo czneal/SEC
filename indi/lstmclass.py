@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import re
 from abc import ABCMeta, abstractmethod
-from typing import Optional, Dict, Union
+from typing import Optional, Dict, Union, Any
 
 from algos.scheme import enum
 from settings import Settings
@@ -206,7 +206,7 @@ class SingleOnlyChild(SingleAnswer, OnlyChild):
     pass
 
 def create(model_name: str, 
-           kwargs : Dict[str, StrInt]
+           kwargs : Dict[str, Any]
            ) -> ModelClassifier:
     args = {'fdict': kwargs['fdict'],
             'fmodel': model_name,
