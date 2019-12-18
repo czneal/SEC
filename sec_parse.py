@@ -53,7 +53,7 @@ def parse_mpc(method: str, after: dt.date):
 
         logger.set_state(state={'state': 'sec_parse'})
         logger.info(msg=f'start to parse {len(records)} reports')
-        manager.start(to_do=records[0:100],
+        manager.start(to_do=records,
                       configure_writer=configure_writer,
                       configure_worker=configure_worker,
                       n_procs=6)
@@ -78,7 +78,7 @@ def parse(method: str, after: dt.date) -> None:
         pb = ProgressBar()
         pb.start(len(records))
 
-        for record in records[0:10]:
+        for record in records:
             worker.feed(record)
             pb.measure()
             print('\r' + pb.message(), end='')
@@ -92,4 +92,4 @@ def parse(method: str, after: dt.date) -> None:
 
 if __name__ == '__main__':
     # parse('new', dt.date(2019, 1, 1))
-    parse_mpc('new', dt.date(2019, 1, 1))
+    parse_mpc('new', dt.date(2013, 1, 1))
