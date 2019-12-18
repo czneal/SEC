@@ -47,10 +47,28 @@ class ReportToDB(ReportWriter):
         self.reports = do.MySQLTable('reports', self.con)
         self.nums = do.MySQLTable('mgnums', self.con)
         self.companies = do.MySQLTable('companies', self.con)
+        self.shares = do.MySQLTable('sec_shares', self.con)
         self.companies.set_insert_if('updated')
 
         atexit.register(self.close)
 
+    def write(self, record: FileRecord, miner: DataMiner) -> bool:
+        logger = logs.get_logger(name=__name__)
+        try:
+            retry(self.retrys, InternalError)(self.write_company)(record)
+            retry(self.retrys, InternalError)(self.write_report)(record, miner)
+            retry(self.retrys, InternalError)(self.write_nums)(record, miner)
+            retry(self.retrys, InternalError)(self.write_shares)(record, miner)
+            self.commit()
+            logger.info('report data has been writen')
+            return True
+        except InternalError:
+            logger.error(msg='mysql super dead lock', exc_info=True)
+        except Exception:
+            logger.error(msg='unexpected error', exc_info=True)
+
+        return False
+        
     def commit(self) -> None:
         if self.con.is_connected():
             self.con.commit()
@@ -105,7 +123,7 @@ class ReportToDB(ReportWriter):
                   }
         self.reports.write(report, self.cur)
 
-    def write_nums(self, record: FileRecord, miner):
+    def write_nums(self, record: FileRecord, miner: DataMiner):
         if miner.numeric_facts is None:
             return
 
@@ -119,21 +137,11 @@ class ReportToDB(ReportWriter):
 
         self.companies.write(company, self.cur)
 
-    def write(self, record: FileRecord, miner) -> bool:
-        logger = logs.get_logger(name=__name__)
-        try:
-            retry(self.retrys, InternalError)(self.write_company)(record)
-            retry(self.retrys, InternalError)(self.write_report)(record, miner)
-            retry(self.retrys, InternalError)(self.write_nums)(record, miner)
-            self.commit()
-            logger.info('report data has been writen')
-            return True
-        except InternalError:
-            logger.error(msg='mysql super dead lock', exc_info=True)
-        except Exception:
-            logger.error(msg='unexpected error', exc_info=True)
+    def write_shares(self, record: FileRecord, miner: DataMiner) -> None:
+        if miner.shares_facts is None:
+            return
 
-        return False
+        self.shares.write(miner.shares_facts, self.cur)
 
 
 def records_to_mysql(records: List[Tuple[FileRecord, str]]) -> None:

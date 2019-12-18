@@ -98,7 +98,7 @@ venv.bak/
 .ropeproject
 
 # VS code project settings
-.vscode/
+.vscode
 
 # mkdocs documentation
 /site
@@ -130,4 +130,5 @@ MGparams/~$Bingo problems.xlsx
 MGparams/Bingo problems.xlsx
 MGparams/Скрипты и классификаторы.xlsx
 *.xlsx
+.vscode/settings.json
 .vscode/settings.json

@@ -44,7 +44,7 @@ def configure_writer() -> Writer:
 
 
 def parse_mpc(method: str, after: dt.date):
-    manager = MpcManager('file', level=logs.logging.INFO)
+    manager = MpcManager('mysql', level=logs.logging.INFO)
     logger = logs.get_logger()
     try:
         rss = MySQLEnumerator()
@@ -53,7 +53,7 @@ def parse_mpc(method: str, after: dt.date):
 
         logger.set_state(state={'state': 'sec_parse'})
         logger.info(msg=f'start to parse {len(records)} reports')
-        manager.start(to_do=records,
+        manager.start(to_do=records[0:100],
                       configure_writer=configure_writer,
                       configure_worker=configure_worker,
                       n_procs=6)
@@ -91,4 +91,5 @@ def parse(method: str, after: dt.date) -> None:
 
 
 if __name__ == '__main__':
-    parse('new', dt.date(2019, 1, 1))
+    # parse('new', dt.date(2019, 1, 1))
+    parse_mpc('new', dt.date(2019, 1, 1))
