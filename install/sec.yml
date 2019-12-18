@@ -1,0 +1,7 @@
+name: sec
+channels:
+  - defaults
+dependencies:
+  - python=3.7
+prefix: C:\Users\Asus\Miniconda3\envs\sec
+
