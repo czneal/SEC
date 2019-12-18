@@ -65,7 +65,9 @@ def update_companies_nasdaq() -> None:
         new_companies = fio.get_new_companies()
         ciks = list(new_companies['cik'].unique())
 
-        logger.info('get info for new {0} companies from SEC site'.format(len(ciks)))
+        logger.info(
+            'get info for new {0} companies from SEC site'.format(
+                len(ciks)))
         companies = f.companies_search_mpc(ciks)
         companies['updated'] = dt.date.today()
 
@@ -111,7 +113,7 @@ def download_report_files(method: str, after: dt.date) -> None:
 
 
 if __name__ == '__main__':
-    logs.configure('file', level=logs.logging.INFO)
+    logs.configure('mysql', level=logs.logging.INFO)
 
     update_xbrl_sec_forms(years=[2019], months=[m for m in range(1, 13)])
     update_sec_forms(years=[2019], months=[m for m in range(1, 13)])

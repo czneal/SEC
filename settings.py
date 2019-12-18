@@ -7,20 +7,29 @@ Created on Mon Sep 10 15:30:31 2018
 
 import json
 import os
+from typing import Dict, Any
 
 
 class Settings(object):
+    __settings: Dict[str, Any] = {}
+
     @staticmethod
     def __open():
+        if Settings.__settings:
+            return Settings.__settings
+
+        filename = os.path.join(os.path.split(__file__)[0],
+                                'global.settings')
+        if not os.path.exists(filename):
+            raise FileExistsError('create settings file global.settings')
+
         try:
-            wd = os.path.split(__file__)[0]
-            f = open(wd + '/global.settings')
-            settings = json.loads(f.read())
-            f.close()
-        except BaseException:
-            print("create settings file")
-            raise
-        return settings
+            with open(filename) as f:
+                Settings.__settings = json.loads(f.read())
+        except Exception:
+            raise Exception("settings file global.settings corrupted")
+
+        return Settings.__settings
 
     @staticmethod
     def ssl_dir():

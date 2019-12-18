@@ -10,7 +10,7 @@
         "--aggressive",
         "--aggressive"
     ],
-    "python.pythonPath": "C:\\Users\\Asus\\Miniconda3\\envs\\sec\\python.exe",
+    "python.pythonPath": "C:\\Users\\Media\\Miniconda3\\envs\\sec\\python.exe",
     "python.linting.mypyEnabled": true,
     "python.linting.mypyArgs": [
         "--follow-imports=silent",
