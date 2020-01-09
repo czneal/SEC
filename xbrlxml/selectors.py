@@ -1,5 +1,5 @@
 import json
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Tuple
 
 import algos.scheme
 import algos.xbrljson
@@ -100,7 +100,9 @@ class ContextChooser(object):
             return None
 
         contexts = self.xbrlfile.contexts
-        nondim, successor, parent = None, None, None
+        nondim : Optional[Tuple[str, float]] = None
+        successor : Optional[Tuple[str, float]] = None
+        parent : Optional[Tuple[str, float]] = None
         top = (f.iloc[0]['context'], f.iloc[0]['cnt'])
 
         for index, row in f.iterrows():

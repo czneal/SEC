@@ -156,7 +156,7 @@ class DimChapter(Chapter):
             if not re.match('.*member', n.tag, re.IGNORECASE):
                 continue
             p = n.parent
-            while True and p is not None:
+            while p is not None:
                 if re.match('.*axis', p.tag, re.I):
                     retval.append([p.name, n.name])
                     break

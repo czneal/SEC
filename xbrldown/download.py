@@ -164,7 +164,7 @@ def download_and_save(cik: int, adsh: str, zip_filename: str) -> None:
         packet.save_packet(files, zip_filename)
     except Exception:
         pass
-    
+
     check_zip_file(zip_filename)
     check_zip_file_deep(zip_filename)
 

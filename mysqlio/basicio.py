@@ -8,7 +8,7 @@ import datetime
 import re
 from contextlib import contextmanager
 from exceptions import MySQLSyntaxError, MySQLTypeError
-from typing import Any, Dict, List, Optional, Set, Mapping, Union, cast
+from typing import Any, Dict, List, Optional, Set, Mapping, Union, cast, Iterable
 
 import mysql.connector  # type :ignore
 import pandas as pd  # type: ignore
@@ -444,24 +444,6 @@ class MySQLTable(object):
                 'unsupported type to write into MySQL table {}'.format(
                     type(obj)))
     
-    def _prepare_row(self, row: Dict[str, Any]) -> Dict[str, Any]:
-        if not self.fields_not_null.issubset(row.keys()):
-            diff = self.fields_not_null.difference(row.keys())
-            raise MySQLTypeError(f'fields {diff} have not null flag')
-        
-        data: Dict[str, Any] = {}
-        for k, v in row.items():
-            if k not in self.fields:
-                continue
-            if v is None or pd.isna(v):
-                data[k] = None
-                continue
-
-            if k in self.fields_to_cut:
-                data[k] = v[0: self.fields_to_cut[k]]
-            else:
-                data[k] = v
-        return data
 
     def write_df(
             self,
@@ -492,6 +474,38 @@ class MySQLTable(object):
 
     def truncate(self, cur) -> None:
         cur.execute(f'truncate table `{self.name}`;')
+
+    def update_row(
+                self, 
+                row: Dict[str, Any],
+                key_fields: Iterable[str], 
+                update_fields: Iterable[str],
+                cur: mysql.connector.cursor.MySQLCursor) -> None:
+        data = self._prepare_row(row, check=False)
+        cur.execute(simple_update_command(
+                        self.name,
+                        key_fields=key_fields,
+                        update_fields=update_fields), 
+                    data)
+
+    def _prepare_row(self, row: Dict[str, Any], check: bool=True) -> Dict[str, Any]:
+        if check and not self.fields_not_null.issubset(row.keys()):
+            diff = self.fields_not_null.difference(row.keys())
+            raise MySQLTypeError(f'fields {diff} have not null flag')
+        
+        data: Dict[str, Any] = {}
+        for k, v in row.items():
+            if k not in self.fields:
+                continue
+            if v is None or pd.isna(v):
+                data[k] = None
+                continue
+
+            if k in self.fields_to_cut:
+                data[k] = v[0: self.fields_to_cut[k]]
+            else:
+                data[k] = v
+        return data
 
 def simple_insert_command(table_name: str,
                           fields: Set[str],
@@ -539,13 +553,22 @@ def update_command(table_name: str,
 
     return update
 
+def simple_update_command(table_name: str,
+                          key_fields: Iterable[str],
+                          update_fields: Iterable[str]) -> str:
+    command = f'update `{table_name}`\n'
+    update = ',\n  '.join([f'`{field}` = %({field})s' for field in update_fields])
+    where = '\n  and '.join([f'`{field}` = %({field})s' for field in key_fields])
+
+    return (command + 'set ' + update + '\nwhere ' + where)
+
 
 if __name__ == '__main__':
-    # update = update_command(table_name='companies',
-    #                 fields=set(['company_name', 'cik', 'sic', 'updated']),
-    #                 fields_not_null=set(['company_name', 'cik', 'sic', 'updated']),
-    #                 primary_keys=set(['cik']),
-    #                 date_field='updated')
+    update = simple_update_command(
+                    table_name='companies',
+                    key_fields=['cik', 'sic'],
+                    update_fields={'company_name', 'updated'})
+    print(update)
     
     # insert = insert_command(table_name='companies',
     #                 fields=set(['company_name', 'cik', 'sic', 'updated']),
@@ -554,17 +577,17 @@ if __name__ == '__main__':
     #print(update)
     #print(insert)
 
-    with OpenConnection() as con:
-        t = MySQLTable('logs_parse', con)
-        cur = con.cursor(dictionary=True)
+    # with OpenConnection() as con:
+    #     t = MySQLTable('logs_parse', con)
+    #     cur = con.cursor(dictionary=True)
 
-        # id, created, state, module, levelname, msg, extra
-        row = {'created': '2019-12-02 18:47:23.000235', 
-               'state': 'mpc.worker.Process-100000000000000000000000000', 
-               'module': 'mpc', 
-               'levelname': 'DEBUG', 
-               'msg': 'configure worker' + ''.join(['-' for _ in range(0,100)]), 
-               'extra': ''}
-        t.write_row(row, cur)
-        con.commit()
+    #     # id, created, state, module, levelname, msg, extra
+    #     row = {'created': '2019-12-02 18:47:23.000235', 
+    #            'state': 'mpc.worker.Process-100000000000000000000000000', 
+    #            'module': 'mpc', 
+    #            'levelname': 'DEBUG', 
+    #            'msg': 'configure worker' + ''.join(['-' for _ in range(0,100)]), 
+    #            'extra': ''}
+    #     t.write_row(row, cur)
+    #     con.commit()
 

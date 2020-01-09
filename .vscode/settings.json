@@ -10,13 +10,16 @@
         "--aggressive",
         "--aggressive"
     ],
-    "python.pythonPath": "C:\\Users\\Media\\Miniconda3\\envs\\sec\\python.exe",
+    "python.pythonPath": "C:\\Users\\Asus\\Miniconda3\\envs\\sec\\python.exe",
     "python.linting.mypyEnabled": true,
     "python.linting.mypyArgs": [
-        "--follow-imports=silent",
+        "--follow-imports=normal",
         "--allow-redefinition",
+        "--namespace-packages",
+        "--warn-unreachable",
         "--python-version=3.7"
     ],
+    "python.linting.mypyPath": "mypy",
     "python.linting.mypyCategorySeverity.note": "Hint",
     "python.linting.pylintEnabled": false,
     "python.analysis.openFilesOnly": true,

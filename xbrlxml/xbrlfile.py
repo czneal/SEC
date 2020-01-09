@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd #type: ignore
+import datetime as dt
 from collections import namedtuple
+from typing import Dict, Optional
 
 import utils
 import logs
 import xbrlxml.xbrlfileparser as xbrlfp
 import xbrlxml.truevalues as tv
 from xbrlxml.xsdfile import XSDFile
-from xbrlxml.xbrlchapter import ReferenceParser
+from xbrlxml.xbrlchapter import ReferenceParser, CalcChapter, Chapter
 from xbrlxml.xbrlexceptions import XbrlException
 
 
@@ -16,18 +18,20 @@ XbrlFiles = namedtuple('XbrlFiles', ['xbrl', 'xsd', 'pres', 'defi', 'calc'])
 
 class XbrlFile(object) :
     def __init__(self):
-        self.schemes = {'calc': {},
-                        'defi': {},
-                        'pres': None,
-                        'xsd': None}
+        self.schemes = {}
+        self.schemes['calc']: Dict[str, CalcChapter] = {}
+        self.schemes['defi']: Dict[str, Chapter] = {}
+        self.schemes['pres'] = None,
+        self.schemes['xsd'] = None
+
         self.dei = None
-        self.period = None
-        self.fy = None
-        self.fye = None
+        self.period: Optional[dt.date] = None
+        self.fy: Optional[int] = None
+        self.fye: Optional[str] = None
         self.contexts = None
         self.root = None
-        self.company_name = None
-        self.adsh = None
+        self.company_name: Optional[str] = None
+        self.adsh: Optional[str] = None
         
         self.numfacts = {'facts': None,
                          'units': None,

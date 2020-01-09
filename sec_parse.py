@@ -43,7 +43,7 @@ def configure_writer() -> Writer:
     return WriterProxy()
 
 
-def parse_mpc(method: str, after: dt.date):
+def parse_mpc(method: str, after: dt.date, n_procs: int = 8):
     manager = MpcManager('mysql', level=logs.logging.INFO)
     logger = logs.get_logger()
     try:
@@ -56,21 +56,21 @@ def parse_mpc(method: str, after: dt.date):
         manager.start(to_do=records,
                       configure_writer=configure_writer,
                       configure_worker=configure_worker,
-                      n_procs=6)
+                      n_procs=n_procs)
         logger.info(msg=f'finish to parse {len(records)} reports')
     except Exception:
         logger.error('unexpected error', exc_info=True)
     logger.revoke_state()
 
 
-def parse(method: str, after: dt.date) -> None:
-    logs.configure('mysql', level=logs.logging.INFO)
+def parse(method: str, after: dt.date, adsh: str = '') -> None:
+    logs.configure('file', level=logs.logging.INFO)
     logger = logs.get_logger(__name__)
     worker = configure_worker()
 
     try:
         rss = MySQLEnumerator()
-        rss.set_filter_method(method=method, after=after)
+        rss.set_filter_method(method=method, after=after, adsh=adsh)
         records = rss.filing_records()
 
         logger.set_state(state={'state': 'sec_parse'})
@@ -91,5 +91,5 @@ def parse(method: str, after: dt.date) -> None:
 
 
 if __name__ == '__main__':
-    # parse('new', dt.date(2019, 1, 1))
+    # parse('explicit', dt.date(2013, 1, 1), adsh='0000917491-19-000012')
     parse_mpc('new', dt.date(2013, 1, 1))

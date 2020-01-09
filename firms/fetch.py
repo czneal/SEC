@@ -30,7 +30,7 @@ def find_company_attr(cik: int) -> Dict[str, Union[str, int]]:
     try:
         info = bs.find(attrs={'class':'companyName'})
         company_name = re.findall(r'(.+)cik#', info.text, re.I)[0].strip()
-    except AttributeError or IndexError:
+    except (AttributeError, IndexError):
         company_name = ''
     try:
         sic = bs.find('a', href = re.compile('&sic', re.I)).text
@@ -49,9 +49,6 @@ def find_company_attr(cik: int) -> Dict[str, Union[str, int]]:
 def companies_search(ciks: List[int],
                      lock: Lock = None,                       
                      pid: int = 0) -> pd.DataFrame:
-    if lock is None: 
-        lock = LockStub()
-    
     data = []
     
     pb = ProgressBar()
@@ -61,11 +58,11 @@ def companies_search(ciks: List[int],
         data.append(find_company_attr(cik))
         pb.measure()
         
-        lock.acquire()
+        if lock: lock.acquire()
         try:
             print('\r{0}: {1}'.format(str(pid).zfill(2), pb.message()), end='')
         finally:
-            lock.release()
+            if lock: lock.release()
     
     print()    
     return pd.DataFrame(data)

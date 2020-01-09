@@ -57,7 +57,7 @@ def cap(market_cap: str) -> float:
         
     return value*mult
 
-def convert_decimal(value: Optional[str]) -> Optional[float]:
+def convert_decimal(value: Optional[Union[str, float]]) -> Optional[float]:
     if pd.isna(value):
         return None
 

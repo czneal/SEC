@@ -68,7 +68,7 @@ class ReportToDB(ReportWriter):
             logger.error(msg='unexpected error', exc_info=True)
 
         return False
-        
+
     def commit(self) -> None:
         if self.con.is_connected():
             self.con.commit()

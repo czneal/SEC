@@ -1,5 +1,6 @@
 import pandas as pd
 import typing
+import atexit
 import mysql.connector.errors as mysql_err
 
 from abstractions import Writer
@@ -23,12 +24,33 @@ class PandasWriter(Writer):
         pd.DataFrame(self.data).to_csv(self.filename, index=False)
 
 
-class StocksWriter(Writer):
-    def __init__(self, *args, **kwargs):
+class MySQLWriter(Writer):
+    def __init__(self):
         self.con = do.open_connection()
         self.cur = self.con.cursor(dictionary=True)
+        atexit.register(self.close)
+
+    def close(self) -> None:
+        try:
+            self.con.close()
+        except Exception:
+            pass
+
+    def flush(self) -> None:
+        try:
+            self.con.commit()
+        except Exception:
+            pass
+
+        self.close()
+
+
+class StocksWriter(MySQLWriter):
+    def __init__(self, *args, **kwargs):
+        MySQLWriter.__init__(self)
         self.stocks_daily = do.MySQLTable('stocks_daily', self.con)
         self.stocks_shares = do.MySQLTable('stocks_shares', self.con)
+        self.nasdaq = do.MySQLTable('nasdaq', self.con)
 
     def write(self, obj: tic.StockData) -> None:
         row = obj
@@ -44,7 +66,18 @@ class StocksWriter(Writer):
                 sio.write_stocks_shares)(
                 data=row, cur=self.cur, table=self.stocks_shares)
         else:
-            logger.warning(msg="for ticker {0} shares doesn't exist".format(row['ticker']))
+            logger.warning(
+                msg="for ticker {0} shares doesn't exist".format(
+                    row['ticker']))
+
+        if not(row['ttype'] == '' or row['ttype'] is None):
+            utils.retry(
+                5, mysql_err.InternalError)(
+                self.nasdaq.update_row)(
+                    row=row,
+                    key_fields=['ticker'],
+                    update_fields=['ttype'],
+                    cur=self.cur)
 
         utils.retry(
             5, mysql_err.InternalError)(
@@ -52,18 +85,10 @@ class StocksWriter(Writer):
             row, self.cur)
         self.con.commit()
 
-    def flush(self) -> None:
-        try:
-            self.con.commit()
-            self.con.close()
-        except Exception:
-            pass
 
-
-class HistoricalStocksWriter(Writer):
+class HistoricalStocksWriter(MySQLWriter):
     def __init__(self, *args, **kwargs):
-        self.con = do.open_connection()
-        self.cur = self.con.cursor(dictionary=True)
+        MySQLWriter.__init__(self)
         self.stocks_daily = do.MySQLTable('stocks_daily', self.con)
         self.stocks_dividents = do.MySQLTable('stocks_dividents', self.con)
 
@@ -83,13 +108,9 @@ class HistoricalStocksWriter(Writer):
 
         self.con.commit()
 
-    def flush(self) -> None:
-        try:
-            self.con.commit()
-            self.con.close()
-        except Exception:
-            pass
-
 
 if __name__ == "__main__":
-    pass
+    data = tic.stock_data('AAPL')
+    w = StocksWriter()
+    w.write(data)
+    w.flush()

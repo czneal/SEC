@@ -71,7 +71,7 @@ def record_from_str(data: str) -> FileRecord:
             record.__dict__[k] = v
     if record.period is not None:
         record.period = utils.str2date(record.period, 'ymd')
-        if record.fy is None:
+        if record.fy == 0:
             record.fy = (record.period - dt.timedelta(days=365/2)).year
     if record.file_date is not None:
         record.file_date = utils.str2date(record.file_date, 'ymd')
@@ -189,6 +189,7 @@ class MySQLEnumerator(RecordsEnumerator):
     def __init__(self):        
         self.query: str = ''
         self.after: dt.date = dt.date.today() - dt.timedelta(days=365)
+        self.adsh: str = ''
         self.set_filter_method('all', self.after)
 
     def filing_records(self, 
@@ -197,7 +198,7 @@ class MySQLEnumerator(RecordsEnumerator):
         records: List[Tuple[FileRecord, str]] = []
         with OpenConnection() as con:
             cur = con.cursor(dictionary=True)
-            cur.execute(self.query, {'after': self.after})
+            cur.execute(self.query, {'after': self.after, 'adsh': self.adsh})
             for row in cur.fetchall():
                 record = record_from_str(row['record'])
                 if not (all_types or record.form_type in form_types):
@@ -205,8 +206,8 @@ class MySQLEnumerator(RecordsEnumerator):
                 records.append((record, add_root_dir(row['file_link'])))
         return records
 
-    def set_filter_method(self, method: str, after: dt.date) -> None:
-        assert method in {'new', 'bad', 'all'}
+    def set_filter_method(self, method: str, after: dt.date, adsh: str='') -> None:
+        assert method in {'new', 'bad', 'all', 'explicit'}
         if method == 'all':
             self.query = 'select * from sec_xbrl_forms where filed>=%(after)s'
         elif method == 'new':
@@ -237,7 +238,11 @@ class MySQLEnumerator(RecordsEnumerator):
                             where f.filed>=%(after)s
                                 and r.adsh is null
                                 and l.adsh is not null;"""
+        elif method == 'explicit':
+            self.query = """select * from sec_xbrl_forms
+                            where adsh = %(adsh)s"""
         self.after = after
+        self.adsh = adsh
 
 if __name__ == "__main__":
     pass

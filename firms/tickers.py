@@ -5,13 +5,13 @@ Created on Fri Aug 30 17:50:53 2019
 @author: Asus
 """
 
-import pandas as pd
+import pandas as pd # typing: ignore
 import numpy as np
 import re
 import datetime as dt
 import json
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup #typing: ignore
 from typing import Tuple, Dict, Optional, Union, cast
 
 from utils import ProgressBar
@@ -23,9 +23,6 @@ from firms.futils import convert_date, convert_decimal, select_data, date_from_t
 
 def period(todate: dt.date = dt.datetime.now().date(),
            days: int = 365) -> Tuple[dt.date, dt.date, int]:
-    if todate is None:
-        todate = dt.datetime.now().date()
-
     fromdate = todate - dt.timedelta(days=days)
     limit = np.busday_count(fromdate, todate)
 

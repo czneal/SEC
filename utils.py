@@ -10,7 +10,8 @@ import calendar
 import re
 import os
 import pathlib
-from lxml import etree #type: ignore
+import lxml.etree #type: ignore
+
 from typing import Tuple, Optional, cast, Match, Union, IO, Callable, Any, Type
 
 from settings import Settings
@@ -59,11 +60,9 @@ def calculate_fy_fye(period: dt.date) -> Tuple[int, str]:
     
     return(fy, fye)
 
-def str2date(datestr: Optional[str], pattern: str='ymd') -> Optional[dt.date]:
+def str2date(datestr: Optional[Union[str, dt.date, dt.datetime]], pattern: str='ymd') -> Optional[dt.date]:
     if isinstance(datestr, dt.date):
-        return datestr
-    if isinstance(datestr, dt.datetime):
-        return datestr
+        return cast(dt.date, datestr)
     if datestr is None:
         return None
     
@@ -96,27 +95,27 @@ def str2date(datestr: Optional[str], pattern: str='ymd') -> Optional[dt.date]:
     
     return retval
 
-def opensmallxmlfile(file: IO):
+def opensmallxmlfile(file: Optional[IO]) -> Optional[lxml.etree.Element]:
     if file is None:
         return None
     
     root = None
     try:
-        root = etree.parse(file).getroot()
+        root = lxml.etree.parse(file).getroot()
     except:
         file.close()
         
     return root
 
-def openbigxmlfile(file: IO):
+def openbigxmlfile(file: Optional[IO]) -> Optional[lxml.etree.Element]:
     if file is None:
         return None
             
     root = None
     try:
         #xmlparser = etree.XMLParser(recover=True)
-        xmlparser = etree.XMLParser(huge_tree =True)
-        tree = etree.parse(file, parser=xmlparser)
+        xmlparser = lxml.etree.XMLParser(huge_tree =True)
+        tree = lxml.etree.parse(file, parser=xmlparser)
         root = tree.getroot()
     except:
         file.close()

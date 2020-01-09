@@ -308,43 +308,6 @@ def start_mpc_logging(handler_name: str,
     return (listener, queue, stop_event)
 
 
-# def stop_mpc_logging(listener: Optional[multi.Process],
-#                      queue: Optional[multi.Queue],
-#                      stop_event: Optional[multi.synchronize.Event]) -> None:
-#     if listener is None and queue is None and stop_event is None:
-#         return
-
-#     try:
-#         if queue is not None:
-#             queue.join()
-#             print('close log queue...', end='')
-#             queue.close()
-#             print('ok')
-#     except Exception:
-#         print('fail')
-#         traceback.print_exc(file=sys.stderr)
-
-#     try:
-#         print('set stop event for log listener...', end='')
-#         if stop_event is not None:
-#             stop_event.set()
-#         print('ok')
-#     except Exception:
-#         print('fail')
-#         traceback.print_exc(file=sys.stderr)
-
-#     try:
-#         if listener is not None:
-#             print('stop log listener process...', end='')
-#             listener.join(timeout=1.0)
-#             if listener.exitcode is None:
-#                 listener.terminate()
-#             print('ok')
-#     except Exception:
-#         print('fail')
-#         traceback.print_exc(file=sys.stderr)
-
-
 class LogManager():
     def __init__(self):
         self.listener: Optional[multi.Process] = None

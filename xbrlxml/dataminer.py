@@ -40,9 +40,10 @@ class TextBlocks(object):
 
 
 class SharesFilter():
-    share_types = re.compile(r'us-gaap:CommonClass[A-Z]{1}Member|'+
-                             r'us-gaap:CapitalUnitClass[A-Z]{1}Member|'+
-                             r'us-gaap:PreferredClass[A-Z]{1}Member')
+    # share_types = re.compile(r'us-gaap:CommonClass[A-Z]{1}Member|'+
+    #                          r'us-gaap:CapitalUnitClass[A-Z]{1}Member|'+
+    #                          r'us-gaap:PreferredClass[A-Z]{1}Member')
+    share_types = re.compile(r'[A-Z,a-z,\:,\-,_]+Class[A-Z]{1}Member')
     @staticmethod
     def filter_shares_context(context: Context) -> bool:
         if len(context.dim) == 1:
@@ -66,8 +67,8 @@ class DataMiner(metaclass=ABCMeta):
         self.cntx = ContextChooser(self.xbrlfile)
         self.extender = ChapterExtender(self.xbrlfile)
 
-        self.cik: Optional[int] = None
-        self.adsh: Optional[str] = None
+        self.cik: int = 0
+        self.adsh: str = ''
         self.zip_filename: str = ''
 
         self.extentions: List[Dict[str, str]] = []  # try to deprecate
@@ -247,24 +248,35 @@ class DataMiner(metaclass=ABCMeta):
             self.numeric_facts = None
 
     def _mine_dei_for_shares(
-            self) -> List[List[Union[str, int, datetime.date, None]]]:
+            self) -> List[Tuple[str, str, int, 
+                                Optional[datetime.date], 
+                                datetime.date, str]]:
         shares = self.xbrlfile.dei.get('shares', None)
         if shares is None or not shares:
             logs.get_logger(__name__).warning('dei shares not found')
             return []
 
-        data: List[List[Union[str, int, datetime.date, None]]] = []
+        data: List[Tuple[str, str, int, 
+                         Optional[datetime.date], 
+                         datetime.date, str]] = []
 
         for shares_count, context_name, shares_tag in shares:
             context = self.xbrlfile.contexts[context_name]
             if SharesFilter.filter_shares_context(context):
-                data.append([self.adsh,
+                member = context.member[-1]
+                if member is None:
+                    member = ''
+                data.append((self.adsh,
                              'dei:' + shares_tag,
                              shares_count,
                              context.sdate,
                              context.edate,
-                             context.member[-1]])
+                             member))
+        if not data:
+            return data
 
+        max_date = max(data, key=lambda x: x[4])[4]
+        data = [d for d in filter(lambda x: x[4] == max_date, data)]
         return data
 
     def _mine_se_for_shares(self) -> List[List[Any]]:
@@ -311,11 +323,17 @@ class DataMiner(metaclass=ABCMeta):
                     'details': "se doesn't contains any shares data"})
         return data
 
-    def _mine_bs_parent_for_shares(self) -> List[List[Any]]:
+    def _mine_bs_parent_for_shares(self) -> List[Tuple[str, str, int,
+                                                    Optional[datetime.date],
+                                                    datetime.date,
+                                                    str]]:
         self._prerequisites("_mine_bs_parent_for_shares")
 
         logger = logs.get_logger(__name__)
-        data: List[List[Any]] = []
+        data: List[Tuple[str, str, int,
+                        Optional[datetime.date],
+                        datetime.date,
+                        str]] = []
 
         bs_roleuri = self.sheets.mschapters.get('bs', None)
         if bs_roleuri is None:
@@ -334,6 +352,10 @@ class DataMiner(metaclass=ABCMeta):
             return data
 
         pres = self.xbrlfile.schemes['pres'].get(roleuri, None)
+        if pres is None:
+            logger.warning(msg='bs parentical shares not found')
+            return data
+            
         tags = pres.gettags()
 
         shares = self.xbrlfile.dfacts[self.xbrlfile.dfacts['name'].isin(tags)]
@@ -343,21 +365,22 @@ class DataMiner(metaclass=ABCMeta):
         for index, row in shares.iterrows():
             context = self.xbrlfile.contexts[row['context']]
             if SharesFilter.filter_shares_context(context):
-                data.append([self.adsh,
+                member = context.member[-1]
+                if member is None:
+                    member = ''
+                data.append((self.adsh,
                              row['name'],
                              row['value'],
                              row['sdate'],
                              row['edate'],
-                             context.member[-1]])
+                             member))
         if not data:
             logger.warning(msg='bs parentical shares not found', extra={
                            'details': "bs doesn't contains any shares data"})
         return data
 
-        return data
-
     def _gather_shares_facts(self) -> None:
-        data = self._mine_dei_for_shares() + self._mine_bs_parent_for_shares()
+        data = self._mine_dei_for_shares() #+ self._mine_bs_parent_for_shares()
 
         self.shares_facts = pd.DataFrame(
             data,
