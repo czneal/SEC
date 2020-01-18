@@ -29,9 +29,9 @@ class XbrlFile(object) :
         self.fy: Optional[int] = None
         self.fye: Optional[str] = None
         self.contexts = None
-        self.root = None
-        self.company_name: Optional[str] = None
-        self.adsh: Optional[str] = None
+        self.root = None        
+        self.cik: int = 0
+        self.adsh: str = ''
         
         self.numfacts = {'facts': None,
                          'units': None,
@@ -54,7 +54,6 @@ class XbrlFile(object) :
         if failed raise XbrlException()
         """
         self.__init__()        
-        self.company_name = record['company_name']
         self.adsh = record['adsh']
         
         #read xbrl file into xmltree object        
@@ -76,11 +75,19 @@ class XbrlFile(object) :
         """Parse dei section and contexts section of xbrl file
         setup dei property
         setup contexts property
+        setup cik property
+
+        if failed raise XbrlException()
         """
         parser = xbrlfp.XbrlParser()
         self.contexts = parser.parse_contexts(self.root)
         units = parser.parse_units(self.root)
-        self.dei = parser.parse_dei(self.root, units)        
+        self.dei = parser.parse_dei(self.root, units)
+        self.cik = parser.parse_cik(self.root)
+        if self.cik == 0:
+            msg = "couldn't find CIK in report"
+            logger.error(msg=msg)
+            raise XbrlException(msg=msg)
     
     def __read_scheme_files(self, files):
         """Read scheme files

@@ -395,6 +395,26 @@ class DataMiner(metaclass=ABCMeta):
     def _read_text_blocks(self):
         raise NotImplementedError('_read_text_blocks is not implemented')
 
+    def _find_proper_company_name_cik(self, record: Dict[str, Any]) -> None:
+        if self.cik == self.xbrlfile.cik:
+            return
+
+        try:
+            (cik, context) = [(int(e[0]), e[1]) 
+                                for e in filter(lambda x: int(x[0]) == self.xbrlfile.cik, 
+                                                self.xbrlfile.dei['cik'])][0]
+            company_name = [e for e in filter(lambda x: x[1] == context,
+                                              self.xbrlfile.dei['company_name'])][0][0]
+            self.cik = cik
+            record['cik'] = cik
+            record['company_name'] = company_name
+
+        except (IndexError, ValueError):
+            logger = logs.get_logger(name=__name__)
+            logger.error("couldn't find proper company name and CIK")
+            raise XbrlException('')
+        
+
     def _prepare(self, record, zip_filename):
         self.extentions = []
         self.numeric_facts = None
@@ -418,6 +438,7 @@ class DataMiner(metaclass=ABCMeta):
             good = False
             self.xbrlzip.open_packet(zip_filename)
             self.xbrlfile.prepare(self.xbrlzip, record)
+            self._find_proper_company_name_cik(record)
             self.do_job()
             good = True
 

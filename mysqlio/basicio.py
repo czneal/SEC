@@ -19,6 +19,7 @@ from settings import Settings
 WHITE_LIST_TABLES = frozenset(
     ['companies', 'nasdaq', 
      'stocks_daily', 'stocks_shares', 'stocks_dividents',
+     'stocks_index',
      'mgnums', 'logs_parse',
      'siccodes', 'sec_forms', 'reports',
      'sec_xbrl_forms', 'sec_shares'])

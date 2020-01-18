@@ -134,7 +134,7 @@ class XBRLEnumerator(RecordsEnumerator):
         records: List[Tuple[FileRecord, str]] = []
 
         rss = FilingRSS()
-        adshs: Set[str] = set()
+        
         for y in self.years:
             for m in self.months:
                 year_month_dir = utils.year_month_dir(y, m)
@@ -143,13 +143,10 @@ class XBRLEnumerator(RecordsEnumerator):
                                     'rss-{0}-{1}.xml'.format(y,str(m).zfill(2)))
 
                 rss.open_file(rssfilename)
-                for record in rss.filing_records():
-                    if record.adsh in adshs:
-                        continue
+                for record in rss.filing_records():                    
                     if not (all_types or record.form_type in form_types):
                         continue
 
-                    adshs.add(record.adsh)
                     zip_filename = utils.posix_join(
                                         year_month_dir,
                                         '{0}-{1}.zip'.format(

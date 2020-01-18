@@ -115,7 +115,7 @@ def download_report_files(method: str, after: dt.date) -> None:
 if __name__ == '__main__':
     logs.configure('file', level=logs.logging.INFO)
 
-    # update_xbrl_sec_forms(years=[2019], months=[m for m in range(1, 13)])
+    update_xbrl_sec_forms(years=[y for y in range (2013, 2020)], months=[m for m in range(1, 13)])
     # update_sec_forms(years=[2019], months=[m for m in range(1, 13)])
-    download_report_files('bad', dt.date(2013, 1, 1))
+    # download_report_files('bad', dt.date(2013, 1, 1))
     # update_companies_nasdaq()

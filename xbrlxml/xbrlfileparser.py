@@ -7,8 +7,9 @@ Created on Wed May 29 12:18:19 2019
 
 import re
 import datetime
+import contextlib
 
-from typing import Optional, List, Dict, Union
+from typing import Optional, List, Dict, Union, cast
 
 import utils
 import logs
@@ -173,7 +174,6 @@ class FootNote():
 class XbrlParser(object):
     def __init__(self):
         self.nsmapi = None
-        pass
     
     def parse_fact(self, factelem):
         """
@@ -333,7 +333,21 @@ class XbrlParser(object):
             arcs[factids[fr]] = footnotes[to]
             
         return arcs
-    
+
+    def parse_cik(self, root) -> int:
+        ciks: Dict[int, int] = {}
+        for e in root.iter('{*}identifier'):
+            if e.text is None:
+                continue
+            with contextlib.suppress(ValueError):
+                cik = int(e.text.strip())    
+                ciks[cik] = ciks.get(cik, 0) + 1                
+        
+        if len(ciks) == 0:
+            return 0
+        
+        return sorted(ciks.items(), key=lambda x: x[1], reverse=True)[0][0]
+
     def parse_dei(self, root, units):
         """return dict object with main Document Entity Facts
         {'fye': [[fey, context], ...],
@@ -341,6 +355,7 @@ class XbrlParser(object):
            'shares': [[shares, context], ...],
            'fy': [[fy, context], ...],
            'cik': [[cik, context], ...],
+           'company_name': [[company_name, context], ...]
            'us-gaap':'yyyy-mm-dd'}
         """
         "unittested"
@@ -349,7 +364,8 @@ class XbrlParser(object):
                'period': [],
                'shares': [],
                'fy': [],
-               'cik': []}
+               'cik': [],
+               'company_name': []}
         if 'dei' not in root.nsmap:
             msg='no dei section in xbrl file'
             logs.get_logger(__name__).error(msg=msg)
@@ -381,6 +397,8 @@ class XbrlParser(object):
                 dei['period'].append([text, context])
             if tag == 'EntityCentralIndexKey':
                 dei['cik'].append([text, context])
+            if tag == 'EntityRegistrantName':
+                dei['company_name'].append([text, context])
                 
         return dei
     

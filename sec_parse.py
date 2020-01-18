@@ -91,5 +91,5 @@ def parse(method: str, after: dt.date, adsh: str = '') -> None:
 
 
 if __name__ == '__main__':
-    # parse('explicit', dt.date(2013, 1, 1), adsh='0000917491-19-000012')
-    parse_mpc('new', dt.date(2013, 1, 1))
+    parse('explicit', dt.date(2013, 1, 1), adsh='0000065984-13-000050')
+    #parse_mpc('new', dt.date(2013, 1, 1))
