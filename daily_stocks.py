@@ -56,8 +56,9 @@ if __name__ == '__main__':
         tickers: List[str] = [cast(str, ticker)
                               for (ticker,) in cur.fetchall()]
 
-    manager = MpcManager('file', level=logs.logging.INFO)
-    logger = logs.get_logger()
+    manager = MpcManager('mysql', level=logs.logging.INFO)
+    logger = logs.get_logger('daily_stocks')
+    logger.set_state(state={'state': 'daily_stocks'})
     logger.info(
         msg='download daily tickers from nasdaq to stocks_shares and stock_daily tables')
     logger.info(msg='start to download {0} tickers'.format(len(tickers)))
@@ -66,3 +67,4 @@ if __name__ == '__main__':
                   configure_worker=configure_worker,
                   n_procs=6)
     logger.info(msg='finish to download {0} tickers'.format(len(tickers)))
+    logger.revoke_state()
