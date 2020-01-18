@@ -26,6 +26,9 @@ class StocksWorker(Worker):
 def off_hours(tm: datetime.datetime = datetime.datetime.now()) -> bool:
     eastern = pytz.timezone('US/Eastern')
     now_ny = tm.astimezone(eastern)
+    if now_ny.weekday() in (5, 6):
+        return True
+
     if datetime.time(8, 0, 0) <= now_ny.time() <= datetime.time(20, 15, 0):
         return False
     return True
@@ -43,7 +46,6 @@ def configure_writer() -> Writer:
 
 
 if __name__ == '__main__':
-
     if not off_hours():
         print('you should run this script in off hours of nasdaq')
         exit()
