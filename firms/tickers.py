@@ -270,7 +270,7 @@ def attach() -> pd.DataFrame:
     nasdaq_cik = get_nasdaq_cik()
 
     # attach cik to new nasdaq symbols from ones in database
-    nasdaq = pd.merge(nasdaq, nasdaq_cik[['company_name', 'cik', 'checked']],
+    nasdaq = pd.merge(nasdaq, nasdaq_cik[['company_name', 'cik', 'checked', 'ttype']],
                       how='left',
                       left_index=True, right_index=True,
                       suffixes=('', '_y'))
@@ -310,6 +310,7 @@ def attach() -> pd.DataFrame:
     print()
 
     nasdaq.update(new[new['cik'].notna()][['cik', 'checked']])
+    nasdaq.loc[nasdaq['ttype'].isna(), 'ttype'] = ''
 
     return nasdaq.drop(axis='columns', labels=['norm_name', 'company_name_y'])
 
@@ -336,4 +337,5 @@ def stocks_convert(row: pd.Series) -> pd.Series:
 
 
 if __name__ == '__main__':
-    print(stock_data('wfc'))
+    nasdaq = attach()
+    print()

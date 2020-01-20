@@ -108,7 +108,6 @@ class HistoricalStocksWriter(MySQLWriter):
 
         self.con.commit()
 
-
 if __name__ == "__main__":
     data = tic.stock_data('AAPL')
     w = StocksWriter()

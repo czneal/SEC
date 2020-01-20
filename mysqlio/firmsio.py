@@ -17,7 +17,7 @@ def get_nasdaq_cik() -> pd.DataFrame:
             nasdaq_cik = pd.DataFrame(columns=['ticker', 'company_name',
                                                'cik', 'quote', 'industry',
                                                'sector', 'checked',
-                                               'market_cap'])
+                                               'market_cap', 'ttype'])
 
     return nasdaq_cik.set_index('ticker')
 
