@@ -2,11 +2,13 @@
 
 import datetime
 import re
+import json
 from abc import ABCMeta, abstractmethod
 from typing import Any, Dict, List, Tuple, Union, Optional, cast
 
 import pandas as pd
 
+import algos.xbrljson
 import algos.calc as c
 import logs
 from algos.scheme import enum
@@ -16,6 +18,7 @@ from xbrlxml.xbrlexceptions import XbrlException
 from xbrlxml.xbrlfile import XbrlFile
 from xbrlxml.xbrlfileparser import Context
 from xbrlxml.xbrlzip import XBRLZipPacket
+from xbrlxml.xbrlrss import FileRecord
 
 
 class TextBlocks(object):
@@ -39,11 +42,9 @@ class TextBlocks(object):
         df.to_csv(filename)
 
 
-class SharesFilter():
-    # share_types = re.compile(r'us-gaap:CommonClass[A-Z]{1}Member|'+
-    #                          r'us-gaap:CapitalUnitClass[A-Z]{1}Member|'+
-    #                          r'us-gaap:PreferredClass[A-Z]{1}Member')
+class SharesFilter():    
     share_types = re.compile(r'[A-Z,a-z,\:,\-,_]+Class[A-Z]{1}Member')
+
     @staticmethod
     def filter_shares_context(context: Context) -> bool:
         if len(context.dim) == 1:
@@ -475,3 +476,53 @@ class ChapterNamesMiner(DataMiner):
 
         self._choose_shares_sheets()
         self._gather_shares_facts()
+
+def prepare_report(miner: DataMiner, record: FileRecord) -> Dict[str, Any]:
+    file_link = remove_root_dir(miner.zip_filename)
+    report = {'adsh': miner.adsh,
+            'cik': miner.cik,
+            'period': miner.xbrlfile.period,
+            'period_end': miner.xbrlfile.fye,
+            'fin_year': miner.xbrlfile.fy,
+            'taxonomy': miner.xbrlfile.dei['us-gaap'],
+            'form': record.form_type,
+            'quarter': 0,
+            'file_date': record.file_date,
+            'file_link': file_link,
+            'trusted': 1,
+            'structure': _dump_structure(miner),
+            'contexts': _dump_contexts(miner)
+            }
+    return report
+
+def prepare_nums(miner: DataMiner) -> Optional[pd.DataFrame]:
+    return miner.numeric_facts
+    
+
+def prepare_shares(miner: DataMiner) -> Optional[pd.DataFrame]:
+    return miner.shares_facts
+
+def prepare_company(miner: DataMiner, record: FileRecord) -> Dict[str, Any]:
+    company = {'company_name': record.company_name,
+                'sic': record.sic,
+                'cik': record.cik,
+                'updated': record.file_date}
+
+    return company
+
+def _dump_structure(miner: DataMiner) -> str:    
+    structure = {}
+    for sheet, roleuri in miner.sheets.mschapters.items():
+        xsd_chapter = miner.xbrlfile.schemes['xsd'].get(roleuri, None)
+        calc_chapter = (miner.xbrlfile
+                        .schemes['calc']
+                        .get(roleuri, {"roleuri": roleuri}))
+        structure[sheet] = {
+            'label': xsd_chapter.label,
+            'chapter': calc_chapter
+        }
+
+    return json.dumps(structure, cls=algos.xbrljson.ForDBJsonEncoder)
+
+def _dump_contexts(miner: DataMiner) -> str:
+    return json.dumps(miner.extentions)

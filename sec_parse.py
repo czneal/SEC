@@ -1,49 +1,53 @@
 import datetime as dt
-from typing import List, Type, Set, Any, Tuple
+from typing import Any, List, Optional, Set, Tuple, Type
 
-import mysqlio.basicio as do
 import logs
+import mysqlio.basicio as do
+import mysqlio.xbrlfileio as xio
+import xbrlxml.dataminer as dm
+from abstractions import Worker, Writer
 from mpc import MpcManager
-from abstractions import Worker, WriterProxy, Writer
-from xbrlxml.dataminer import NumericDataMiner, DataMiner
-from xbrlxml.xbrlrss import MySQLEnumerator, FileRecord
-from mysqlio.xbrlfileio import ReportToDB, ReportWriter
-from utils import remove_root_dir, ProgressBar
+from settings import Settings
+from utils import ProgressBar, remove_root_dir
+from xbrlxml.xbrlrss import FileRecord, MySQLEnumerator
 
 
 class Parser(Worker):
     def __init__(self,
-                 miner_cls: Type[DataMiner],
-                 writer_cls: Type[ReportWriter]):
+                 miner_cls: Type[dm.DataMiner]):
         self.miner = miner_cls()
-        self.writer = writer_cls()
         self.logger = logs.get_logger(name=__name__)
 
-    def feed(self, job: Tuple[FileRecord, str]) -> str:
+    def feed(self, job: Tuple[FileRecord, str]) -> Optional[xio.ReportTuple]:
         (record, filename) = job
         self.logger.set_state(state={'state': record.adsh},
                               extra={'file_link': remove_root_dir(filename)})
 
-        if self.miner.feed(record.__dict__, filename):
-            self.writer.write(record, self.miner)
+        if not self.miner.feed(record.__dict__, filename):
+            return None
+
+        company = dm.prepare_company(self.miner, record)
+        report = dm.prepare_report(self.miner, record)
+        nums = dm.prepare_nums(self.miner)
+        shares = dm.prepare_shares(self.miner)
 
         self.logger.revoke_state()
-        return 'done'
+
+        return (company, report, nums, shares)
 
     def flush(self):
-        self.writer.flush()
+        pass
 
 
 def configure_worker() -> Worker:
-    return Parser(miner_cls=NumericDataMiner,
-                  writer_cls=ReportToDB)
+    return Parser(miner_cls=dm.NumericDataMiner)
 
 
 def configure_writer() -> Writer:
-    return WriterProxy()
+    return xio.ReportToDB()
 
 
-def parse_mpc(method: str, after: dt.date, n_procs: int = 8):
+def parse_mpc(method: str, after: dt.date, n_procs: int = Settings.n_proc()):
     manager = MpcManager('mysql', level=logs.logging.INFO)
     logger = logs.get_logger()
     try:
@@ -66,6 +70,7 @@ def parse_mpc(method: str, after: dt.date, n_procs: int = 8):
 def parse(method: str, after: dt.date, adsh: str = '') -> None:
     logger = logs.get_logger(__name__)
     worker = configure_worker()
+    writer = configure_writer()
 
     try:
         rss = MySQLEnumerator()
@@ -78,7 +83,9 @@ def parse(method: str, after: dt.date, adsh: str = '') -> None:
         pb.start(len(records))
 
         for record in records:
-            worker.feed(record)
+            obj = worker.feed(record)
+            writer.write(obj)
+
             pb.measure()
             print('\r' + pb.message(), end='')
         print()

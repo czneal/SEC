@@ -67,3 +67,7 @@ class Settings(object):
     @staticmethod
     def log_filename():
         return Settings.__open()["log_filename"]
+
+    @staticmethod
+    def n_proc():
+        return Settings.__open()["n_proc"]

@@ -22,7 +22,7 @@ WHITE_LIST_TABLES = frozenset(
      'stocks_index',
      'mgnums', 'logs_parse',
      'siccodes', 'sec_forms', 'reports',
-     'sec_xbrl_forms', 'sec_shares'])
+     'sec_xbrl_forms', 'sec_shares', 'sec_shares_ticker'])
 
 
 @contextmanager

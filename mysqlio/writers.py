@@ -42,8 +42,6 @@ class MySQLWriter(Writer):
         except Exception:
             pass
 
-        self.close()
-
 
 class StocksWriter(MySQLWriter):
     def __init__(self, *args, **kwargs):

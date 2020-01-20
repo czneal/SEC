@@ -12,37 +12,30 @@ import mysql.connector
 from mysql.connector.errors import InternalError, Error
 from mysql.connector.cursor import MySQLCursor  # type: ignore
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Optional
 
 import mysqlio.basicio as do
 import queries as q
 import algos.xbrljson
 import logs
 
+from mysqlio.writers import MySQLWriter
 from xbrlxml.xbrlexceptions import XbrlException
 from xbrlxml.dataminer import SharesDataMiner, DataMiner
 from xbrlxml.xbrlrss import FileRecord
 from utils import remove_root_dir, retry
 
-
-class ReportWriter(metaclass=ABCMeta):
-    @abstractmethod
-    def write(self,
-              record: FileRecord,
-              miner: DataMiner) -> bool:
-        pass
-
-    @abstractmethod
-    def flush(self, commit: bool = True) -> None:
-        pass
+ReportTuple = Tuple[Dict[str, Any],
+                    Dict[str, Any],
+                    Optional[pd.DataFrame],
+                    Optional[pd.DataFrame]]
 
 
-class ReportToDB(ReportWriter):
+class ReportToDB(MySQLWriter):
     def __init__(self):
+        MySQLWriter.__init__(self)
+
         self.retrys = 20
-        self.con: mysql.connector.MySQLConnection = do.open_connection()
-        self.cur: MySQLCursor = self.con.cursor(dictionary=True)
-        atexit.register(self.flush)
 
         self.reports = do.MySQLTable('reports', self.con)
         self.nums = do.MySQLTable('mgnums', self.con)
@@ -50,16 +43,17 @@ class ReportToDB(ReportWriter):
         self.shares = do.MySQLTable('sec_shares', self.con)
         self.companies.set_insert_if('updated')
 
-        atexit.register(self.close)
+    def write(self, obj: Optional[ReportTuple]) -> bool:
+        if obj is None:
+            return False
 
-    def write(self, record: FileRecord, miner: DataMiner) -> bool:
         logger = logs.get_logger(name=__name__)
         try:
-            retry(self.retrys, InternalError)(self.write_company)(record)
-            retry(self.retrys, InternalError)(self.write_report)(record, miner)
-            retry(self.retrys, InternalError)(self.write_nums)(record, miner)
-            retry(self.retrys, InternalError)(self.write_shares)(record, miner)
-            self.commit()
+            retry(self.retrys, InternalError)(self.write_company)(obj[0])
+            retry(self.retrys, InternalError)(self.write_report)(obj[1])
+            retry(self.retrys, InternalError)(self.write_nums)(obj[2])
+            retry(self.retrys, InternalError)(self.write_shares)(obj[3])
+            self.flush()
             logger.info('report data has been writen')
             return True
         except InternalError:
@@ -69,79 +63,23 @@ class ReportToDB(ReportWriter):
 
         return False
 
-    def commit(self) -> None:
-        if self.con.is_connected():
-            self.con.commit()
-
-    def close(self) -> None:
-        if self.con.is_connected():
-            self.con.close()
-
-    def flush(self, commit: bool = True) -> None:
-        try:
-            if commit:
-                self.commit()
-            self.close()
-        except Exception:
-            logger = logs.get_logger(name=__name__)
-            logger.error(
-                'unexpected error while flushing to database',
-                exc_info=True)
-
-    def _dumps_structure(self, miner):
-        structure = {}
-        for sheet, roleuri in miner.sheets.mschapters.items():
-            xsd_chapter = miner.xbrlfile.schemes['xsd'].get(roleuri, None)
-            calc_chapter = (miner.xbrlfile
-                            .schemes['calc']
-                            .get(roleuri, {"roleuri": roleuri}))
-            structure[sheet] = {
-                'label': xsd_chapter.label,
-                'chapter': calc_chapter
-            }
-
-        return json.dumps(structure, cls=algos.xbrljson.ForDBJsonEncoder)
-
-    def _dums_contexts(self, miner):
-        return json.dumps(miner.extentions)
-
-    def write_report(self, record: FileRecord, miner: DataMiner):
-        file_link = remove_root_dir(miner.zip_filename)
-        report = {'adsh': miner.adsh,
-                  'cik': miner.cik,
-                  'period': miner.xbrlfile.period,
-                  'period_end': miner.xbrlfile.fye,
-                  'fin_year': miner.xbrlfile.fy,
-                  'taxonomy': miner.xbrlfile.dei['us-gaap'],
-                  'form': record.form_type,
-                  'quarter': 0,
-                  'file_date': record.file_date,
-                  'file_link': file_link,
-                  'trusted': 1,
-                  'structure': self._dumps_structure(miner),
-                  'contexts': self._dums_contexts(miner)
-                  }
+    def write_report(self, report: Dict[str, Any]):
         self.reports.write(report, self.cur)
 
-    def write_nums(self, record: FileRecord, miner: DataMiner):
-        if miner.numeric_facts is None:
+    def write_nums(self, facts: Optional[pd.DataFrame]):
+        if facts is None:
             return
 
-        self.nums.write(miner.numeric_facts, self.cur)
+        self.nums.write(facts, self.cur)
 
-    def write_company(self, record: FileRecord) -> None:
-        company = {'company_name': record.company_name,
-                   'sic': record.sic,
-                   'cik': record.cik,
-                   'updated': record.file_date}
-
+    def write_company(self, company: Dict[str, Any]) -> None:
         self.companies.write(company, self.cur)
 
-    def write_shares(self, record: FileRecord, miner: DataMiner) -> None:
-        if miner.shares_facts is None:
+    def write_shares(self, shares_facts: Optional[pd.DataFrame]) -> None:
+        if shares_facts is None:
             return
 
-        self.shares.write(miner.shares_facts, self.cur)
+        self.shares.write(shares_facts, self.cur)
 
 
 def records_to_mysql(records: List[Tuple[FileRecord, str]]) -> None:

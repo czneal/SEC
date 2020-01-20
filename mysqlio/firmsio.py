@@ -5,7 +5,6 @@ import datetime as dt
 from firms.futils import split_company_name
 from mysqlio.basicio import OpenConnection
 from mysqlio.basicio import MySQLTable
-from mysqlio.xbrlfileio import ReportToDB
 
 
 def get_nasdaq_cik() -> pd.DataFrame:
