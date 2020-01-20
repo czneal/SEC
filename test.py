@@ -543,14 +543,7 @@ if __name__ == '__main__':
                                             'us-gaap:CommonClassAMember': 'TAP.A'}, 
                    '0001188112-14-000516': {'ucbi:VotingCommonStockMember': 'UCBI'},
                    '0001571049-15-001493': {'ucbi:VotingCommonStockMember': 'UCBI'},
-                   '0001571049-16-012197': {'ucbi:VotingCommonStockMember': 'UCBI'},
-                   '': {'': ''},
-                   '': {'': ''},
-                   '': {'': ''},
-                   '': {'': ''},
-                   '': {'': ''},
-                   '': {'': ''},
-                   '': {'': ''}
+                   '0001571049-16-012197': {'ucbi:VotingCommonStockMember': 'UCBI'}
                    }
     
     logs.configure('file', level=logs.logging.INFO)

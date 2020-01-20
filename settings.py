@@ -15,9 +15,12 @@ class Settings(object):
 
     @staticmethod
     def __open():
-        if Settings.__settings:
-            return Settings.__settings
+        if not Settings.__settings:
+            Settings.reload()
+        return Settings.__settings
 
+    @staticmethod
+    def reload() -> None:
         filename = os.path.join(os.path.split(__file__)[0],
                                 'global.settings')
         if not os.path.exists(filename):
@@ -28,8 +31,6 @@ class Settings(object):
                 Settings.__settings = json.loads(f.read())
         except Exception:
             raise Exception("settings file global.settings corrupted")
-
-        return Settings.__settings
 
     @staticmethod
     def ssl_dir():

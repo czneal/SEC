@@ -1,12 +1,13 @@
 import pytz
 import datetime
-from typing import List, cast
+from typing import List, cast, Tuple
+import pandas as pd
 import logs
 
 import mysqlio.basicio as do
 from mpc import MpcManager
-from firms.tickers import stock_data, StockData
-from mysqlio.writers import PandasWriter, StocksWriter
+from firms.tickers import stock_data, StockData, historical_data, historical_dividents
+from mysqlio.writers import StocksWriter
 from abstractions import Worker, Writer, JobType, WriterProxy
 
 
@@ -14,10 +15,17 @@ class StocksWorker(Worker):
     def __init__(self):
         pass
 
-    def feed(self, job: JobType) -> StockData:
+    def feed(self,
+             job: JobType) -> Tuple[StockData,
+                                    pd.DataFrame,
+                                    pd.DataFrame]:
         logger = logs.get_logger(name=__name__)
-        logger.info('request for ticker {}'.format(str(job)))
-        return stock_data(cast(str, job))
+        ticker = str(job)
+        logger.info(f'request for ticker {ticker}')
+        stocks = stock_data(ticker)
+        h_stocks = historical_data(ticker, days=7)
+        h_div = historical_dividents(ticker)
+        return (stocks, h_stocks, h_div)
 
     def flush(self):
         pass
@@ -45,7 +53,7 @@ def configure_writer() -> Writer:
     return StocksWriter()
 
 
-if __name__ == '__main__':
+def main():
     if not off_hours():
         print('you should run this script in off hours of nasdaq')
         exit()
@@ -68,3 +76,13 @@ if __name__ == '__main__':
                   n_procs=6)
     logger.info(msg='finish to download {0} tickers'.format(len(tickers)))
     logger.revoke_state()
+
+
+if __name__ == '__main__':
+    main()
+    # worker = configure_worker()
+    # writer = configure_writer()
+
+    # obj = worker.feed('AAPL')
+    # writer.write(obj)
+    # writer.flush()

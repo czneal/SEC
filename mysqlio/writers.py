@@ -51,9 +51,10 @@ class StocksWriter(MySQLWriter):
         self.stocks_daily = do.MySQLTable('stocks_daily', self.con)
         self.stocks_shares = do.MySQLTable('stocks_shares', self.con)
         self.nasdaq = do.MySQLTable('nasdaq', self.con)
+        self.hist_writer = HistoricalStocksWriter()
 
-    def write(self, obj: tic.StockData) -> None:
-        row = obj
+    def write(self, obj: typing.Tuple[tic.StockData, pd.DataFrame, pd.DataFrame]) -> None:
+        row = obj[0]
         logger = logs.get_logger(name=__name__)
 
         if row.get('trade_date', None) is None:
@@ -85,6 +86,12 @@ class StocksWriter(MySQLWriter):
             row, self.cur)
         self.con.commit()
 
+        self.hist_writer.write((obj[1],obj[2]))
+
+    def flush(self) -> None:
+        MySQLWriter.flush(self)
+        self.hist_writer.flush()
+
 
 class HistoricalStocksWriter(MySQLWriter):
     def __init__(self, *args, **kwargs):
@@ -93,6 +100,9 @@ class HistoricalStocksWriter(MySQLWriter):
         self.stocks_dividents = do.MySQLTable('stocks_dividents', self.con)
 
     def write(self, obj: typing.Tuple[pd.DataFrame, pd.DataFrame]) -> None:
+        if obj[0] is None or obj[1] is None:
+            return
+
         stocks = obj[0].where((pd.notnull(obj[0])), None).reset_index()
         dividents = obj[1].where((pd.notnull(obj[1])), None).reset_index()
 
@@ -111,5 +121,5 @@ class HistoricalStocksWriter(MySQLWriter):
 if __name__ == "__main__":
     data = tic.stock_data('AAPL')
     w = StocksWriter()
-    w.write(data)
+    w.write((data, None, None))
     w.flush()
