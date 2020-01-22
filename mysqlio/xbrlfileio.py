@@ -4,7 +4,6 @@ Created on Wed Jul 31 18:28:09 2019
 
 @author: Asus
 """
-import json
 import sys
 import atexit
 import pandas as pd
@@ -16,7 +15,6 @@ from typing import Any, Dict, List, Tuple, Optional
 
 import mysqlio.basicio as do
 import queries as q
-import algos.xbrljson
 import logs
 
 from mysqlio.writers import MySQLWriter
@@ -80,6 +78,16 @@ class ReportToDB(MySQLWriter):
             return
 
         self.shares.write(shares_facts, self.cur)
+
+
+class ShareTickerRelation(MySQLWriter):
+    def __init__(self):
+        MySQLWriter.__init__(self)
+
+        self.sec_shares_ticker = do.MySQLTable('sec_shares_ticker', self.con)
+
+    def write(self, row_list: List[Dict[str, str]]) -> None:
+        self.sec_shares_ticker.write(row_list, self.cur)
 
 
 def records_to_mysql(records: List[Tuple[FileRecord, str]]) -> None:

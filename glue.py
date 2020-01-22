@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 import datetime as dt
+from exceptions import XbrlException
 from itertools import product
-from typing import List
+from typing import List, Tuple, Dict, Set
 
 import firms.fetch as f
 import logs
 import mysqlio.firmsio as fio
-from exceptions import XbrlException
+import xbrlxml.shares as shares
 from firms.tickers import attach
-from xbrlxml.xbrlrss import XBRLEnumerator, MySQLEnumerator
 from mysqlio.xbrlfileio import records_to_mysql
-from xbrldown.download import download_rss, download_and_save
+from xbrldown.download import download_and_save, download_rss
+from xbrlxml.xbrlrss import MySQLEnumerator, XBRLEnumerator
 
 
 def update_xbrl_sec_forms(years: List[int], months: List[int]) -> None:
@@ -111,6 +112,57 @@ def download_report_files(method: str, after: dt.date) -> None:
 
     logger.revoke_state()
 
+def attach_sec_shares_ticker() -> None:
+    logger = logs.get_logger(name=__name__)
+    logger.set_state({'state': attach_sec_shares_ticker.__name__})
+    logger.info(f'try to find tickers for share members')
+    try:
+        true_shares: List[Dict[str, str]] = []        
+
+        shares_reader = shares.MySQLShares()
+        reports_reader = shares.MySQLReports()
+
+        ciks = shares_reader.fetch_nasdaq_ciks()
+        logger.info(f'begin with {len(ciks)} filers')
+
+        not_logging: Dict[str, Set] = {'cik': {68622},
+                        'adsh': {'0001558370-15-000135', '0001047469-15-001510', '0001193125-14-116022'}}
+        for cik in ciks:
+            tickers = shares.process_tickers(shares_reader.fetch_tickers(cik))
+            for adsh in reports_reader.fetch_adshs(cik):
+                sec_shares = shares.process_sec_shares(
+                    shares_reader.fetch_sec_shares(adsh))
+
+                if not shares.join_sec_stocks_tickers(
+                                sec_shares, tickers,
+                                cik, shares_reader):
+                    if (cik not in not_logging['cik'] and 
+                        adsh not in not_logging['adsh']):
+                            logger.set_state(state={'state': str(adsh)})
+                            logger.warning(str(tickers))
+                            logger.warning(str(sec_shares))
+                            logger.revoke_state()
+                else:
+                    for shares_list in sec_shares.values():
+                        for share in shares_list:
+                            if share.ticker != '':
+                                true_shares.append({'adsh': adsh, 
+                                                    'member': share.member, 
+                                                    'ticker': share.ticker})
+
+            
+        logger.info(f'end with {len(ciks)} filers')
+
+        shares_reader.close()
+        reports_reader.close()
+
+        shares_writer = shares.ShareTickerRelation()
+        shares_writer.write(true_shares)
+        shares_writer.flush()
+        shares_writer.close()
+    except Exception:
+        logger.error('unexpected error', exc_info=True)
+
 
 if __name__ == '__main__':
     logs.configure('file', level=logs.logging.INFO)
@@ -118,4 +170,4 @@ if __name__ == '__main__':
     # update_xbrl_sec_forms(years=[y for y in range (2013, 2020)], months=[m for m in range(1, 13)])
     # update_sec_forms(years=[2019], months=[m for m in range(1, 13)])
     # download_report_files('bad', dt.date(2013, 1, 1))
-    update_companies_nasdaq()
+    attach_sec_shares_ticker()

@@ -2,8 +2,9 @@
 import re
 import os
 import pandas as pd
+import itertools
 
-from typing import List, Dict, Union, Optional, cast
+from typing import List, Dict, Union, Optional, Tuple, cast
 
 from bs4 import BeautifulSoup
 from multiprocessing import Manager, Pool
@@ -11,7 +12,7 @@ from multiprocessing.synchronize import Lock
 from multiprocessing.managers import SyncManager
 
 from utils import ProgressBar
-from urltools import fetch_urlfile
+from urltools import fetch_urlfile, fetch_with_delay
 from firms.futils import cap, split_company_name
 
 class LockStub(Lock):
@@ -45,6 +46,46 @@ def find_company_attr(cik: int) -> Dict[str, Union[str, int]]:
     return {'cik': cik,
             'company_name': company_name, 
             'sic': sic}
+
+def find_company_names(
+        key_words: List[str], add_words: List[str]) -> List[Tuple[int, str]]:
+    key_words = [w.lower() for w in key_words]
+    add_words = [w.lower() for w in add_words]
+
+    chunk = 100
+    start = 0
+    search = ''
+    companies: List[Tuple[int, str]] = []
+
+    for words in itertools.permutations(key_words):
+        search = ' '.join(words)
+        while True:
+            url = (
+                f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&" +
+                f"company={search}&owner=exclude&match=&start={start}&count={chunk}&hidefilings=0")
+            body = fetch_with_delay(url)
+            if not body:
+                break
+
+            try:
+                tables = pd.read_html(body)
+            except Exception:
+                break
+
+            if not tables:
+                break
+            table = tables[0]
+            if table.shape[0] == 0:
+                break
+
+            for index, row in table.iterrows():
+                company = str(row['Company']).lower()
+                if sum([(w in company) for w in add_words]) == len(add_words):
+                    companies.append((int(row['CIK']), company))
+
+            start += chunk
+
+    return companies
 
 def companies_search(ciks: List[int],
                      lock: Lock = None,                       
