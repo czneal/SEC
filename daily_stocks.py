@@ -72,8 +72,7 @@ def main():
     logger.info(msg='start to download {0} tickers'.format(len(tickers)))
     manager.start(to_do=tickers,
                   configure_writer=configure_writer,
-                  configure_worker=configure_worker,
-                  n_procs=6)
+                  configure_worker=configure_worker)
     logger.info(msg='finish to download {0} tickers'.format(len(tickers)))
     logger.revoke_state()
 

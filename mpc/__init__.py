@@ -12,6 +12,7 @@ import multiprocessing.synchronize
 import multiprocessing.managers
 
 import logs
+from settings import Settings
 from mpc.util import MAX_WAIT_TIME, WAIT_FOR_JOB
 from mpc.util import StopObject, terminate_procs
 
@@ -86,7 +87,7 @@ def worker_proc(
             info_queue: mp.Queue,
             stop_event: mp.synchronize.Event,
             configure_worker: Callable[[], Worker],
-            level: int) -> None:
+            level: int=Settings.n_proc()) -> None:
     try:
         configure_logging(log_queue, level)
         logger = logs.get_logger(name=__name__)
