@@ -25,6 +25,7 @@ def main() -> None:
 
     glue.download_report_files(method='new', after=datetime.date(2013, 1, 1))
     sec_parse.parse(method='new', after=datetime.date(2013, 1, 1))
+    glue.attach_sec_shares_ticker()
 
 
 if __name__ == '__main__':
