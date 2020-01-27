@@ -1,0 +1,58 @@
+[
+    {
+        "model": "liabilities_class_pch_v2019-03-13.h5",
+        "dict": "dictionary.csv",
+        "pc": true,
+        "multi": false,
+        "max_len": 40
+    },
+    {
+        "model": "liabilities_curr_noncurr_v2019-03-13.h5",
+        "dict": "dictionary.csv",
+        "pc": true,
+        "multi": false,
+        "max_len": 40
+    },
+    {
+        "model": "assets_multiclass_pch_v2019-03-13.h5",
+        "dict": "dictionary.csv",
+        "pc": true,
+        "multi": true,
+        "max_len": 40
+    },
+    {
+        "model": "assets_curr_noncurr_pch_v2019-03-13.h5",
+        "dict": "dictionary.csv",
+        "pc": true,
+        "multi": false,
+        "max_len": 40
+    },
+    {
+        "model": "income_st_multiclass_pch_v2019-03-13.h5",
+        "dict": "dictionary.csv",
+        "pc": true,
+        "multi": true,
+        "max_len": 60
+    },
+    {
+        "model": "cashflow_st_cashtype_pch_v2019-03-13.h5",
+        "dict": "dictionary.csv",
+        "pc": true,
+        "multi": true,
+        "max_len": 60
+    },
+    {
+        "model": "cashflow_st_multiclass_pch_v2019-03-14.h5",
+        "dict": "dictionary.csv",
+        "pc": true,
+        "multi": true,
+        "max_len": 60
+    },
+    {
+        "model": "all_gaap_tags_binary_v2019-03-13.h5",
+        "dict": "dictionary.csv",
+        "pc": false,
+        "multi": false,
+        "max_len": 60
+    }
+]
