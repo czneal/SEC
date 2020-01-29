@@ -1,7 +1,7 @@
 import multiprocessing as mp
 from multiprocessing.managers import BaseManager
 import random
-import socket
+from itertools import product
 
 
 class QueueManager(BaseManager):
@@ -21,14 +21,17 @@ class Worker(mp.Process):
         m.connect()
 
         pipe = m.get_pipe()  # type: ignore
-        what = [('Liabilities', 'LiabilitiesCurrent', 1),
-                ('LiabilitiesAndStockholdersEquity', 'Assets', 1)]
-        client = self.pid
-        for i in range(0, 1000):
-            pipe.send(what[0])
-            msg = pipe.recv()
-            self.queue.put(msg)
+        what = [('Liabilities', 'LiabilitiesCurrent'),
+                ('LiabilitiesAndStockholdersEquity', 'Assets'),
+                ('LiabilitiesAndStockholdersEquity', 'Assets'),
+                ('Liabilities', 'LiabilitiesCurrent'),
+                ('Liabilities', 'LiabilitiesNoncurrent')]
 
+        for r, c in product(range(10), range(8)):
+            for msg in what:
+                pipe.send((msg[0], msg[1], c))
+                msg = pipe.recv()
+                self.queue.put(msg)
         pipe.close()
 
 
@@ -67,14 +70,27 @@ if __name__ == '__main__':
     # m.connect()
 
     # pipe = m.get_pipe()  # type: ignore
-    # what = [('Liabilities', 'LiabilitiesCurrent', 1),
-    #         ('LiabilitiesAndStockholdersEquity', 'Assets', 1)]
+    # what = [('Liabilities', 'LiabilitiesCurrent', 0),
+    #         ('LiabilitiesAndStockholdersEquity', 'Assets', 0),
+    #         ('LiabilitiesAndStockholdersEquity', 'Assets', 2),
+    #         ('Liabilities', 'LiabilitiesCurrent', 1),
+    #         ('Liabilities', 'LiabilitiesNoncurrent', 1)]
 
-    # for i in range(0, 10):
-    #     pipe.send(what[1])
-    #     msg = pipe.recv()
-    #     print(msg)
+    # for r in range(100):
+    #     for msg in what:
+    #         pipe.send(msg)
+    #         msg = pipe.recv()
+    #         print(msg)
 
     # pipe.close()
 
     main()
+
+    # from server import ClassifierCache
+    # cache = ClassifierCache()
+    # for i, w in enumerate(what):
+    #     res = cache.predict(w)
+    #     if res:
+    #         print(w, res)
+    #     else:
+    #         cache.append(w, i)

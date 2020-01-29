@@ -10,7 +10,7 @@
         "--aggressive",
         "--aggressive"
     ],
-    "python.pythonPath": "C:\\Users\\Asus\\Miniconda3\\envs\\sec\\python.exe",
+    "python.pythonPath": "/home/mgadmin/miniconda3/envs/sec/bin/python",
     "python.linting.mypyEnabled": true,
     "python.linting.mypyArgs": [
         "--follow-imports=normal",

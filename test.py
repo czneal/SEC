@@ -1,6 +1,6 @@
 import numpy as np
 from typing import List, Tuple, cast, Any
-from keras.models import load_model  # type: ignore
+from tensorflow.keras.models import load_model  # type: ignore
 from abc import ABCMeta, abstractmethod
 from settings import Settings
 import re
@@ -93,19 +93,31 @@ class MultiOnlyChild(MultiAnswer, OnlyChild):
 class SingleOnlyChild(SingleAnswer, OnlyChild):
     pass
 
+
 def load_classifiers() -> List[ModelClassifier]:
     with open(os.path.join(
             Settings.models_dir(),
             'classifiers.json')) as f:
-        classifiers = json.load(f)    
-    return [load_classifier() for]
+        classifiers = json.load(f)
+    return [load_classifier(sett['model'],
+                            sett['dict'],
+                            sett['pc'],
+                            sett['multi'],
+                            sett['max_len']) for sett in classifiers]
 
-def load_classifier(fmodel: str, fdict: str, pc: bool, multi: bool, max_len) -> ModelClassifier:
+
+def load_classifier(
+        fmodel: str,
+        fdict: str,
+        pc: bool,
+        multi: bool,
+        max_len) -> ModelClassifier:
+
     model = load_model(
         os.path.join(
             Settings.models_dir(),
-            fmodel)
-    
+            fmodel))
+
     if pc:
         if multi:
             return MultiParentAndChild(fdict, model, max_len)
@@ -117,11 +129,6 @@ def load_classifier(fmodel: str, fdict: str, pc: bool, multi: bool, max_len) -> 
         else:
             return SingleOnlyChild(fdict, model, max_len)
 
+
 if __name__ == '__main__':
-    model = prepare_models()
-
-    cl = MultiParentAndChild('dictionary.csv', model, 40)
-    y = cl.predict([('Liabilities', 'LiabilitiesCurrent'),
-                    ('Liabilities', 'LiabilitiesNoncurrrent')])
-
-    print(y)
+    load_classifiers()
