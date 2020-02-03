@@ -37,13 +37,13 @@ def main():
 
     while True:
         try:
-            msg = queue.get(timeout=1.5)
+            msg = queue.get(timeout=10)
             print(msg)
         except Exception:
             break
 
     for p in processes:
-        p.join(5)
+        p.join()
         print(f'join process {p.pid}')
 
 

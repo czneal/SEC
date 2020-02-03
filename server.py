@@ -177,6 +177,8 @@ class Dispatcher(mp.Process):
             except Exception as e:
                 print('dispatcher: ', e)
                 print('dispatcher: ', type(e))
+            except:
+                print('dispatcher: exception unknown')
 
         self._stop_workres()
         print('dispatcher: stopped')
