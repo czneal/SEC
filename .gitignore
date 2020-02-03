@@ -127,3 +127,4 @@ Outputs
 *.zip
 .settings
 .vscode/settings.json
+MGparams/*.xlsx

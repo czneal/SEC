@@ -14,7 +14,7 @@ WAIT_FOR_JOB = 0.01
 WAIT_FOR_PROC = 5
 
 SERVER_PORT: int = 50000
-SERVER_AUTHKEY: bytes = b'abracadabra'
+SERVER_AUTHKEY: bytes = b'PAzqWXo3sy55WMjT'
 
 TagTuple = Tuple[str, str, int]
 TagTupleRes = Tuple[str, str, int, int]
@@ -26,7 +26,7 @@ class ClassifierCache(object):
 
     def predict(self, msg: TagTuple) -> Optional[int]:
         if msg in self.cache:
-            return self.cache[msg] + 100
+            return self.cache[msg]
 
         return None
 
