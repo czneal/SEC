@@ -1,21 +1,35 @@
-import numpy as np
-from typing import List, Tuple, cast, Any
-from tensorflow.keras.models import load_model  # type: ignore
-from abc import ABCMeta, abstractmethod
-from settings import Settings
-import re
-import os
 import json
+import os
+import re
+from abc import ABCMeta, abstractmethod
+from typing import Any, List, Tuple, cast
+
+import numpy as np
+from tensorflow.keras.models import load_model  # type: ignore
+
+from settings import Settings
 
 
-class ModelClassifier(metaclass=ABCMeta):
+class Classifier(metaclass=ABCMeta):
+    def __init__(self, fdict: str, model_id: int, max_len: int):
+        self.fdict = fdict
+        self.max_len = max_len
+        self.model_id = model_id
+
+    @abstractmethod
+    def predict(self, pairs: List[Tuple[str, str]]) -> List[int]:
+        pass
+
+
+class ModelClassifier(Classifier):
     def __init__(self,
                  fdict: str,
-                 model,
-                 max_len: int):
+                 model_id: int,
+                 max_len: int,
+                 model):
 
-        self.max_len = max_len
-        self._load_dict(fdict)
+        super().__init__(fdict, model_id, max_len)
+        self._load_dict(self.fdict)
         self.model = model
 
     def _load_dict(self, filename: str) -> None:
@@ -94,24 +108,30 @@ class SingleOnlyChild(SingleAnswer, OnlyChild):
     pass
 
 
-def load_classifiers() -> List[ModelClassifier]:
+def load_classifiers() -> List[Classifier]:
     with open(os.path.join(
             Settings.models_dir(),
             'classifiers.json')) as f:
         classifiers = json.load(f)
-    return [load_classifier(sett['model'],
-                            sett['dict'],
-                            sett['pc'],
-                            sett['multi'],
-                            sett['max_len']) for sett in classifiers]
+
+    cl_objects: List[Classifier] = []
+    for model_id, sett in enumerate(classifiers):
+        cl_objects.append(load_classifier(sett['model'],
+                                          model_id,
+                                          sett['dict'],
+                                          sett['pc'],
+                                          sett['multi'],
+                                          sett['max_len']))
+    return cl_objects
 
 
 def load_classifier(
         fmodel: str,
+        model_id: int,
         fdict: str,
         pc: bool,
         multi: bool,
-        max_len) -> ModelClassifier:
+        max_len: int) -> ModelClassifier:
 
     model = load_model(
         os.path.join(
@@ -120,14 +140,14 @@ def load_classifier(
 
     if pc:
         if multi:
-            return MultiParentAndChild(fdict, model, max_len)
+            return MultiParentAndChild(fdict, model_id, max_len, model)
         else:
-            return SingleParentAndChild(fdict, model, max_len)
+            return SingleParentAndChild(fdict, model_id, max_len, model)
     else:
         if multi:
-            return MultiOnlyChild(fdict, model, max_len)
+            return MultiOnlyChild(fdict, model_id, max_len, model)
         else:
-            return SingleOnlyChild(fdict, model, max_len)
+            return SingleOnlyChild(fdict, model_id, max_len, model)
 
 
 if __name__ == '__main__':

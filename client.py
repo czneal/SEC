@@ -1,11 +1,6 @@
-import multiprocessing as mp
-from multiprocessing.managers import BaseManager
-import random
 from itertools import product
-
-
-class QueueManager(BaseManager):
-    pass
+import multiprocessing as mp
+from indi.remclass import load_remote_classifiers
 
 
 class Worker(mp.Process):
@@ -14,13 +9,8 @@ class Worker(mp.Process):
         self.queue = queue
 
     def run(self):
-        QueueManager.register('get_pipe')
-        m = QueueManager(
-            address=('localhost', 50000),
-            authkey=b'abracadabra')  # type: ignore
-        m.connect()
+        classifiers = load_remote_classifiers()
 
-        pipe = m.get_pipe()  # type: ignore
         what = [('Liabilities', 'LiabilitiesCurrent'),
                 ('LiabilitiesAndStockholdersEquity', 'Assets'),
                 ('LiabilitiesAndStockholdersEquity', 'Assets'),
@@ -28,10 +18,9 @@ class Worker(mp.Process):
                 ('Liabilities', 'LiabilitiesNoncurrent')]
 
         for r, c in product(range(10), range(8)):
-            for msg in what:
-                pipe.send((msg[0], msg[1], c))
-                msg = pipe.recv()
-                self.queue.put(msg)
+            for parent, child in what:
+                [res] = classifiers[c].predict([parent, child])
+                self.queue.put((parent, child, res))
         pipe.close()
 
 
@@ -63,28 +52,33 @@ def main():
 
 
 if __name__ == '__main__':
-    # QueueManager.register('get_pipe')
-    # m = QueueManager(
-    #     address=('localhost', 50000),
-    #     authkey=b'abracadabra')  # type: ignore
-    # m.connect()
+    from multiprocessing.managers import BaseManager
 
-    # pipe = m.get_pipe()  # type: ignore
-    # what = [('Liabilities', 'LiabilitiesCurrent', 0),
-    #         ('LiabilitiesAndStockholdersEquity', 'Assets', 0),
-    #         ('LiabilitiesAndStockholdersEquity', 'Assets', 2),
-    #         ('Liabilities', 'LiabilitiesCurrent', 1),
-    #         ('Liabilities', 'LiabilitiesNoncurrent', 1)]
+    class QueueManager(BaseManager):
+        pass
 
-    # for r in range(100):
-    #     for msg in what:
-    #         pipe.send(msg)
-    #         msg = pipe.recv()
-    #         print(msg)
+    QueueManager.register('get_pipe')
+    m = QueueManager(
+        address=('localhost', 50000),
+        authkey=b'abracadabra')  # type: ignore
+    m.connect()
 
-    # pipe.close()
+    pipe = m.get_pipe()  # type: ignore
+    what = [('Liabilities', 'LiabilitiesCurrent', 0),
+            ('LiabilitiesAndStockholdersEquity', 'Assets', 0),
+            ('LiabilitiesAndStockholdersEquity', 'Assets', 100),
+            ('Liabilities', 'LiabilitiesCurrent', 1),
+            ('Liabilities', 'LiabilitiesNoncurrent', 1)]
 
-    main()
+    for r in range(100):
+        for msg in what:
+            pipe.send(msg)
+            msg = pipe.recv()
+            print(msg)
+
+    pipe.close()
+
+    # main()
 
     # from server import ClassifierCache
     # cache = ClassifierCache()
