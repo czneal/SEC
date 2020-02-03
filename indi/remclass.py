@@ -1,15 +1,17 @@
 import atexit
 from typing import List, Tuple
+import contextlib
 
 from indi.modclass import Classifier
-from server import PipeManager
+from server import PipeManager, SERVER_PORT
+from settings import Settings
 
 
 class RemoteClassifier(Classifier):
     def __init__(self, fdict: str, model_id: int, max_len: int):
         super().__init__(fdict, model_id, max_len)
 
-        m = PipeManager()
+        m = PipeManager(address=(Settings.server_address(), SERVER_PORT))
         m.connect()
         self.pipe = m.get_pipe()
         atexit.register(self.close)
@@ -23,7 +25,8 @@ class RemoteClassifier(Classifier):
         return res
 
     def close(self):
-        self.pipe.close()
+        with contextlib.suppress(Exception):
+            self.pipe.close()
 
 
 def load_remote_classifiers() -> List[RemoteClassifier]:

@@ -81,6 +81,8 @@ class Worker(mp.Process):
                 continue
             except Exception as e:
                 print(f'worker: {self.pid}: {str(e)}')
+            except:
+                print('exception unknown')
 
         print(f'worker {self.pid}: stopped')
 

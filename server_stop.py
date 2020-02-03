@@ -3,7 +3,7 @@ from server import PipeManager, SERVER_PORT
 
 def main():
     try:
-        m = PipeManager(('localhost', SERVER_PORT))
+        m = PipeManager(('192.168.88.113', SERVER_PORT))
         # BaseManager.register('stop_server')
         # m = BaseManager(
         #     address=('localhost', 50000),
