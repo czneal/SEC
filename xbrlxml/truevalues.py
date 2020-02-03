@@ -10,8 +10,8 @@ import utils
 
 class TrueValues(object):
     def __init__(self, source_filenames: Mapping[str, str]):
-        self.periods = {}  # type: Dict[str, dt.date]
-        self.chapters = {}  # type: Dict[str, Dict[str, str]]
+        self.periods: Dict[str, dt.date] = {}
+        self.chapters: Dict[str, Dict[str, str]] = {}
 
         with open(source_filenames['periods']) as f:
             for line in f.readlines():
@@ -27,7 +27,7 @@ class TrueValues(object):
     def get_true_period(self, adsh: str) -> Union[dt.date, None]:
         return self.periods.get(adsh, None)
 
-    def get_true_chapters(self, adsh: str) -> Optional[Mapping[str, str]]:
+    def get_true_chapters(self, adsh: str) -> Optional[Dict[str, str]]:
         return self.chapters.get(adsh, None)
 
 

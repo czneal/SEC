@@ -49,9 +49,9 @@ class SharesFilter():
     def filter_shares_context(context: Context) -> bool:
         if len(context.dim) == 1:
             return True
-        if (len(context.dim) == 2 and
-                SharesFilter.share_types.match(
-                    cast(str, context.member[1]))):
+        if (len(context.dim) == 2):
+                # and SharesFilter.share_types.match(
+                    # cast(str, context.member[1]))):
             return True
         return False
 
