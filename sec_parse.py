@@ -20,10 +20,12 @@ class Parser(Worker):
 
     def feed(self, job: Tuple[FileRecord, str]) -> Optional[xio.ReportTuple]:
         (record, filename) = job
+
         self.logger.set_state(state={'state': record.adsh},
                               extra={'file_link': remove_root_dir(filename)})
 
         if not self.miner.feed(record.__dict__, filename):
+            self.logger.revoke_state()
             return None
 
         company = dm.prepare_company(self.miner, record)
