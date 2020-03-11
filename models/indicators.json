@@ -1,0 +1,272 @@
+{
+    "mg_r_liabilities": {
+        "type": "restated",
+        "model_name": "liabilities_class_pch_v2019-03-13.h5",
+        "class_id": 1,
+        "feeder": "lshe"
+    },
+    "mg_r_liabilities_current": {
+        "type": "restated",
+        "model_name": "liabilities_curr_noncurr_v2019-03-13.h5",
+        "class_id": 1,
+        "feeder": "liabilities"
+    },
+    "mg_r_liabilities_noncurrent": {
+        "type": "restated",
+        "model_name": "liabilities_curr_noncurr_v2019-03-13.h5",
+        "class_id": 0,
+        "feeder": "liabilities"
+    },
+    "mg_r_intangibles": {
+        "type": "restated",
+        "model_name": "assets_multiclass_pch_v2019-03-13.h5",
+        "class_id": 1,
+        "feeder": "assets"
+    },
+    "mg_r_fixed_assets": {
+        "type": "restated",
+        "model_name": "assets_multiclass_pch_v2019-03-13.h5",
+        "class_id": 2,
+        "feeder": "assets"
+    },
+    "mg_r_capitalized_costs": {
+        "type": "restated",
+        "model_name": "assets_multiclass_pch_v2019-03-13.h5",
+        "class_id": 3,
+        "feeder": "assets"
+    },
+    "mg_r_assets_current": {
+        "type": "restated",
+        "model_name": "assets_curr_noncurr_pch_v2019-03-13.h5",
+        "class_id": 1,
+        "feeder": "assets"
+    },
+    "mg_r_assets_noncurrent": {
+        "type": "restated",
+        "model_name": "assets_curr_noncurr_pch_v2019-03-13.h5",
+        "class_id": 0,
+        "feeder": "assets"
+    },
+    "mg_r_income_noncontroling": {
+        "type": "restated",
+        "model_name": "income_st_multiclass_pch_v2019-03-13.h5",
+        "class_id": 1,
+        "feeder": "is"
+    },
+    "mg_r_sales": {
+        "type": "restated",
+        "model_name": "income_st_multiclass_pch_v2019-03-13.h5",
+        "class_id": 2,
+        "feeder": "is"
+    },
+    "mg_r_cost_of_revenue": {
+        "type": "restated",
+        "model_name": "income_st_multiclass_pch_v2019-03-13.h5",
+        "class_id": 3,
+        "feeder": "is"
+    },
+    "mg_r_SGAA_expenses": {
+        "type": "restated",
+        "model_name": "income_st_multiclass_pch_v2019-03-13.h5",
+        "class_id": 4,
+        "feeder": "is"
+    },
+    "mg_r_one_time_events": {
+        "type": "restated",
+        "model_name": "income_st_multiclass_pch_v2019-03-13.h5",
+        "class_id": 5,
+        "feeder": "is"
+    },
+    "mg_r_income_equity_method": {
+        "type": "restated",
+        "model_name": "income_st_multiclass_pch_v2019-03-13.h5",
+        "class_id": 6,
+        "feeder": "is"
+    },
+    "mg_r_unrealized_gain_loss": {
+        "type": "restated",
+        "model_name": "income_st_multiclass_pch_v2019-03-13.h5",
+        "class_id": 7,
+        "feeder": "is"
+    },
+    "mg_r_interest_expenses": {
+        "type": "restated",
+        "model_name": "income_st_multiclass_pch_v2019-03-13.h5",
+        "class_id": 8,
+        "feeder": "is"
+    },
+    "mg_r_dividend_preferred": {
+        "type": "restated",
+        "model_name": "income_st_multiclass_pch_v2019-03-13.h5",
+        "class_id": 9,
+        "feeder": "is"
+    },
+    "mg_r_cash_operating_activities": {
+        "type": "restated",
+        "model_name": "cashflow_st_cashtype_pch_v2019-03-13.h5",
+        "class_id": 1,
+        "feeder": "cf_cut"
+    },
+    "mg_r_cash_investing_activities": {
+        "type": "restated",
+        "model_name": "cashflow_st_cashtype_pch_v2019-03-13.h5",
+        "class_id": 2,
+        "feeder": "cf_cut"
+    },
+    "mg_r_cash_financing_activities": {
+        "type": "restated",
+        "model_name": "cashflow_st_cashtype_pch_v2019-03-13.h5",
+        "class_id": 3,
+        "feeder": "cf_cut"
+    },
+    "mg_r_cash_acquired_realestate": {
+        "type": "restated",
+        "model_name": "cashflow_st_multiclass_pch_v2019-03-14.h5",
+        "class_id": 1,
+        "feeder": "cf_cut"
+    },
+    "mg_r_cash_payments_fixed_assets": {
+        "type": "restated",
+        "model_name": "cashflow_st_multiclass_pch_v2019-03-14.h5",
+        "class_id": 2,
+        "feeder": "cf_cut"
+    },
+    "mg_r_cash_payments_other_capital": {
+        "type": "restated",
+        "model_name": "cashflow_st_multiclass_pch_v2019-03-14.h5",
+        "class_id": 3,
+        "feeder": "cf_cut"
+    },
+    "mg_r_cash_acquired_businesses": {
+        "type": "restated",
+        "model_name": "cashflow_st_multiclass_pch_v2019-03-14.h5",
+        "class_id": 4,
+        "feeder": "cf_cut"
+    },
+    "mg_r_cash_dividends_common": {
+        "type": "restated",
+        "model_name": "cashflow_st_multiclass_pch_v2019-03-14.h5",
+        "class_id": 5,
+        "feeder": "cf_cut"
+    },
+    "mg_r_cash_dividends_preferred": {
+        "type": "restated",
+        "model_name": "cashflow_st_multiclass_pch_v2019-03-14.h5",
+        "class_id": 6,
+        "feeder": "cf_cut"
+    },
+    "mg_r_cash_buybacks": {
+        "type": "restated",
+        "model_name": "cashflow_st_multiclass_pch_v2019-03-14.h5",
+        "class_id": 7,
+        "feeder": "cf_cut"
+    },
+    "mg_r_cash_nonrecurring": {
+        "type": "restated",
+        "model_name": "cashflow_st_multiclass_pch_v2019-03-14.h5",
+        "class_id": 8,
+        "feeder": "cf_cut"
+    },
+    "mg_r_cash_dividends_minority": {
+        "type": "restated",
+        "model_name": "cashflow_st_multiclass_pch_v2019-03-14.h5",
+        "class_id": 9,
+        "feeder": "cf_cut"
+    },
+    "mg_acquired_realestate": {
+        "type": "static"
+    },
+    "mg_capitalized_software": {
+        "type": "dynamic"
+    },
+    "mg_cash_operating_activities": {
+        "type": "static"
+    },
+    "mg_equity": {
+        "type": "dynamic"
+    },
+    "mg_income": {
+        "type": "static"
+    },
+    "mg_intangibles": {
+        "type": "static"
+    },
+    "mg_interest_net": {
+        "type": "static"
+    },
+    "mg_invest_fix_assets": {
+        "type": "static"
+    },
+    "mg_payments_capital": {
+        "type": "static"
+    },
+    "mg_provision_for_losses": {
+        "type": "static"
+    },
+    "mg_restructuring_nonrecurring": {
+        "type": "static"
+    },
+    "mg_roe": {
+        "type": "static"
+    },
+    "mg_roe_average": {
+        "type": "dynamic"
+    },
+    "mg_roe_variance": {
+        "type": "dynamic"
+    },
+    "mg_r_capitalized_costs_d": {
+        "type": "dynamic"
+    },
+    "mg_r_cash_buybacks_yld": {
+        "type": "dynamic"
+    },
+    "mg_r_debt_tangible_assets": {
+        "type": "static"
+    },
+    "mg_r_dividents_yld": {
+        "type": "dynamic"
+    },
+    "mg_r_equity": {
+        "type": "dynamic"
+    },
+    "mg_r_free_cashflow": {
+        "type": "static"
+    },
+    "mg_r_free_cashflow_yld": {
+        "type": "dynamic"
+    },
+    "mg_r_income": {
+        "type": "static"
+    },
+    "mg_r_income_corrected": {
+        "type": "static"
+    },
+    "mg_r_income_corrected_yld": {
+        "type": "dynamic"
+    },
+    "mg_r_income_free_cashflow": {
+        "type": "static"
+    },
+    "mg_r_roe": {
+        "type": "static"
+    },
+    "mg_r_roe_average": {
+        "type": "dynamic"
+    },
+    "mg_r_roe_variance": {
+        "type": "dynamic"
+    },
+    "mg_r_sales_growth": {
+        "type": "dynamic"
+    },
+    "mg_r_sales_growth_average": {
+        "type": "dynamic"
+    },
+    "mg_sales": {
+        "type": "static"
+    },
+    "mg_SGAAExpense": {
+        "type": "static"
+    }
+}

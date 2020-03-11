@@ -17,12 +17,13 @@ import queries as q
 from settings import Settings
 
 WHITE_LIST_TABLES = frozenset(
-    ['companies', 'nasdaq', 
+    ['companies', 'nasdaq',
      'stocks_daily', 'stocks_shares', 'stocks_dividents',
      'stocks_index',
      'mgnums', 'logs_parse',
      'siccodes', 'sec_forms', 'reports',
-     'sec_xbrl_forms', 'sec_shares', 'sec_shares_ticker'])
+     'sec_xbrl_forms', 'sec_shares', 'sec_shares_ticker',
+     'indicators', 'ind_proc_info', 'ind_rest_info', 'ind_classified_pairs'])
 
 
 @contextmanager
@@ -369,10 +370,10 @@ def read_reports_by_cik(ciks: List[int],
 
 
 class MySQLTable(object):
-    def __init__(self, 
-                table_name: str, 
-                con: mysql.connector.MySQLConnection,
-                use_simple_insert: bool=False):
+    def __init__(self,
+                 table_name: str,
+                 con: mysql.connector.MySQLConnection,
+                 use_simple_insert: bool = False):
         if table_name not in WHITE_LIST_TABLES:
             raise Exception(
                 'table name {0} is not white listed'.format(table_name))
@@ -400,9 +401,11 @@ class MySQLTable(object):
 
             groups = types.findall(r['Type'])
             if groups:
-                self.field_sizes[field_name] = [groups[0][0], int(groups[0][1])]
+                self.field_sizes[field_name] = [
+                    groups[0][0], int(groups[0][1])]
                 if self.field_sizes[field_name][0] == 'varchar':
-                    self.fields_to_cut[field_name] = cast(int, self.field_sizes[field_name][1])
+                    self.fields_to_cut[field_name] = cast(
+                        int, self.field_sizes[field_name][1])
 
         cur.execute(
             "show index from " +
@@ -418,14 +421,14 @@ class MySQLTable(object):
                 fields=self.fields,
                 fields_not_null=self.fields_not_null,
                 primary_keys=self.primary_keys)
-        else:    
+        else:
             self.insert_command = insert_command(
                 table_name=self.name,
                 fields=self.fields,
                 fields_not_null=self.fields_not_null,
                 primary_keys=self.primary_keys)
 
-    def set_insert_if(self, if_field:str) -> None:
+    def set_insert_if(self, if_field: str) -> None:
         self.insert_command = update_command(
             table_name=self.name,
             fields=self.fields,
@@ -444,7 +447,6 @@ class MySQLTable(object):
             raise MySQLTypeError(
                 'unsupported type to write into MySQL table {}'.format(
                     type(obj)))
-    
 
     def write_df(
             self,
@@ -452,48 +454,49 @@ class MySQLTable(object):
             cur: mysql.connector.cursor.MySQLCursor) -> None:
         if not self.fields.issubset(df.columns):
             raise MySQLTypeError(f'DataFrame should contain all table fields')
-        
+
         row_list = df[list(self.fields)].to_dict('record')
         self.write_row_list(row_list, cur)
 
     def write_row(
             self, row: Dict[str, Any],
             cur: mysql.connector.cursor.MySQLCursor) -> None:
-        
+
         data = self._prepare_row(row)
         cur.execute(self.insert_command, data)
 
     def write_row_list(
             self, row_list: List[Dict[str, Any]],
             cur: mysql.connector.cursor.MySQLCursor) -> None:
-                
-        for i in range(int(len(row_list)/self.chunk_size) + 1):            
-            new_row_list = [self._prepare_row(row) 
-                            for row in row_list[i*self.chunk_size: 
-                                                (i + 1)*self.chunk_size]]
+
+        for i in range(int(len(row_list) / self.chunk_size) + 1):
+            new_row_list = [self._prepare_row(row)
+                            for row in row_list[i * self.chunk_size:
+                                                (i + 1) * self.chunk_size]]
             cur.executemany(self.insert_command, new_row_list)
 
     def truncate(self, cur) -> None:
         cur.execute(f'truncate table `{self.name}`;')
 
     def update_row(
-                self, 
-                row: Dict[str, Any],
-                key_fields: Iterable[str], 
-                update_fields: Iterable[str],
-                cur: mysql.connector.cursor.MySQLCursor) -> None:
+            self,
+            row: Dict[str, Any],
+            key_fields: Iterable[str],
+            update_fields: Iterable[str],
+            cur: mysql.connector.cursor.MySQLCursor) -> None:
         data = self._prepare_row(row, check=False)
         cur.execute(simple_update_command(
-                        self.name,
-                        key_fields=key_fields,
-                        update_fields=update_fields), 
-                    data)
+            self.name,
+            key_fields=key_fields,
+            update_fields=update_fields),
+            data)
 
-    def _prepare_row(self, row: Dict[str, Any], check: bool=True) -> Dict[str, Any]:
+    def _prepare_row(self, row: Dict[str, Any],
+                     check: bool = True) -> Dict[str, Any]:
         if check and not self.fields_not_null.issubset(row.keys()):
             diff = self.fields_not_null.difference(row.keys())
             raise MySQLTypeError(f'fields {diff} have not null flag')
-        
+
         data: Dict[str, Any] = {}
         for k, v in row.items():
             if k not in self.fields:
@@ -508,6 +511,7 @@ class MySQLTable(object):
                 data[k] = v
         return data
 
+
 def simple_insert_command(table_name: str,
                           fields: Set[str],
                           fields_not_null: Set[str],
@@ -515,10 +519,11 @@ def simple_insert_command(table_name: str,
     insert = """insert into {0}\n({1})\nvalues({2})"""
     columns = ', '.join('' + f + '' for f in fields)
     values = ', '.join(['%(' + f + ')s' for f in fields])
-    
+
     insert = insert.format(table_name, columns, values)
 
     return insert
+
 
 def insert_command(table_name: str,
                    fields: Set[str],
@@ -535,13 +540,15 @@ def insert_command(table_name: str,
 
     return insert
 
+
 def update_command(table_name: str,
                    fields: Set[str],
                    fields_not_null: Set[str],
                    primary_keys: Set[str],
                    if_field: str) -> str:
     if if_field not in fields_not_null:
-        raise MySQLTypeError(f"if_field '{if_field}'' should be in fields_not_null set")
+        raise MySQLTypeError(
+            f"if_field '{if_field}'' should be in fields_not_null set")
 
     update = """insert into {0}\n({1})\nvalues({2})\non duplicate key update\n{3}"""
     columns = ', '.join('' + f + '' for f in fields)
@@ -554,41 +561,43 @@ def update_command(table_name: str,
 
     return update
 
+
 def simple_update_command(table_name: str,
                           key_fields: Iterable[str],
                           update_fields: Iterable[str]) -> str:
     command = f'update `{table_name}`\n'
-    update = ',\n  '.join([f'`{field}` = %({field})s' for field in update_fields])
-    where = '\n  and '.join([f'`{field}` = %({field})s' for field in key_fields])
+    update = ',\n  '.join([f'`{field}` = %({field})s'
+                           for field in update_fields])
+    where = '\n  and '.join(
+        [f'`{field}` = %({field})s' for field in key_fields])
 
     return (command + 'set ' + update + '\nwhere ' + where)
 
 
 if __name__ == '__main__':
     update = simple_update_command(
-                    table_name='companies',
-                    key_fields=['cik', 'sic'],
-                    update_fields={'company_name', 'updated'})
+        table_name='companies',
+        key_fields=['cik', 'sic'],
+        update_fields={'company_name', 'updated'})
     print(update)
-    
+
     # insert = insert_command(table_name='companies',
     #                 fields=set(['company_name', 'cik', 'sic', 'updated']),
     #                 fields_not_null=set(['company_name', 'cik', 'sic', 'updated']),
     #                 primary_keys=set(['cik']))
-    #print(update)
-    #print(insert)
+    # print(update)
+    # print(insert)
 
     # with OpenConnection() as con:
     #     t = MySQLTable('logs_parse', con)
     #     cur = con.cursor(dictionary=True)
 
     #     # id, created, state, module, levelname, msg, extra
-    #     row = {'created': '2019-12-02 18:47:23.000235', 
-    #            'state': 'mpc.worker.Process-100000000000000000000000000', 
-    #            'module': 'mpc', 
-    #            'levelname': 'DEBUG', 
-    #            'msg': 'configure worker' + ''.join(['-' for _ in range(0,100)]), 
+    #     row = {'created': '2019-12-02 18:47:23.000235',
+    #            'state': 'mpc.worker.Process-100000000000000000000000000',
+    #            'module': 'mpc',
+    #            'levelname': 'DEBUG',
+    #            'msg': 'configure worker' + ''.join(['-' for _ in range(0,100)]),
     #            'extra': ''}
     #     t.write_row(row, cur)
     #     con.commit()
-

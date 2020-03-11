@@ -35,6 +35,9 @@ def main():
         p.start()
         processes.append(p)
 
+    import time
+    time.sleep(10)
+
     while True:
         try:
             msg = queue.get(timeout=10)

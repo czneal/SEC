@@ -1,0 +1,43 @@
+{
+        "lshe": {
+                "chapter": "bs",
+                "names": [
+                        "us-gaap:LiabilitiesAndStockholdersEquity"
+                ]
+        },
+        "liabilities": {
+                "chapter": "bs",
+                "names": [
+                        "us-gaap:LiabilitiesAndStockholdersEquity"
+                ],
+                "model": "liabilities_class_pch_v2019-03-13.h5",
+                "class_id": 1
+        },
+        "assets": {
+                "chapter": "bs",
+                "names": [
+                        "us-gaap:Assets"
+                ]
+        },
+        "is": {
+                "chapter": "is",
+                "names": [
+                        "us-gaap:IncomeLoss",
+                        "us-gaap:ProfitLoss"
+                ]
+        },
+        "cf_cut": {
+                "chapter": "cf",
+                "names": [
+                        "us-gaap:IncomeLoss"
+                ],
+                "model": "all_gaap_tags_binary_v2019-03-13.h5",
+                "class_id": 1
+        },
+        "cf": {
+                "chapter": "cf",
+                "names": [
+                        "us-gaap:IncomeLoss"
+                ]
+        }
+}

@@ -12,13 +12,15 @@ class MySQLReader():
         self.cur = self.con.cursor(dictionary=True)
         atexit.register(self.close)
 
-    def _fetch(self, query: str, params: Dict[str, Any] = {}) -> List[Any]:
+    def fetch(self, query: str,
+              params: Dict[str, Any] = {}) -> List[Dict[str, Any]]:
         try:
+            self.con.commit()
             if params:
                 self.cur.execute(query, params)
             else:
                 self.cur.execute(query)
-            return cast(List[Any], self.cur.fetchall())
+            return cast(List[Dict[str, Any]], self.cur.fetchall())
         except Exception:
             return []
 
@@ -68,13 +70,13 @@ class MySQLShares(MySQLReader):
             return []
 
     def fetch_unconnected_ciks(self) -> List[int]:
-        data = self._fetch(q_get_unconnected_ciks)
+        data = self.fetch(q_get_unconnected_ciks)
         return [cast(int, r['cik']) for r in data]
 
     def fetch_possible_ticker(
             self, cik: int, member: str) -> List[Tuple[str, str]]:
-        data = self._fetch(q_get_possible_ticker, {'cik': cik,
-                                                   'member': member})
+        data = self.fetch(q_get_possible_ticker, {'cik': cik,
+                                                  'member': member})
         return [(cast(str, r['member']), cast(str, r['ticker']))
                 for r in data]
 

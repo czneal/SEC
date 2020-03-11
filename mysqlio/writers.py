@@ -13,7 +13,7 @@ import logs
 
 
 class PandasWriter(Writer):
-    def __init__(self, filename: str, *args, **kvargs):
+    def __init__(self, filename: str, *args, **kwargs):
         self.data: typing.List[typing.Dict[str, typing.Any]] = []
         self.filename = filename
 
@@ -26,6 +26,7 @@ class PandasWriter(Writer):
 
 class MySQLWriter(Writer):
     def __init__(self):
+        self.n_retry: int = 20
         self.con = do.open_connection()
         self.cur = self.con.cursor(dictionary=True)
         atexit.register(self.close)
@@ -42,6 +43,19 @@ class MySQLWriter(Writer):
         except Exception:
             pass
 
+    def table(self,
+              table_name: str,
+              use_simple_insert: bool = False) -> do.MySQLTable:
+        return do.MySQLTable(table_name=table_name,
+                             con=self.con,
+                             use_simple_insert=use_simple_insert)
+
+    def write_to_table(self, table: do.MySQLTable, data) -> None:
+        utils.retry(
+            self.n_retry, mysql_err.InternalError)(
+            table.write)(
+            data, self.cur)
+
 
 class StocksWriter(MySQLWriter):
     def __init__(self, *args, **kwargs):
@@ -51,7 +65,9 @@ class StocksWriter(MySQLWriter):
         self.nasdaq = do.MySQLTable('nasdaq', self.con)
         self.hist_writer = HistoricalStocksWriter()
 
-    def write(self, obj: typing.Tuple[tic.StockData, pd.DataFrame, pd.DataFrame]) -> None:
+    def write(
+            self, obj: typing.Tuple
+            [tic.StockData, pd.DataFrame, pd.DataFrame]) -> None:
         row = obj[0]
         logger = logs.get_logger(name=__name__)
 
@@ -84,7 +100,7 @@ class StocksWriter(MySQLWriter):
             row, self.cur)
         self.con.commit()
 
-        self.hist_writer.write((obj[1],obj[2]))
+        self.hist_writer.write((obj[1], obj[2]))
 
     def flush(self) -> None:
         MySQLWriter.flush(self)
@@ -115,6 +131,7 @@ class HistoricalStocksWriter(MySQLWriter):
             dividents, self.cur)
 
         self.con.commit()
+
 
 if __name__ == "__main__":
     data = tic.stock_data('AAPL')

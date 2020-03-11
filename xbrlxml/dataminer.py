@@ -19,6 +19,7 @@ from xbrlxml.xbrlfile import XbrlFile
 from xbrlxml.xbrlfileparser import Context
 from xbrlxml.xbrlzip import XBRLZipPacket
 from xbrlxml.xbrlrss import FileRecord
+from xbrlxml.xbrlchapter import CalcChapter
 
 
 class TextBlocks(object):
@@ -42,7 +43,7 @@ class TextBlocks(object):
         df.to_csv(filename)
 
 
-class SharesFilter():    
+class SharesFilter():
     share_types = re.compile(r'[A-Z,a-z,\:,\-,_]+Class[A-Z]{1}Member')
 
     @staticmethod
@@ -249,16 +250,16 @@ class DataMiner(metaclass=ABCMeta):
             self.numeric_facts = None
 
     def _mine_dei_for_shares(
-            self) -> List[Tuple[str, str, int, 
-                                Optional[datetime.date], 
+            self) -> List[Tuple[str, str, int,
+                                Optional[datetime.date],
                                 datetime.date, str]]:
         shares = self.xbrlfile.dei.get('shares', None)
         if shares is None or not shares:
             logs.get_logger(__name__).warning('dei shares not found')
             return []
 
-        data: List[Tuple[str, str, int, 
-                         Optional[datetime.date], 
+        data: List[Tuple[str, str, int,
+                         Optional[datetime.date],
                          datetime.date, str]] = []
 
         for shares_count, context_name, shares_tag in shares:
@@ -325,16 +326,16 @@ class DataMiner(metaclass=ABCMeta):
         return data
 
     def _mine_bs_parent_for_shares(self) -> List[Tuple[str, str, int,
-                                                    Optional[datetime.date],
-                                                    datetime.date,
-                                                    str]]:
+                                                       Optional[datetime.date],
+                                                       datetime.date,
+                                                       str]]:
         self._prerequisites("_mine_bs_parent_for_shares")
 
         logger = logs.get_logger(__name__)
         data: List[Tuple[str, str, int,
-                        Optional[datetime.date],
-                        datetime.date,
-                        str]] = []
+                         Optional[datetime.date],
+                         datetime.date,
+                         str]] = []
 
         bs_roleuri = self.sheets.mschapters.get('bs', None)
         if bs_roleuri is None:
@@ -356,7 +357,7 @@ class DataMiner(metaclass=ABCMeta):
         if pres is None:
             logger.warning(msg='bs parentical shares not found')
             return data
-            
+
         tags = pres.gettags()
 
         shares = self.xbrlfile.dfacts[self.xbrlfile.dfacts['name'].isin(tags)]
@@ -381,7 +382,7 @@ class DataMiner(metaclass=ABCMeta):
         return data
 
     def _gather_shares_facts(self) -> None:
-        data = self._mine_dei_for_shares() #+ self._mine_bs_parent_for_shares()
+        data = self._mine_dei_for_shares()  # + self._mine_bs_parent_for_shares()
 
         self.shares_facts = pd.DataFrame(
             data,
@@ -401,11 +402,13 @@ class DataMiner(metaclass=ABCMeta):
             return
 
         try:
-            (cik, context) = [(int(e[0]), e[1]) 
-                                for e in filter(lambda x: int(x[0]) == self.xbrlfile.cik, 
-                                                self.xbrlfile.dei['cik'])][0]
-            company_name = [e for e in filter(lambda x: x[1] == context,
-                                              self.xbrlfile.dei['company_name'])][0][0]
+            (cik, context) = [(int(e[0]), e[1]) for e in filter(
+                lambda x: int(x[0]) == self.xbrlfile.cik, self.xbrlfile.dei['cik'])][0]
+            company_name = [
+                e
+                for e in filter(
+                    lambda x: x[1] == context, self.xbrlfile.dei
+                    ['company_name'])][0][0]
             self.cik = cik
             record['cik'] = cik
             record['company_name'] = company_name
@@ -414,7 +417,6 @@ class DataMiner(metaclass=ABCMeta):
             logger = logs.get_logger(name=__name__)
             logger.error("couldn't find proper company name and CIK")
             raise XbrlException('')
-        
 
     def _prepare(self, record, zip_filename):
         self.extentions = []
@@ -477,52 +479,63 @@ class ChapterNamesMiner(DataMiner):
         self._choose_shares_sheets()
         self._gather_shares_facts()
 
+
 def prepare_report(miner: DataMiner, record: FileRecord) -> Dict[str, Any]:
     file_link = remove_root_dir(miner.zip_filename)
     report = {'adsh': miner.adsh,
-            'cik': miner.cik,
-            'period': miner.xbrlfile.period,
-            'period_end': miner.xbrlfile.fye,
-            'fin_year': miner.xbrlfile.fy,
-            'taxonomy': miner.xbrlfile.dei['us-gaap'],
-            'form': record.form_type,
-            'quarter': 0,
-            'file_date': record.file_date,
-            'file_link': file_link,
-            'trusted': 1,
-            'structure': _dump_structure(miner),
-            'contexts': _dump_contexts(miner)
-            }
+              'cik': miner.cik,
+              'period': miner.xbrlfile.period,
+              'period_end': miner.xbrlfile.fye,
+              'fin_year': miner.xbrlfile.fy,
+              'taxonomy': miner.xbrlfile.dei['us-gaap'],
+              'form': record.form_type,
+              'quarter': 0,
+              'file_date': record.file_date,
+              'file_link': file_link,
+              'trusted': 1,
+              'structure': _dump_structure(miner),
+              'contexts': _dump_contexts(miner)
+              }
     return report
+
 
 def prepare_nums(miner: DataMiner) -> Optional[pd.DataFrame]:
     return miner.numeric_facts
-    
+
 
 def prepare_shares(miner: DataMiner) -> Optional[pd.DataFrame]:
     return miner.shares_facts
 
+
 def prepare_company(miner: DataMiner, record: FileRecord) -> Dict[str, Any]:
     company = {'company_name': record.company_name,
-                'sic': record.sic,
-                'cik': record.cik,
-                'updated': record.file_date}
+               'sic': record.sic,
+               'cik': record.cik,
+               'updated': record.file_date}
 
     return company
 
-def _dump_structure(miner: DataMiner) -> str:    
+
+def _dump_structure(miner: DataMiner) -> str:
     structure = {}
     for sheet, roleuri in miner.sheets.mschapters.items():
         xsd_chapter = miner.xbrlfile.schemes['xsd'].get(roleuri, None)
-        calc_chapter = (miner.xbrlfile
-                        .schemes['calc']
-                        .get(roleuri, {"roleuri": roleuri}))
-        structure[sheet] = {
-            'label': xsd_chapter.label,
-            'chapter': calc_chapter
-        }
+        if not xsd_chapter:
+            continue
 
-    return json.dumps(structure, cls=algos.xbrljson.ForDBJsonEncoder)
+        calc_chapter = (miner
+                        .xbrlfile
+                        .schemes['calc']
+                        .get(roleuri, None))
+        if calc_chapter is None:
+            calc_chapter = CalcChapter(roleuri=roleuri,
+                                       label=xsd_chapter.label)
+        else:
+            calc_chapter.label = xsd_chapter.label
+        structure[sheet] = calc_chapter
+
+    return algos.xbrljson.dumps(structure)
+
 
 def _dump_contexts(miner: DataMiner) -> str:
     return json.dumps(miner.extentions)

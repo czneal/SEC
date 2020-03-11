@@ -161,32 +161,23 @@ def find_missing(chapter: CalcChapter,
 
     return retval
 
-def calc_filtered(
-         node: Node, 
-         nums: Dict[str, float],
-         filter_func: Callable[[str, str], bool],
-         class_func: Callable[[str, str], bool]) -> Optional[float]:
-    
-    value: Optional[float] = None
-    
-    for child in node.children.values():
-        child_value: Optional[float] = None
-        if filter_func(node.tag, child.tag) or not child.children:
-            if class_func(node.tag, child.tag):
-                child_value = nums.get(child.name, None)
-                if child_value:
-                    child_value = child_value * child.getweight()
-        else:
-            child_value = calc_filtered(child, nums, 
-                                        filter_func,
-                                        class_func)
-        
-        if value is None:
-            value = child_value
-        elif child_value is not None:
-            value += child_value
 
-    if value:
-        return value * node.getweight()
-    else:
-        return None
+def calc_indicator(
+        node: Node,
+        nums: Dict[str, float]) -> Optional[float]:
+
+    value: Optional[float] = None
+
+    for child in node.children.values():
+        child_value = calc_indicator(child, nums)
+        child_weight = child.getweight()
+        if child_value is None:
+            child_value = nums.get(child.name, None)
+        if child_value is not None:
+            if value:
+                value += child_value * child_weight
+            else:
+                value = child_value * child_weight
+    if value is None:
+        value = nums.get(node.name, None)
+    return value

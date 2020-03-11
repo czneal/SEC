@@ -38,8 +38,8 @@ class ReportToDB(MySQLWriter):
         self.reports = do.MySQLTable('reports', self.con)
         self.nums = do.MySQLTable('mgnums', self.con)
         self.companies = do.MySQLTable('companies', self.con)
-        self.shares = do.MySQLTable('sec_shares', self.con)
         self.companies.set_insert_if('updated')
+        self.shares = do.MySQLTable('sec_shares', self.con)
 
     def write(self, obj: Optional[ReportTuple]) -> bool:
         if obj is None:

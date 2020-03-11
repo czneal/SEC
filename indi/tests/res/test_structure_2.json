@@ -1,0 +1,691 @@
+{
+	"bs" : {
+		"label" : "Consolidated Balance Sheet",
+		"nodes" : {
+			"us-gaap:Assets" : {
+				"children" : {
+					"us-gaap:AvailableForSaleSecurities" : {
+						"children" : null,
+						"name" : "us-gaap:AvailableForSaleSecurities",
+						"weight" : 1
+					},
+					"us-gaap:CashAndDueFromBanks" : {
+						"children" : null,
+						"name" : "us-gaap:CashAndDueFromBanks",
+						"weight" : 1
+					},
+					"us-gaap:Goodwill" : {
+						"children" : null,
+						"name" : "us-gaap:Goodwill",
+						"weight" : 1
+					},
+					"us-gaap:HeldToMaturitySecurities" : {
+						"children" : null,
+						"name" : "us-gaap:HeldToMaturitySecurities",
+						"weight" : 1
+					},
+					"us-gaap:LoansAndLeasesReceivableNetReportedAmount" : {
+						"children" : {
+							"us-gaap:LoansAndLeasesReceivableAllowance" : {
+								"children" : null,
+								"name" : "us-gaap:LoansAndLeasesReceivableAllowance",
+								"weight" : -1
+							},
+							"us-gaap:LoansAndLeasesReceivableNetOfDeferredIncome" : {
+								"children" : null,
+								"name" : "us-gaap:LoansAndLeasesReceivableNetOfDeferredIncome",
+								"weight" : 1
+							}
+						},
+						"name" : "us-gaap:LoansAndLeasesReceivableNetReportedAmount",
+						"weight" : 1
+					},
+					"us-gaap:LoansHeldForSaleMortgages" : {
+						"children" : null,
+						"name" : "us-gaap:LoansHeldForSaleMortgages",
+						"weight" : 1
+					},
+					"us-gaap:LoansHeldForSaleOther" : {
+						"children" : null,
+						"name" : "us-gaap:LoansHeldForSaleOther",
+						"weight" : 1
+					},
+					"us-gaap:OtherAssets" : {
+						"children" : null,
+						"name" : "us-gaap:OtherAssets",
+						"weight" : 1
+					},
+					"us-gaap:PropertyPlantAndEquipmentNet" : {
+						"children" : null,
+						"name" : "us-gaap:PropertyPlantAndEquipmentNet",
+						"weight" : 1
+					},
+					"us-gaap:ServicingAssetAtAmortizedValue" : {
+						"children" : null,
+						"name" : "us-gaap:ServicingAssetAtAmortizedValue",
+						"weight" : 1
+					},
+					"us-gaap:ServicingAssetAtFairValueAmount" : {
+						"children" : null,
+						"name" : "us-gaap:ServicingAssetAtFairValueAmount",
+						"weight" : 1
+					},
+					"wfc:FederalFundsSoldSecuritiesPurchasedUnderResaleAgreementsAndOtherShortTermInvestments" : {
+						"children" : null,
+						"name" : "wfc:FederalFundsSoldSecuritiesPurchasedUnderResaleAgreementsAndOtherShortTermInvestments",
+						"weight" : 1
+					},
+					"wfc:TradingAssets" : {
+						"children" : null,
+						"name" : "wfc:TradingAssets",
+						"weight" : 1
+					}
+				},
+				"name" : "us-gaap:Assets",
+				"weight" : 1
+			},
+			"us-gaap:LiabilitiesAndStockholdersEquity" : {
+				"children" : {
+					"us-gaap:Liabilities" : {
+						"children" : {
+							"us-gaap:AccountsPayableAndAccruedLiabilitiesCurrentAndNoncurrent" : {
+								"children" : null,
+								"name" : "us-gaap:AccountsPayableAndAccruedLiabilitiesCurrentAndNoncurrent",
+								"weight" : 1
+							},
+							"us-gaap:Deposits" : {
+								"children" : {
+									"us-gaap:InterestBearingDepositLiabilities" : {
+										"children" : null,
+										"name" : "us-gaap:InterestBearingDepositLiabilities",
+										"weight" : 1
+									},
+									"us-gaap:NoninterestBearingDepositLiabilities" : {
+										"children" : null,
+										"name" : "us-gaap:NoninterestBearingDepositLiabilities",
+										"weight" : 1
+									}
+								},
+								"name" : "us-gaap:Deposits",
+								"weight" : 1
+							},
+							"us-gaap:LongTermDebt" : {
+								"children" : null,
+								"name" : "us-gaap:LongTermDebt",
+								"weight" : 1
+							},
+							"us-gaap:ShortTermBorrowings" : {
+								"children" : null,
+								"name" : "us-gaap:ShortTermBorrowings",
+								"weight" : 1
+							}
+						},
+						"name" : "us-gaap:Liabilities",
+						"weight" : 1
+					},
+					"us-gaap:StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest" : {
+						"children" : {
+							"us-gaap:MinorityInterest" : {
+								"children" : null,
+								"name" : "us-gaap:MinorityInterest",
+								"weight" : 1
+							},
+							"us-gaap:StockholdersEquity" : {
+								"children" : {
+									"us-gaap:AccumulatedOtherComprehensiveIncomeLossNetOfTax" : {
+										"children" : null,
+										"name" : "us-gaap:AccumulatedOtherComprehensiveIncomeLossNetOfTax",
+										"weight" : 1
+									},
+									"us-gaap:AdditionalPaidInCapital" : {
+										"children" : null,
+										"name" : "us-gaap:AdditionalPaidInCapital",
+										"weight" : 1
+									},
+									"us-gaap:CommonStockValue" : {
+										"children" : null,
+										"name" : "us-gaap:CommonStockValue",
+										"weight" : 1
+									},
+									"us-gaap:PreferredStockValue" : {
+										"children" : null,
+										"name" : "us-gaap:PreferredStockValue",
+										"weight" : 1
+									},
+									"us-gaap:RetainedEarningsAccumulatedDeficit" : {
+										"children" : null,
+										"name" : "us-gaap:RetainedEarningsAccumulatedDeficit",
+										"weight" : 1
+									},
+									"us-gaap:TreasuryStockValue" : {
+										"children" : null,
+										"name" : "us-gaap:TreasuryStockValue",
+										"weight" : -1
+									},
+									"wfc:UnearnedESOPSharesCost" : {
+										"children" : null,
+										"name" : "wfc:UnearnedESOPSharesCost",
+										"weight" : -1
+									}
+								},
+								"name" : "us-gaap:StockholdersEquity",
+								"weight" : 1
+							}
+						},
+						"name" : "us-gaap:StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest",
+						"weight" : 1
+					}
+				},
+				"name" : "us-gaap:LiabilitiesAndStockholdersEquity",
+				"weight" : 1
+			}
+		},
+		"roleuri" : "http://www.wellsfargo.com/role/ConsolidatedBalanceSheet"
+	},
+	"cf" : {
+		"label" : "Consolidated Statement of Cash Flows",
+		"nodes" : {
+			"us-gaap:CashAndCashEquivalentsPeriodIncreaseDecrease" : {
+				"children" : {
+					"us-gaap:NetCashProvidedByUsedInFinancingActivitiesContinuingOperations" : {
+						"children" : {
+							"us-gaap:ExcessTaxBenefitFromShareBasedCompensationFinancingActivities" : {
+								"children" : null,
+								"name" : "us-gaap:ExcessTaxBenefitFromShareBasedCompensationFinancingActivities",
+								"weight" : 1
+							},
+							"us-gaap:IncreaseDecreaseInDeposits" : {
+								"children" : null,
+								"name" : "us-gaap:IncreaseDecreaseInDeposits",
+								"weight" : 1
+							},
+							"us-gaap:PaymentsForRepurchaseOfCommonStock" : {
+								"children" : null,
+								"name" : "us-gaap:PaymentsForRepurchaseOfCommonStock",
+								"weight" : -1
+							},
+							"us-gaap:PaymentsForRepurchaseOfWarrants" : {
+								"children" : null,
+								"name" : "us-gaap:PaymentsForRepurchaseOfWarrants",
+								"weight" : -1
+							},
+							"us-gaap:PaymentsOfDividendsCommonStock" : {
+								"children" : null,
+								"name" : "us-gaap:PaymentsOfDividendsCommonStock",
+								"weight" : -1
+							},
+							"us-gaap:PaymentsOfDividendsPreferredStockAndPreferenceStock" : {
+								"children" : null,
+								"name" : "us-gaap:PaymentsOfDividendsPreferredStockAndPreferenceStock",
+								"weight" : -1
+							},
+							"us-gaap:ProceedsFromIssuanceOfCommonStock" : {
+								"children" : null,
+								"name" : "us-gaap:ProceedsFromIssuanceOfCommonStock",
+								"weight" : 1
+							},
+							"us-gaap:ProceedsFromIssuanceOfLongTermDebtAndCapitalSecuritiesNet" : {
+								"children" : null,
+								"name" : "us-gaap:ProceedsFromIssuanceOfLongTermDebtAndCapitalSecuritiesNet",
+								"weight" : 1
+							},
+							"us-gaap:ProceedsFromIssuanceOfPreferredStockAndPreferenceStock" : {
+								"children" : null,
+								"name" : "us-gaap:ProceedsFromIssuanceOfPreferredStockAndPreferenceStock",
+								"weight" : 1
+							},
+							"us-gaap:ProceedsFromPaymentsForOtherFinancingActivities" : {
+								"children" : null,
+								"name" : "us-gaap:ProceedsFromPaymentsForOtherFinancingActivities",
+								"weight" : 1
+							},
+							"us-gaap:ProceedsFromPaymentsToMinorityShareholders" : {
+								"children" : null,
+								"name" : "us-gaap:ProceedsFromPaymentsToMinorityShareholders",
+								"weight" : 1
+							},
+							"us-gaap:ProceedsFromRepaymentsOfShortTermDebt" : {
+								"children" : null,
+								"name" : "us-gaap:ProceedsFromRepaymentsOfShortTermDebt",
+								"weight" : 1
+							},
+							"us-gaap:RepaymentsOfLongTermDebt" : {
+								"children" : null,
+								"name" : "us-gaap:RepaymentsOfLongTermDebt",
+								"weight" : -1
+							}
+						},
+						"name" : "us-gaap:NetCashProvidedByUsedInFinancingActivitiesContinuingOperations",
+						"weight" : 1
+					},
+					"us-gaap:NetCashProvidedByUsedInInvestingActivitiesContinuingOperations" : {
+						"children" : {
+							"us-gaap:PaymentsForProceedsFromMortgageServicingRights" : {
+								"children" : null,
+								"name" : "us-gaap:PaymentsForProceedsFromMortgageServicingRights",
+								"weight" : -1
+							},
+							"us-gaap:PaymentsForProceedsFromOtherInvestingActivities" : {
+								"children" : null,
+								"name" : "us-gaap:PaymentsForProceedsFromOtherInvestingActivities",
+								"weight" : -1
+							},
+							"us-gaap:PaymentsToAcquireAvailableForSaleSecurities" : {
+								"children" : null,
+								"name" : "us-gaap:PaymentsToAcquireAvailableForSaleSecurities",
+								"weight" : -1
+							},
+							"us-gaap:PaymentsToAcquireBusinessesNetOfCashAcquired" : {
+								"children" : null,
+								"name" : "us-gaap:PaymentsToAcquireBusinessesNetOfCashAcquired",
+								"weight" : -1
+							},
+							"us-gaap:PaymentsToAcquireHeldToMaturitySecurities" : {
+								"children" : null,
+								"name" : "us-gaap:PaymentsToAcquireHeldToMaturitySecurities",
+								"weight" : -1
+							},
+							"us-gaap:PaymentsToAcquireLoansAndLeasesHeldForInvestment" : {
+								"children" : null,
+								"name" : "us-gaap:PaymentsToAcquireLoansAndLeasesHeldForInvestment",
+								"weight" : -1
+							},
+							"us-gaap:ProceedsFromMaturitiesPrepaymentsAndCallsOfAvailableForSaleSecurities" : {
+								"children" : null,
+								"name" : "us-gaap:ProceedsFromMaturitiesPrepaymentsAndCallsOfAvailableForSaleSecurities",
+								"weight" : 1
+							},
+							"us-gaap:ProceedsFromMaturitiesPrepaymentsAndCallsOfHeldToMaturitySecurities" : {
+								"children" : null,
+								"name" : "us-gaap:ProceedsFromMaturitiesPrepaymentsAndCallsOfHeldToMaturitySecurities",
+								"weight" : 1
+							},
+							"us-gaap:ProceedsFromSaleOfAvailableForSaleSecurities" : {
+								"children" : null,
+								"name" : "us-gaap:ProceedsFromSaleOfAvailableForSaleSecurities",
+								"weight" : 1
+							},
+							"us-gaap:ProceedsFromSaleOfLoansAndLeasesHeldForInvestment" : {
+								"children" : null,
+								"name" : "us-gaap:ProceedsFromSaleOfLoansAndLeasesHeldForInvestment",
+								"weight" : 1
+							},
+							"wfc:LoansOriginatedByNonbankEntities" : {
+								"children" : null,
+								"name" : "wfc:LoansOriginatedByNonbankEntities",
+								"weight" : -1
+							},
+							"wfc:NetChangeInFederalFundsSoldSecuritiesPurchasedUnderResaleAgreementsAndOtherShortTermInvestments" : {
+								"children" : null,
+								"name" : "wfc:NetChangeInFederalFundsSoldSecuritiesPurchasedUnderResaleAgreementsAndOtherShortTermInvestments",
+								"weight" : -1
+							},
+							"wfc:PaymentsForLoansOriginatedByBankingSubsidiariesNetOfProceedsFromCollections" : {
+								"children" : null,
+								"name" : "wfc:PaymentsForLoansOriginatedByBankingSubsidiariesNetOfProceedsFromCollections",
+								"weight" : -1
+							},
+							"wfc:PaymentsToAcquireNonmarketableEquityInvestments" : {
+								"children" : null,
+								"name" : "wfc:PaymentsToAcquireNonmarketableEquityInvestments",
+								"weight" : -1
+							},
+							"wfc:PrincipalCollectedOnNonbankEntitiesLoans" : {
+								"children" : null,
+								"name" : "wfc:PrincipalCollectedOnNonbankEntitiesLoans",
+								"weight" : 1
+							},
+							"wfc:ProceedsFromSaleOfForeclosedAssetsAndShortSales" : {
+								"children" : null,
+								"name" : "wfc:ProceedsFromSaleOfForeclosedAssetsAndShortSales",
+								"weight" : 1
+							},
+							"wfc:ProceedsFromSaleOfNonmarketableEquityInvestments" : {
+								"children" : null,
+								"name" : "wfc:ProceedsFromSaleOfNonmarketableEquityInvestments",
+								"weight" : 1
+							}
+						},
+						"name" : "us-gaap:NetCashProvidedByUsedInInvestingActivitiesContinuingOperations",
+						"weight" : 1
+					},
+					"us-gaap:NetCashProvidedByUsedInOperatingActivitiesContinuingOperations" : {
+						"children" : {
+							"us-gaap:DepreciationAmortizationAndAccretionNet" : {
+								"children" : null,
+								"name" : "us-gaap:DepreciationAmortizationAndAccretionNet",
+								"weight" : 1
+							},
+							"us-gaap:ExcessTaxBenefitFromShareBasedCompensationOperatingActivities" : {
+								"children" : null,
+								"name" : "us-gaap:ExcessTaxBenefitFromShareBasedCompensationOperatingActivities",
+								"weight" : -1
+							},
+							"us-gaap:IncomeLossFromContinuingOperationsIncludingPortionAttributableToNoncontrollingInterest" : {
+								"children" : null,
+								"name" : "us-gaap:IncomeLossFromContinuingOperationsIncludingPortionAttributableToNoncontrollingInterest",
+								"weight" : 1
+							},
+							"us-gaap:IncreaseDecreaseInAccruedInterestReceivableNet" : {
+								"children" : null,
+								"name" : "us-gaap:IncreaseDecreaseInAccruedInterestReceivableNet",
+								"weight" : -1
+							},
+							"us-gaap:IncreaseDecreaseInDeferredIncomeTaxes" : {
+								"children" : null,
+								"name" : "us-gaap:IncreaseDecreaseInDeferredIncomeTaxes",
+								"weight" : -1
+							},
+							"us-gaap:IncreaseDecreaseInInterestPayableNet" : {
+								"children" : null,
+								"name" : "us-gaap:IncreaseDecreaseInInterestPayableNet",
+								"weight" : 1
+							},
+							"us-gaap:IncreaseDecreaseInOtherAccountsPayableAndAccruedLiabilities" : {
+								"children" : null,
+								"name" : "us-gaap:IncreaseDecreaseInOtherAccountsPayableAndAccruedLiabilities",
+								"weight" : 1
+							},
+							"us-gaap:IncreaseDecreaseInOtherOperatingAssets" : {
+								"children" : null,
+								"name" : "us-gaap:IncreaseDecreaseInOtherOperatingAssets",
+								"weight" : -1
+							},
+							"us-gaap:OtherNoncashIncomeExpense" : {
+								"children" : null,
+								"name" : "us-gaap:OtherNoncashIncomeExpense",
+								"weight" : -1
+							},
+							"us-gaap:PaymentsForOriginationOfMortgageLoansHeldForSale" : {
+								"children" : null,
+								"name" : "us-gaap:PaymentsForOriginationOfMortgageLoansHeldForSale",
+								"weight" : -1
+							},
+							"us-gaap:PaymentsToPurchaseOtherLoansHeldForSale" : {
+								"children" : null,
+								"name" : "us-gaap:PaymentsToPurchaseOtherLoansHeldForSale",
+								"weight" : -1
+							},
+							"us-gaap:ProvisionForLoanLeaseAndOtherLosses" : {
+								"children" : null,
+								"name" : "us-gaap:ProvisionForLoanLeaseAndOtherLosses",
+								"weight" : 1
+							},
+							"wfc:IncreaseDecreaseInTradingAssets" : {
+								"children" : null,
+								"name" : "wfc:IncreaseDecreaseInTradingAssets",
+								"weight" : 1
+							},
+							"wfc:PaymentsForOriginationOfLoansHeldForSale" : {
+								"children" : null,
+								"name" : "wfc:PaymentsForOriginationOfLoansHeldForSale",
+								"weight" : -1
+							},
+							"wfc:ProceedsFromSalesOfAndPrincipalCollectedOnLoansHeldForSale" : {
+								"children" : null,
+								"name" : "wfc:ProceedsFromSalesOfAndPrincipalCollectedOnLoansHeldForSale",
+								"weight" : 1
+							},
+							"wfc:ProceedsFromSalesOfAndPrincipalCollectedOnMortgagesOriginatedForSale" : {
+								"children" : null,
+								"name" : "wfc:ProceedsFromSalesOfAndPrincipalCollectedOnMortgagesOriginatedForSale",
+								"weight" : 1
+							},
+							"wfc:ShareBasedCompensationAndPreferredStockReleasedByEmployeeStockOptionPlan" : {
+								"children" : null,
+								"name" : "wfc:ShareBasedCompensationAndPreferredStockReleasedByEmployeeStockOptionPlan",
+								"weight" : 1
+							},
+							"wfc:UnrealizedGainLossOnMortgageServicingRightsMortgagesHeldForSaleAndLoansHeldForSale" : {
+								"children" : null,
+								"name" : "wfc:UnrealizedGainLossOnMortgageServicingRightsMortgagesHeldForSaleAndLoansHeldForSale",
+								"weight" : -1
+							}
+						},
+						"name" : "us-gaap:NetCashProvidedByUsedInOperatingActivitiesContinuingOperations",
+						"weight" : 1
+					}
+				},
+				"name" : "us-gaap:CashAndCashEquivalentsPeriodIncreaseDecrease",
+				"weight" : 1
+			}
+		},
+		"roleuri" : "http://www.wellsfargo.com/role/ConsolidatedStatementOfCashFlows"
+	},
+	"is" : {
+		"label" : "Consolidated Statement of Income",
+		"nodes" : {
+			"us-gaap:NetIncomeLossAvailableToCommonStockholdersBasic" : {
+				"children" : {
+					"us-gaap:NetIncomeLoss" : {
+						"children" : {
+							"us-gaap:IncomeLossFromContinuingOperationsIncludingPortionAttributableToNoncontrollingInterest" : {
+								"children" : {
+									"us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest" : {
+										"children" : {
+											"us-gaap:InterestIncomeExpenseAfterProvisionForLoanLoss" : {
+												"children" : {
+													"us-gaap:InterestIncomeExpenseNet" : {
+														"children" : {
+															"us-gaap:InterestAndDividendIncomeOperating" : {
+																"children" : {
+																	"us-gaap:InterestAndDividendIncomeSecurities" : {
+																		"children" : null,
+																		"name" : "us-gaap:InterestAndDividendIncomeSecurities",
+																		"weight" : 1
+																	},
+																	"us-gaap:InterestAndDividendIncomeSecuritiesTradingOrMeasuredAtFairValue" : {
+																		"children" : null,
+																		"name" : "us-gaap:InterestAndDividendIncomeSecuritiesTradingOrMeasuredAtFairValue",
+																		"weight" : 1
+																	},
+																	"us-gaap:InterestAndFeeIncomeLoansAndLeasesHeldInPortfolio" : {
+																		"children" : null,
+																		"name" : "us-gaap:InterestAndFeeIncomeLoansAndLeasesHeldInPortfolio",
+																		"weight" : 1
+																	},
+																	"us-gaap:InterestAndFeeIncomeLoansHeldForSaleMortgages" : {
+																		"children" : null,
+																		"name" : "us-gaap:InterestAndFeeIncomeLoansHeldForSaleMortgages",
+																		"weight" : 1
+																	},
+																	"us-gaap:InterestAndFeeIncomeNonmortgageLoansAndLeasesHeldForSale" : {
+																		"children" : null,
+																		"name" : "us-gaap:InterestAndFeeIncomeNonmortgageLoansAndLeasesHeldForSale",
+																		"weight" : 1
+																	},
+																	"us-gaap:OtherInterestAndDividendIncome" : {
+																		"children" : null,
+																		"name" : "us-gaap:OtherInterestAndDividendIncome",
+																		"weight" : 1
+																	}
+																},
+																"name" : "us-gaap:InterestAndDividendIncomeOperating",
+																"weight" : 1
+															},
+															"us-gaap:InterestExpense" : {
+																"children" : {
+																	"us-gaap:InterestExpenseDeposits" : {
+																		"children" : null,
+																		"name" : "us-gaap:InterestExpenseDeposits",
+																		"weight" : 1
+																	},
+																	"us-gaap:InterestExpenseLongTermDebt" : {
+																		"children" : null,
+																		"name" : "us-gaap:InterestExpenseLongTermDebt",
+																		"weight" : 1
+																	},
+																	"us-gaap:InterestExpenseOther" : {
+																		"children" : null,
+																		"name" : "us-gaap:InterestExpenseOther",
+																		"weight" : 1
+																	},
+																	"us-gaap:InterestExpenseShortTermBorrowings" : {
+																		"children" : null,
+																		"name" : "us-gaap:InterestExpenseShortTermBorrowings",
+																		"weight" : 1
+																	}
+																},
+																"name" : "us-gaap:InterestExpense",
+																"weight" : -1
+															}
+														},
+														"name" : "us-gaap:InterestIncomeExpenseNet",
+														"weight" : 1
+													},
+													"us-gaap:ProvisionForLoanLeaseAndOtherLosses" : {
+														"children" : null,
+														"name" : "us-gaap:ProvisionForLoanLeaseAndOtherLosses",
+														"weight" : -1
+													}
+												},
+												"name" : "us-gaap:InterestIncomeExpenseAfterProvisionForLoanLoss",
+												"weight" : 1
+											},
+											"us-gaap:NoninterestExpense" : {
+												"children" : {
+													"us-gaap:AmortizationOfIntangibleAssets" : {
+														"children" : null,
+														"name" : "us-gaap:AmortizationOfIntangibleAssets",
+														"weight" : 1
+													},
+													"us-gaap:EquipmentExpense" : {
+														"children" : null,
+														"name" : "us-gaap:EquipmentExpense",
+														"weight" : 1
+													},
+													"us-gaap:FederalDepositInsuranceCorporationPremiumExpense" : {
+														"children" : null,
+														"name" : "us-gaap:FederalDepositInsuranceCorporationPremiumExpense",
+														"weight" : 1
+													},
+													"us-gaap:OccupancyNet" : {
+														"children" : null,
+														"name" : "us-gaap:OccupancyNet",
+														"weight" : 1
+													},
+													"us-gaap:OtherLaborRelatedExpenses" : {
+														"children" : null,
+														"name" : "us-gaap:OtherLaborRelatedExpenses",
+														"weight" : 1
+													},
+													"us-gaap:OtherNoninterestExpense" : {
+														"children" : null,
+														"name" : "us-gaap:OtherNoninterestExpense",
+														"weight" : 1
+													},
+													"us-gaap:SalariesWagesAndOfficersCompensation" : {
+														"children" : null,
+														"name" : "us-gaap:SalariesWagesAndOfficersCompensation",
+														"weight" : 1
+													},
+													"wfc:CommissionAndIncentiveCompensation" : {
+														"children" : null,
+														"name" : "wfc:CommissionAndIncentiveCompensation",
+														"weight" : 1
+													}
+												},
+												"name" : "us-gaap:NoninterestExpense",
+												"weight" : -1
+											},
+											"us-gaap:NoninterestIncome" : {
+												"children" : {
+													"us-gaap:FeesAndCommissionsCreditAndDebitCards" : {
+														"children" : null,
+														"name" : "us-gaap:FeesAndCommissionsCreditAndDebitCards",
+														"weight" : 1
+													},
+													"us-gaap:FeesAndCommissionsFiduciaryAndTrustActivities" : {
+														"children" : null,
+														"name" : "us-gaap:FeesAndCommissionsFiduciaryAndTrustActivities",
+														"weight" : 1
+													},
+													"us-gaap:FeesAndCommissionsOther" : {
+														"children" : null,
+														"name" : "us-gaap:FeesAndCommissionsOther",
+														"weight" : 1
+													},
+													"us-gaap:GainLossOnSaleOfDebtInvestments" : {
+														"children" : null,
+														"name" : "us-gaap:GainLossOnSaleOfDebtInvestments",
+														"weight" : 1
+													},
+													"us-gaap:InsuranceServicesRevenue" : {
+														"children" : null,
+														"name" : "us-gaap:InsuranceServicesRevenue",
+														"weight" : 1
+													},
+													"us-gaap:NoninterestIncomeOtherOperatingIncome" : {
+														"children" : null,
+														"name" : "us-gaap:NoninterestIncomeOtherOperatingIncome",
+														"weight" : 1
+													},
+													"us-gaap:OperatingLeasesIncomeStatementLeaseRevenue" : {
+														"children" : null,
+														"name" : "us-gaap:OperatingLeasesIncomeStatementLeaseRevenue",
+														"weight" : 1
+													},
+													"us-gaap:TradingGainsLosses" : {
+														"children" : null,
+														"name" : "us-gaap:TradingGainsLosses",
+														"weight" : 1
+													},
+													"wfc:FeesAndCommissionMortgageBanking" : {
+														"children" : null,
+														"name" : "wfc:FeesAndCommissionMortgageBanking",
+														"weight" : 1
+													},
+													"wfc:FeesAndCommissionsDepositorsAccounts" : {
+														"children" : null,
+														"name" : "wfc:FeesAndCommissionsDepositorsAccounts",
+														"weight" : 1
+													},
+													"wfc:NetGainsLossesFromEquityInvestments" : {
+														"children" : null,
+														"name" : "wfc:NetGainsLossesFromEquityInvestments",
+														"weight" : 1
+													}
+												},
+												"name" : "us-gaap:NoninterestIncome",
+												"weight" : 1
+											}
+										},
+										"name" : "us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+										"weight" : 1
+									},
+									"us-gaap:IncomeTaxExpenseBenefit" : {
+										"children" : null,
+										"name" : "us-gaap:IncomeTaxExpenseBenefit",
+										"weight" : -1
+									}
+								},
+								"name" : "us-gaap:IncomeLossFromContinuingOperationsIncludingPortionAttributableToNoncontrollingInterest",
+								"weight" : 1
+							},
+							"us-gaap:NetIncomeLossAttributableToNoncontrollingInterest" : {
+								"children" : null,
+								"name" : "us-gaap:NetIncomeLossAttributableToNoncontrollingInterest",
+								"weight" : -1
+							}
+						},
+						"name" : "us-gaap:NetIncomeLoss",
+						"weight" : 1
+					},
+					"us-gaap:PreferredStockDividendsAndOtherAdjustments" : {
+						"children" : null,
+						"name" : "us-gaap:PreferredStockDividendsAndOtherAdjustments",
+						"weight" : -1
+					}
+				},
+				"name" : "us-gaap:NetIncomeLossAvailableToCommonStockholdersBasic",
+				"weight" : 1
+			}
+		},
+		"roleuri" : "http://www.wellsfargo.com/role/ConsolidatedStatementOfIncome"
+	},
+	"se" : {
+		"label" : "Consolidated Statement of Changes in Equity",
+		"nodes" : {		},
+		"roleuri" : "http://www.wellsfargo.com/role/ConsolidatedStatementOfChangesInEquity"
+	}
+}

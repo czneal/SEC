@@ -24,5 +24,15 @@
     "python.linting.pylintEnabled": false,
     "python.analysis.openFilesOnly": true,
     "python.terminal.executeInFileDir": true,
-    "python.dataScience.notebookFileRoot": "${workspaceFolder}"
+    "python.dataScience.notebookFileRoot": "${workspaceFolder}",
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        "./tests",
+        "-p",
+        "test_*.py"
+    ],
+    "python.testing.pytestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.unittestEnabled": true
 }

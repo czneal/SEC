@@ -1,85 +1,83 @@
 # -*- coding: utf-8 -*-
+import json
+import os
+from typing import Dict, Tuple, Optional, Any, List
 
-from typing import Dict, Tuple, Union, Optional, Generator, TypeVar
-import pandas as pd
-from abc import ABCMeta, abstractmethod
+import indi.modclass
+from indi.modclass import Classifier
+import indi.feeder
+from indi.feeder import Feeder
+import indi.indicators
+from indi.indicators import Indicator
+from indi.indpool import IndicatorsPool
 
 from settings import Settings
-from mysqlio.basicio import OpenConnection
 
-StrInt = TypeVar('StrInt', str, int)
 
-class Loader(metaclass=ABCMeta):
-    def __init__(self):
-        self._indc = None #type: pd.DataFrame
-    
-    @abstractmethod
-    def load(self):
-        pass
-    
-    def indicators(self) -> Generator[Tuple[str, Dict[str, StrInt]],
-                                      None, None]:
-        for ind_name, row in self._indc.iterrows():
-            yield (ind_name, row.to_dict())
-            
-class CSVLoader(Loader):
-    def __init(self):
-        #load csv files with indicator and classifier settings
-        super().__init__()
-        
-        self.__class = None #type: pd.DataFrame
-        self.__filters = None #type: pd.DataFrame
-        
-    def load(self):
-        model_dir = Settings.models_dir()
-        self._indc = (pd.read_csv(model_dir + 'indicators.csv', sep='\t')
-                            .drop_duplicates('indicator_name')
-                            .set_index('indicator_name')
-                            )
-        self._indc = self._indc.where((pd.notnull(self._indc)), None)
-        
-        self.__class = (pd.read_csv(model_dir + 'classifiers.csv', sep='\t')
-                            .drop_duplicates('fmodel')
-                            .set_index('fmodel')
-                            )
-        self.__class = self.__class.where((pd.notnull(self.__class)), None)
-        
-        self.__filters = (pd.read_csv(model_dir + 'filters.csv', sep='\t')
-                            .drop_duplicates('fmodel')
-                            .set_index('fmodel')
-                            )
-        self.__filters = self.__filters.where((pd.notnull(self.__filters)), None)
-        
-            
-    def get_class(self, model_name: str) -> Optional[Dict[str, StrInt]]:
-        if model_name in self.__class.index:
-            return self.__class.loc[model_name].to_dict()
-        return None
-    
-    def get_filter(self, model_name: str) -> Optional[Dict[str, StrInt]]:
-        if model_name in self.__filters.index:
-            return self.__filters.loc[model_name].to_dict()
-        return None
-    
-    def models(self) -> Generator[Tuple[str, Dict[str, StrInt]],
-                                  None, None]:
-        for model_name, row in self.__class.iterrows():
-            yield (model_name, row.to_dict())
-            
-class DBLoader(Loader):
-    def __init__(self):
-        super().__init__()
-        
-    def load(self):
-        with OpenConnection() as con:
-            cur = con.cursor(dictionary=True)
-            cur.execute('select * from mgparams')
-            self._indc = pd.DataFrame(cur.fetchall()).set_index('tag')
-            
-    
+def load_classifiers() -> List[Classifier]:
+    with open(os.path.join(
+            Settings.models_dir(),
+            'classifiers.json')) as f:
+        classifiers = json.load(f)
+
+    cl_objects: List[Classifier] = []
+    for model_id, sett in enumerate(classifiers):
+        cl_objects.append(indi.modclass.create(
+            sett['model'],
+            model_id,
+            sett['dict'],
+            sett['pc'],
+            sett['multi'],
+            sett['max_len']))
+    return cl_objects
+
+
+def load_feeders(classifiers: Dict[str,
+                                   Classifier]) -> Dict[str, Feeder]:
+    with open(os.path.join(Settings.models_dir(), 'feeders.json')) as f:
+        data = json.load(f)
+
+    feeders: Dict[str, indi.feeder.Feeder] = {}
+    for name, sett in data.items():
+        classifier = classifiers.get(sett.get('model', ''), None)
+        feeder = indi.feeder.create(sett['chapter'],
+                                    sett['names'],
+                                    cl=classifier,
+                                    cl_id=sett.get('class_id', -1))
+        feeders[name] = feeder
+
+    return feeders
+
+
+def load_indicators(classifiers: Dict[str, Classifier],
+                    feeders: Dict[str, Feeder]) -> Dict[str, Indicator]:
+
+    with open(os.path.join(Settings.models_dir(), 'indicators.json')) as f:
+        data = json.load(f)
+
+    indicators: Dict[str, Indicator] = {}
+    for name, sett in data.items():
+        ind = indi.indicators.create(
+            ind_name=name,
+            type_=sett['type'],
+            model_name=sett.get('model_name', ''),
+            class_id=sett.get('class_id', 0),
+            feeder_name=sett.get('feeder', ''),
+            classifiers=classifiers,
+            feeders=feeders)
+        indicators[name] = ind
+    return indicators
+
+
+def load() -> IndicatorsPool:
+    classifiers = {cl.model_name: cl for cl in load_classifiers()}
+    feeders = load_feeders(classifiers)
+    indicators = load_indicators(classifiers, feeders)
+
+    pool = IndicatorsPool(indicators)
+
+    return pool
+
+
 if __name__ == "__main__":
-    loader = DBLoader()
-    loader.load()
-    
-    print([x for x in loader.indicators()])
-    
+    pass

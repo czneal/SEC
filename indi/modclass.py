@@ -2,22 +2,39 @@ import json
 import os
 import re
 from abc import ABCMeta, abstractmethod
-from typing import Any, List, Tuple, cast
+from typing import Any, Dict, List, Tuple, TypeVar, cast
 
 import numpy as np
 from tensorflow.keras.models import load_model  # type: ignore
 
 from settings import Settings
+import indi.indcache
 
 
 class Classifier(metaclass=ABCMeta):
-    def __init__(self, fdict: str, model_id: int, max_len: int):
+    def __init__(
+            self,
+            fdict: str,
+            model_id: int,
+            max_len: int,
+            model_name: str):
         self.fdict = fdict
         self.max_len = max_len
         self.model_id = model_id
+        self.model_name = model_name
 
     @abstractmethod
     def predict(self, pairs: List[Tuple[str, str]]) -> List[int]:
+        pass
+
+    @abstractmethod
+    def description(self) -> str:
+        pass
+
+
+class KerasModel(object):
+    @abstractmethod
+    def predict(self, x: np.ndarray) -> np.ndarray:
         pass
 
 
@@ -26,11 +43,13 @@ class ModelClassifier(Classifier):
                  fdict: str,
                  model_id: int,
                  max_len: int,
-                 model):
+                 model_name: str,
+                 model: KerasModel):
 
-        super().__init__(fdict, model_id, max_len)
+        super().__init__(fdict, model_id, max_len, model_name)
         self._load_dict(self.fdict)
         self.model = model
+        self.dict_name = fdict
 
     def _load_dict(self, filename: str) -> None:
         with open(Settings.models_dir() + filename) as f:
@@ -39,6 +58,7 @@ class ModelClassifier(Classifier):
                 for l in f}
 
     def _to_vector(self, tag: str, x: np.ndarray, row: int, pos: int) -> None:
+        tag = tag.split(':')[-1]
         words = re.findall('[A-Z][^A-Z]*', tag)
         try:
             for i, word in enumerate(words):
@@ -56,12 +76,36 @@ class ModelClassifier(Classifier):
         pass
 
     def predict(self, pairs: List[Tuple[str, str]]) -> List[int]:
+        labels = indi.indcache.check(pairs, self.model_id)
+        u_pairs = [pair for _, pair in filter(
+            lambda x: x[0] == -1, zip(labels, pairs))]
+
+        u_labels = self.predict_calc(u_pairs)
+        indi.indcache.append(u_pairs, u_labels, self.model_id)
+        it = iter(u_labels)
+
+        for i in range(0, len(labels)):
+            if labels[i] == -1:
+                labels[i] = it.__next__()
+
+        return labels
+
+    def predict_calc(self, pairs: List[Tuple[str, str]]) -> List[int]:
+        if not pairs:
+            return []
+
         x = np.ones((len(pairs), self.max_len))
         for i, (parent, child) in enumerate(pairs):
             self._vectorize(parent, child, x, i)
 
         y = self.model.predict(x)
         return self._explain_results(y)
+
+    def description(self) -> str:
+        return (f'model: {self.model_name}\n' +
+                f'model_id: {self.model_id}\n' +
+                f'max_len: {self.max_len}\n'
+                f'dictionary: {self.dict_name}')
 
 
 class SingleAnswer(ModelClassifier):
@@ -108,47 +152,43 @@ class SingleOnlyChild(SingleAnswer, OnlyChild):
     pass
 
 
-def load_classifiers() -> List[Classifier]:
-    with open(os.path.join(
+models: Dict[str, KerasModel] = {}
+
+
+def get_model(model_name: str) -> KerasModel:
+    if model_name in models:
+        return models[model_name]
+
+    model = load_model(
+        os.path.join(
             Settings.models_dir(),
-            'classifiers.json')) as f:
-        classifiers = json.load(f)
-
-    cl_objects: List[Classifier] = []
-    for model_id, sett in enumerate(classifiers):
-        cl_objects.append(load_classifier(sett['model'],
-                                          model_id,
-                                          sett['dict'],
-                                          sett['pc'],
-                                          sett['multi'],
-                                          sett['max_len']))
-    return cl_objects
+            model_name))
+    models[model_name] = model
+    return cast(KerasModel, model)
 
 
-def load_classifier(
-        fmodel: str,
+def create(
+        model_name: str,
         model_id: int,
         fdict: str,
         pc: bool,
         multi: bool,
         max_len: int) -> ModelClassifier:
 
-    model = load_model(
-        os.path.join(
-            Settings.models_dir(),
-            fmodel))
-
+    model = get_model(model_name)
     if pc:
         if multi:
-            return MultiParentAndChild(fdict, model_id, max_len, model)
+            return MultiParentAndChild(
+                fdict, model_id, max_len, model_name, model)
         else:
-            return SingleParentAndChild(fdict, model_id, max_len, model)
+            return SingleParentAndChild(
+                fdict, model_id, max_len, model_name, model)
     else:
         if multi:
-            return MultiOnlyChild(fdict, model_id, max_len, model)
+            return MultiOnlyChild(fdict, model_id, max_len, model_name, model)
         else:
-            return SingleOnlyChild(fdict, model_id, max_len, model)
+            return SingleOnlyChild(fdict, model_id, max_len, model_name, model)
 
 
 if __name__ == '__main__':
-    load_classifiers()
+    pass
