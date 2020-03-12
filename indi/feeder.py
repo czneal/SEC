@@ -14,6 +14,9 @@ class Feeder(object):
         raise IndexError exception otherwise
         """
 
+        if self.chapter not in structure:
+            raise IndexError()
+
         chapter = structure[self.chapter]
         for name in self.names:
             if name in chapter.nodes:

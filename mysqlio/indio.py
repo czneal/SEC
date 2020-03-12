@@ -114,6 +114,19 @@ class MySQLIndicatorFeeder(MySQLReader):
                  cast(int, row['model_id'])): cast(int, row['label'])
                 for row in data}
 
+    def fetch_snp500_ciks(self, fy: int) -> List[int]:
+        data = self.fetch(q_get_snp500_ciks, {'fy': fy})
+        return [cast(int, row['cik']) for row in data]
+
+
+q_get_snp500_ciks = """
+select r.cik from reports r, stocks_index i, nasdaq n
+where fin_year = %(fy)s
+	and r.cik = n.cik
+    and i.ticker = n.ticker
+    and index_name = 'sp5'
+group by r.cik;
+"""
 
 q_get_indicators = """
 select * from indicators

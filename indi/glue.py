@@ -6,6 +6,7 @@ import indi.types
 from indi.indpool import IndicatorsPool
 from indi.loader import load
 from mysqlio.indio import MySQLIndicatorFeeder, IndicatorsWriter
+from utils import ProgressBar
 
 
 def extract_indicators(nums: indi.types.Nums,
@@ -30,17 +31,29 @@ def main():
 
     pool = load()
 
-    cik = 72971
-    chapters, fy_adsh = ir.fetch_indicator_data(cik=cik, fy=2018, deep=5)
-    nums = ir.fetch_nums(fy_adsh)
+    fy = 2018
+    ciks = ir.fetch_snp500_ciks(fy)
+    pb = ProgressBar()
+    pb.start(len(ciks))
 
-    nums = pool.calc(nums, chapters)
-    inds = extract_indicators(nums, fy_adsh, cik)
+    for cik in ciks[:10]:
+        chapters, fy_adsh = ir.fetch_indicator_data(cik=cik, fy=fy, deep=5)
+        nums = ir.fetch_nums(fy_adsh)
 
-    iw.write(inds)
+        nums = pool.calc(nums, chapters)
+
+        inds = extract_indicators(nums, fy_adsh, cik)
+        iw.write(inds)
+        iw.flush()
+
+        pb.measure()
+        print('\r' + pb.message(), end='')
+
     iw.write_classified_pairs(info.cache_info())
     iw.write_ind_info(*info.ind_info(pool))
     iw.flush()
+
+    print()
 
 
 if __name__ == '__main__':

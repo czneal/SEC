@@ -103,6 +103,13 @@ class TestWriteIndicators(unittest.TestCase):
 
         self.assertEqual(len(pairs), 3)
 
+    def test_fetch_snp500_ciks(self):
+        ir = MySQLIndicatorFeeder()
+        ciks = ir.fetch_snp500_ciks(2018)
+
+        # Berkshire in ciks
+        self.assertTrue(1067983 in ciks)
+
 
 if __name__ == '__main__':
     unittest.main()
