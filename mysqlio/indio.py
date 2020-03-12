@@ -35,6 +35,16 @@ class IndicatorsWriter(MySQLWriter):
     def write_classified_pairs(self, pairs: List[Dict[str, Any]]) -> None:
         self.write_to_table(self.classifier_pairs, pairs)
 
+    def truncate(self) -> None:
+        truncate_tables = """
+        truncate table ind_proc_info;
+        truncate table ind_rest_info;
+        truncate table ind_classified_pairs;
+        truncate table indicators;
+        """
+        self.cur.execute(truncate_tables, multi=True)
+        self.flush()
+
 
 def write_info(pool: I.IndicatorsPool) -> None:
     iw = IndicatorsWriter()
@@ -147,3 +157,7 @@ from mgnums
 where adsh = %(adsh)s
     and value is not null;
 """
+
+if __name__ == '__main__':
+    iw = IndicatorsWriter()
+    iw.truncate()

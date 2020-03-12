@@ -31,12 +31,12 @@ def main():
 
     pool = load()
 
-    fy = 2018
+    fy = 2019
     ciks = ir.fetch_snp500_ciks(fy)
     pb = ProgressBar()
     pb.start(len(ciks))
 
-    for cik in ciks[:10]:
+    for cik in ciks:
         chapters, fy_adsh = ir.fetch_indicator_data(cik=cik, fy=fy, deep=5)
         nums = ir.fetch_nums(fy_adsh)
 
@@ -47,7 +47,7 @@ def main():
         iw.flush()
 
         pb.measure()
-        print('\r' + pb.message(), end='')
+        print(f'\r cik: {cik}, {pb.message()}', end='')
 
     iw.write_classified_pairs(info.cache_info())
     iw.write_ind_info(*info.ind_info(pool))
