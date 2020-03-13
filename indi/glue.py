@@ -33,6 +33,8 @@ def main():
 
     fy = 2019
     ciks = ir.fetch_snp500_ciks(fy)
+    iw.truncate()
+
     pb = ProgressBar()
     pb.start(len(ciks))
 

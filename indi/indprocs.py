@@ -322,6 +322,8 @@ class mg_roe(IndicatorStatic):
 
 
 class mg_roe_average(IndicatorDynamic):
+    "unittested"
+
     def __init__(self):
         super().__init__(deep=-1)
         self.dp = {'mg_roe'}
@@ -528,6 +530,22 @@ class mg_r_income_free_cashflow(IndicatorStatic):
         return self.result(result)
 
 
+class mg_r_free_cashflow_income(IndicatorStatic):
+    def __init__(self):
+        super().__init__()
+        self.dp = {'mg_r_income_corrected_yld', 'mg_r_free_cashflow_yld'}
+
+    def run_it(self, params: Nums, fy: int) -> Result:
+        denom = params.get(fy, {}).get('mg_r_income_corrected_yld', eph)
+        nom = params.get(fy, {}).get('mg_r_free_cashflow_yld', eph)
+
+        result: NoneFact = eph
+        if denom != 0.0:
+            result = (nom / denom)
+
+        return self.result(result)
+
+
 class mg_r_roe(IndicatorStatic):
     def __init__(self):
         super().__init__()
@@ -544,6 +562,8 @@ class mg_r_roe(IndicatorStatic):
 
 
 class mg_r_roe_average(IndicatorDynamic):
+    "unittested"
+
     def __init__(self):
         super().__init__(deep=-1)
         self.dp = {'mg_r_roe'}
@@ -551,7 +571,7 @@ class mg_r_roe_average(IndicatorDynamic):
     def run_it(self, params: Nums, fy: int) -> Result:
         r = (facts['mg_r_roe'] + 1.0
              for y, facts in params.items()
-             if y <= fy and 'mg_r_row' in facts)
+             if y <= fy and 'mg_r_roe' in facts)
         prod, pw = nanprod(r)
         if pw != 0:
             prod = pow(abs(prod), 1.0 / pw) - 1.0
