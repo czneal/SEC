@@ -36,10 +36,10 @@ class EmptyPlace(object):
     def __rmul__(self, other):
         return eph
 
-    def __truediv__(self, other):
+    def __truediv__(self, other) -> EmptyPlace:
         return eph
 
-    def __rtruediv__(self, other):
+    def __rtruediv__(self, other) -> EmptyPlace:
         return eph
 
     def __abs__(self):

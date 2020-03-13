@@ -41,7 +41,7 @@ class Indicator(metaclass=ABCMeta):
 
 
 class IndicatorProcedural(Indicator):
-    def __init__(self, deep: int = 1):
+    def __init__(self, deep: int):
         super().__init__(self.__class__.__name__)
         self.deep = deep
 
@@ -71,7 +71,8 @@ class IndicatorProcedural(Indicator):
 
 
 class IndicatorStatic(IndicatorProcedural):
-    pass
+    def __init__(self):
+        super().__init__(deep=1)
 
 #     @staticmethod
 #     def btype():
@@ -430,6 +431,45 @@ class mg_r_equity(IndicatorDynamic):
         return self.result(result)
 
 
+class mg_r_equity_dynamics(IndicatorDynamic):
+    "unittested"
+
+    def __init__(self):
+        super().__init__(deep=-1)
+        self.dp = {'mg_r_equity'}
+
+    def run_it(self, params: Nums, fy: int) -> Result:
+        if not params:
+            return None
+
+        result: NoneFact = eph
+        try:
+            e_last = params[fy]['mg_r_equity']
+            e_first = params[min(params)]['mg_r_equity']
+            if e_first != 0:
+                result = (e_last - e_first) / e_first
+        except KeyError:
+            pass
+
+        return self.result(result)
+
+
+class mg_r_return_growth(IndicatorStatic):
+    def __init__(self):
+        super().__init__()
+        self.dp = {'mg_r_equity', 'mg_r_sales_growth', 'mg_r_roe_average'}
+
+    def run_it(self, params: Nums, fy: int) -> Result:
+        result: NoneFact = eph
+        try:
+            result = (params[fy]['mg_r_equity'] *
+                      (params[fy]['mg_r_sales_growth'] + 1.0) *
+                      (params[fy]['mg_r_roe_average'] + 1.0))
+        except KeyError:
+            pass
+        return self.result(result)
+
+
 class mg_r_free_cashflow(IndicatorStatic):
     def __init__(self):
         super().__init__()
@@ -665,6 +705,48 @@ class mg_SGAAExpense(IndicatorStatic):
         else:
             return self.result(
                 facts['us-gaap:SellingGeneralAndAdministrativeExpense'])
+
+
+class mg_r_cash_to_shareholders_average(IndicatorStatic):
+    "unittested"
+
+    def __init__(self):
+        super().__init__()
+        self.dp = {
+            'mg_r_cash_buybacks_yld',
+            'mg_r_dividends_yld'}
+
+    def run_it(self, params: Nums, fy: int) -> Result:
+        a = params.get(fy, {}).get('mg_r_cash_buybacks_yld', eph)
+        b = params.get(fy, {}).get('mg_r_dividends_yld', eph)
+        count = len([y for y in params if y <= fy])
+
+        if count != 0:
+            result = (a + b) / float(count)
+        else:
+            result = eph
+
+        return self.result(result)
+
+
+class mg_r_cash_to_shareholders_free_cash_flow(IndicatorStatic):
+    def __init__(self):
+        super().__init__()
+        self.dp = {
+            'mg_r_cash_to_shareholders_average',
+            'mg_r_free_cashflow_average'}
+
+    def run_it(self, params: Nums, fy: int) -> Result:
+        result = eph
+        try:
+            nom = params[fy]['mg_r_cash_to_shareholders_average']
+            denom = params[fy]['mg_r_free_cashflow_average']
+            if denom != 0.0:
+                result = assign(result, nom / denom)
+        except KeyError:
+            pass
+
+        return self.result(result)
 
 
 def create(name: str) -> Indicator:

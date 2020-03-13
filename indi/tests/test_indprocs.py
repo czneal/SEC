@@ -252,6 +252,94 @@ class TestSyntax(unittest.TestCase):
             nums = {}
             self.assertEqual(proc.run_it(nums, 2019), None)
 
+    def test_mg_r_equity_dynamics(self):
+        proc = prc.mg_r_equity_dynamics()
+        with self.subTest(i=0):
+            nums = {}
+            self.assertEqual(proc.run_it(nums, 2019), None)
+
+        with self.subTest(i=1):
+            nums = {2019: {'mg_r_equity': 100}}
+            self.assertEqual(proc.run_it(nums, 2019), 0.0)
+
+        with self.subTest(i=2):
+            nums = {2019: {'mg_r_equity': 100},
+                    2018: {'mg_r_equity': 200}}
+            self.assertEqual(proc.run_it(nums, 2019), -0.5)
+
+        with self.subTest(i=3):
+            nums = {2019: {'mg_r_equity': 100.0},
+                    2018: {'mg_r_equity': 0.0}}
+            self.assertEqual(proc.run_it(nums, 2019), None)
+
+    def test_mg_r_return_growth(self):
+        proc = prc.mg_r_return_growth()
+        with self.subTest(i=0):
+            nums = {}
+            self.assertEqual(proc.run_it(nums, 2019), None)
+
+        with self.subTest(i=1):
+            nums = {2019: {'mg_r_equity': 100}}
+            self.assertEqual(proc.run_it(nums, 2019), None)
+
+        with self.subTest(i=2):
+            nums = {2019: {'mg_r_equity': 100,
+                           'mg_r_sales_growth': 0.5,
+                           'mg_r_roe_average': 0.2},
+                    2018: {'mg_r_equity': 200}}
+            self.assertEqual(proc.run_it(nums, 2019), 100.0 * 1.5 * 1.2)
+
+        with self.subTest(i=2):
+            nums = {2018: {'mg_r_equity': 100,
+                           'mg_r_sales_growth': 0.5,
+                           'mg_r_roe_average': 0.2},
+                    }
+            self.assertEqual(proc.run_it(nums, 2019), None)
+
+    def test_mg_r_cash_to_shareholders_average(self):
+        proc = prc.mg_r_cash_to_shareholders_average()
+        with self.subTest(i=0):
+            nums = {}
+            self.assertEqual(proc.run_it(nums, 2019), None)
+
+        with self.subTest(i=0):
+            nums = {2019: {'mg_r_cash_buybacks_yld': 100,
+                           'mg_r_dividends_yld': 200}}
+            self.assertEqual(proc.run_it(nums, 2019), 300)
+
+        with self.subTest(i=1):
+            nums = {2019: {'mg_r_cash_buybacks_yld': 100,
+                           'mg_r_dividends_yld': 200},
+                    2018: {}}
+            self.assertEqual(proc.run_it(nums, 2019), 150)
+
+        with self.subTest(i=2):
+            nums = {2019: {'mg_r_cash_buybacks_yld': 100,
+                           'mg_r_dividends_yld': 200},
+                    2018: {'mg_r_cash_buybacks_yld': 100,
+                           'mg_r_dividends_yld': 200}}
+            self.assertEqual(proc.run_it(nums, 2018), 300)
+
+    def test_mg_r_cash_to_shareholders_free_cash_flow(self):
+        proc = prc.mg_r_cash_to_shareholders_free_cash_flow()
+        with self.subTest(i=0):
+            nums = {}
+            self.assertEqual(proc.run_it(nums, 2019), None)
+
+        with self.subTest(i=1):
+            nums = {2019: {'mg_r_cash_to_shareholders_average': 100}}
+            self.assertEqual(proc.run_it(nums, 2019), None)
+
+        with self.subTest(i=2):
+            nums = {2019: {'mg_r_cash_to_shareholders_average': 100,
+                           'mg_r_free_cashflow_average': 200}}
+            self.assertEqual(proc.run_it(nums, 2019), 0.5)
+
+        with self.subTest(i=3):
+            nums = {2019: {'mg_r_cash_to_shareholders_average': 100,
+                           'mg_r_free_cashflow_average': 0.0}}
+            self.assertEqual(proc.run_it(nums, 2019), None)
+
 
 if __name__ == '__main__':
     unittest.main()
