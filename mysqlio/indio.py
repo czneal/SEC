@@ -42,7 +42,9 @@ class IndicatorsWriter(MySQLWriter):
         truncate table ind_classified_pairs;
         truncate table indicators;
         """
-        self.cur.execute(truncate_tables, multi=True)
+        for result in self.cur.execute(truncate_tables, multi=True):
+            pass
+
         self.flush()
 
 

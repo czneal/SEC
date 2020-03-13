@@ -181,6 +181,77 @@ class TestSyntax(unittest.TestCase):
         with self.subTest(i=0):
             self.assertEqual(proc.run_it(nums, 2019), 22.0)
 
+    def test_mg_roe_average(self):
+        proc = prc.mg_roe_average()
+
+        with self.subTest(i=0):
+            nums = {2019: {'mg_roe': 0.1},
+                    2017: {'mg_roe': 0.2}}
+            self.assertEqual(
+                proc.run_it(
+                    nums, fy=2019), pow(
+                    1.1 * 1.2, 0.5) - 1.0)
+
+        with self.subTest(i=1):
+            nums = {}
+            self.assertEqual(
+                proc.run_it(
+                    nums, fy=2019), None)
+
+    def test_mg_r_roe_average(self):
+        proc = prc.mg_r_roe_average()
+
+        with self.subTest(i=0):
+            nums = {2019: {'mg_r_roe': 0.1},
+                    2017: {'mg_r_roe': 0.2}}
+            self.assertEqual(
+                proc.run_it(
+                    nums, fy=2019), pow(
+                    1.1 * 1.2, 0.5) - 1.0)
+
+        with self.subTest(i=1):
+            nums = {}
+            self.assertEqual(
+                proc.run_it(
+                    nums, fy=2019), None)
+
+    def test_mg_roe_variance(self):
+        proc = prc.mg_roe_variance()
+
+        with self.subTest(i=0):
+            nums = {2019: {'mg_roe': 0.1,
+                           'mg_roe_average': pow(1.1 * 1.2, 0.5) - 1.0},
+                    2017: {'mg_roe': 0.2}}
+            avg = nums[2019]['mg_roe_average']
+            self.assertEqual(
+                proc.run_it(nums, fy=2019),
+                pow((0.1 - avg)**2 + (0.2 - avg)**2, 0.5) / 2)
+
+        with self.subTest(i=1):
+            nums = {}
+            self.assertEqual(
+                proc.run_it(
+                    nums, fy=2019), None)
+
+    def test_mg_r_free_cashflow_income(self):
+        proc = prc.mg_r_free_cashflow_income()
+
+        with self.subTest(i=0):
+            nums = {2019: {'mg_r_income_corrected_yld': 0.0,
+                           'mg_r_free_cashflow_yld': 2.0}}
+
+            self.assertEqual(proc.run_it(nums, 2019), None)
+
+        with self.subTest(i=1):
+            nums = {2019: {'mg_r_income_corrected_yld': 4.0,
+                           'mg_r_free_cashflow_yld': 2.0}}
+
+            self.assertEqual(proc.run_it(nums, 2019), 0.5)
+
+        with self.subTest(i=2):
+            nums = {}
+            self.assertEqual(proc.run_it(nums, 2019), None)
+
 
 if __name__ == '__main__':
     unittest.main()
