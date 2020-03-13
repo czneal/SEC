@@ -23,13 +23,16 @@
                 "chapter": "is",
                 "names": [
                         "us-gaap:IncomeLoss",
+                        "us-gaap:NetIncomeLossAvailableToCommonStockholdersBasic",
+                        "us-gaap:EarningsPerShareBasic",
                         "us-gaap:ProfitLoss"
                 ]
         },
         "cf_cut": {
                 "chapter": "cf",
                 "names": [
-                        "us-gaap:IncomeLoss"
+                        "us-gaap:CashAndCashEquivalentsPeriodIncreaseDecrease",
+                        "us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalentsPeriodIncreaseDecreaseIncludingExchangeRateEffect"
                 ],
                 "model": "all_gaap_tags_binary_v2019-03-13.h5",
                 "class_id": 1
@@ -37,7 +40,8 @@
         "cf": {
                 "chapter": "cf",
                 "names": [
-                        "us-gaap:IncomeLoss"
+                        "us-gaap:CashAndCashEquivalentsPeriodIncreaseDecrease",
+                        "us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalentsPeriodIncreaseDecreaseIncludingExchangeRateEffect"
                 ]
         }
 }

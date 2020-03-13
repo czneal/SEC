@@ -248,6 +248,9 @@
     "mg_r_income_free_cashflow": {
         "type": "static"
     },
+    "mg_r_free_cashflow_income": {
+        "type": "static"
+    },
     "mg_r_roe": {
         "type": "static"
     },
