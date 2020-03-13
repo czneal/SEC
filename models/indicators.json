@@ -272,4 +272,16 @@
     "mg_SGAAExpense": {
         "type": "static"
     }
+    "mg_r_equity_dynamics": {
+        "type": "dynamic"
+    }
+    "mg_r_return_growth": {
+        "type": "static"
+    }
+    "mg_r_cash_to_shareholders_free_cash_flow": {
+        "type": "static"
+    }
+    "mg_r_cash_to_shareholders_average": {
+        "type": "static"
+    }
 }
