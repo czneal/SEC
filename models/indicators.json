@@ -224,7 +224,7 @@
     "mg_r_debt_tangible_assets": {
         "type": "static"
     },
-    "mg_r_dividents_yld": {
+    "mg_r_dividends_yld": {
         "type": "dynamic"
     },
     "mg_r_equity": {
@@ -271,17 +271,20 @@
     },
     "mg_SGAAExpense": {
         "type": "static"
-    }
+    },
     "mg_r_equity_dynamics": {
         "type": "dynamic"
-    }
+    },
     "mg_r_return_growth": {
         "type": "static"
-    }
+    },
     "mg_r_cash_to_shareholders_free_cash_flow": {
         "type": "static"
-    }
+    },
     "mg_r_cash_to_shareholders_average": {
+        "type": "static"
+    },
+    "mg_r_free_cashflow_average": {
         "type": "static"
     }
 }

@@ -340,6 +340,18 @@ class TestSyntax(unittest.TestCase):
                            'mg_r_free_cashflow_average': 0.0}}
             self.assertEqual(proc.run_it(nums, 2019), None)
 
+    def test_mg_r_free_cashflow_average(self):
+        proc = prc.mg_r_free_cashflow_average()
+
+        with self.subTest(i=0):
+            nums = {}
+            self.assertEqual(proc.run_it(nums, 2019), None)
+
+        with self.subTest(i=1):
+            nums = {2019: {'mg_r_free_cashflow_yld': 100},
+                    2018: {'mg_r_free_cashflow_yld': 200}}
+            self.assertEqual(proc.run_it(nums, 2019), 50.0)
+
 
 if __name__ == '__main__':
     unittest.main()

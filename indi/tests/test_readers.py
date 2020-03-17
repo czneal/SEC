@@ -1,6 +1,6 @@
 import unittest
 
-from mysqlio.readers import MySQLIndicatorFeeder
+from mysqlio.indio import MySQLIndicatorFeeder
 
 
 class TestReader(unittest.TestCase):

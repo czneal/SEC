@@ -404,7 +404,7 @@ class mg_r_debt_tangible_assets(IndicatorStatic):
         return self.result(result)
 
 
-class mg_r_dividents_yld(IndicatorDynamic):
+class mg_r_dividends_yld(IndicatorDynamic):
     def __init__(self):
         super().__init__(deep=-1)
         self.dp = {'mg_r_cash_dividends_common'}
@@ -723,6 +723,25 @@ class mg_r_cash_to_shareholders_average(IndicatorStatic):
 
         if count != 0:
             result = (a + b) / float(count)
+        else:
+            result = eph
+
+        return self.result(result)
+
+
+class mg_r_free_cashflow_average(IndicatorStatic):
+    "unittested"
+
+    def __init__(self):
+        super().__init__()
+        self.dp = {'mg_r_free_cashflow_yld'}
+
+    def run_it(self, params: Nums, fy: int) -> Result:
+        a = params.get(fy, {}).get('mg_r_free_cashflow_yld', eph)
+        count = len([y for y in params if y <= fy])
+
+        if count != 0:
+            result = (a) / float(count)
         else:
             result = eph
 
