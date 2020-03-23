@@ -176,6 +176,12 @@ def join_sec_stocks_tickers(
         cik: int,
         shares_reader: MySQLShares) -> bool:
     full_join = True
+    if len(shares) == 1 and len(tickers) == 1:
+        for k1, k2 in zip(shares, tickers):
+            if len(shares[k1]) == 1 and len(tickers[k2]) == 1:
+                shares[k1][0].ticker = tickers[k2][0]
+                return full_join
+
     for letter, share_list in shares.items():
         if letter in tickers:
             if len(share_list) == 1 and len(tickers[letter]) == 1:
@@ -193,20 +199,13 @@ def join_sec_stocks_tickers(
 
 
 if __name__ == '__main__':
-    # print(find_latest_report(790526))
+    cik = 1058290
+    adsh = '0001058290-20-000008'
+    r = MySQLShares()
 
-    # no classes shares
-    # print(get_shares_sec_adsh('0001628280-19-003087'))
+    sec_shares = process_sec_shares(r.fetch_sec_shares('0001058290-20-000008'))
+    tickers = process_tickers(r.fetch_tickers(1058290))
 
-    # summa equal none returns two share classes
-    # print(get_shares_sec_adsh('0000009346-19-000012'))
+    a = join_sec_stocks_tickers(sec_shares, tickers, 1058290, r)
 
-    # several dates for classes shares
-    # print(get_shares_sec_adsh('0001193125-13-116643'))
-
-    # several none member shares
-    # print(get_shares_sec_adsh('0001387131-13-000570'))
-
-    # summa less '0001193125-13-096150'
-    # summa more '0001144204-13-017209'
-    pass
+    print(sec_shares)
