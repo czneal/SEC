@@ -42,6 +42,7 @@ def load_feeders(classifiers: Dict[str,
         classifier = classifiers.get(sett.get('model', ''), None)
         feeder = indi.feeder.create(sett['chapter'],
                                     sett['names'],
+                                    sett['strict'],
                                     cl=classifier,
                                     cl_id=sett.get('class_id', -1))
         feeders[name] = feeder

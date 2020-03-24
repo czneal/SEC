@@ -423,8 +423,8 @@ class mg_r_equity(IndicatorDynamic):
     def run_it(self, params: Nums, fy: int) -> Result:
         result: NoneFact = eph
         try:
-            result = params[fy - 1]['us-gaap:Assets'] - \
-                params[fy - 1]['mg_r_liabilities']
+            result = params[fy]['us-gaap:Assets'] - \
+                params[fy]['mg_r_liabilities']
         except KeyError:
             pass
 
