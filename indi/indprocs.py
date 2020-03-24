@@ -318,8 +318,10 @@ class mg_roe(IndicatorStatic):
     def run_it(self, params: Nums, fy: int) -> Result:
         e = self.get(params, fy, 'mg_equity')
         i = self.get(params, fy, 'mg_income')
-
-        return self.result(e / i)
+        if e != 0.0:
+            return self.result(i / e)
+        else:
+            return None
 
 
 class mg_roe_average(IndicatorDynamic):
@@ -595,10 +597,10 @@ class mg_r_roe(IndicatorStatic):
         e = params.get(fy, {}).get('mg_r_equity', eph)
         i = params.get(fy, {}).get('mg_r_income', eph)
 
-        if i != 0.0:
-            e = e / i
-
-        return self.result(e)
+        if e != 0.0:
+            return self.result(i / e)
+        else:
+            return None
 
 
 class mg_r_roe_average(IndicatorDynamic):
