@@ -1,8 +1,14 @@
 import unittest
 import unittest.mock
+import os
+import json
+
+from typing import Dict, List
 
 import xbrlxml.dataminer
 from xbrlxml.xbrlchapter import CalcChapter
+from xbrlxml.xbrlrss import record_from_str
+from utils import add_app_dir
 
 
 class TestDump(unittest.TestCase):
@@ -54,6 +60,86 @@ class TestDump(unittest.TestCase):
             self.assertEqual(
                 s,
                 """{"bs": {"roleuri": "roleuri1", "nodes": {}, "label": "label1"}, "cf": {"roleuri": "roleuri2", "nodes": {}, "label": "label2"}}""")
+
+
+class TestConsistence(unittest.TestCase):
+    def test_NetIncomeLoss_fail(self):
+        with open(make_absolute('res/0000097476-0001564590-18-002832.json')) as f:
+            record = record_from_str(f.read())
+            file_link = make_absolute(
+                'res/0000097476-0001564590-18-002832.zip')
+
+        dm = xbrlxml.dataminer.NumericDataMiner()
+
+        dm.feed(record.__dict__, file_link)
+
+        df = dm.numeric_facts
+        self.assertEqual(
+            df[df['name'] == 'us-gaap:NetIncomeLoss'].iloc[0]['value'],
+            3682000000.0)
+        self.assertEqual(
+            df[df['name'] == 'us-gaap:Liabilities'].iloc[0]
+            ['value'],
+            7305000000.0)
+        self.assertEqual(
+            df[df['name'] == 'us-gaap:Assets'].iloc[0]['value'],
+            17642000000.0)
+        self.assertEqual(df.shape[0], 95)
+
+    def check_facts(
+            self, dm: xbrlxml.dataminer.NumericDataMiner,
+            facts: Dict[str, float]) -> List[str]:
+        df = dm.numeric_facts
+        if df is None:
+            return ['facts not parsed']
+
+        msg: List[str] = []
+        if df.shape[0] != len(facts):
+            msg.append(f'facts count differ {df.shape[0]}, {len(facts)}')
+
+        names = set(df['name'].unique())
+        for fact, value in facts.items():
+            if fact not in names:
+                msg.append(f'{fact} not parsed now')
+                continue
+
+            f = df[df['name'] == fact]
+            if f.shape[0] != 1:
+                msg.append(f'only one instnace of {fact} should be parsed')
+                continue
+            new = f.iloc[0]['value']
+            if new != value:
+                msg.append(f'value for {fact} differ old: {value}, new:{new}')
+
+        return msg
+
+    def test_backward_compatibility(self):
+        res_dir = make_absolute('res/backward')
+        with open(os.path.join(res_dir, 'adshs.json')) as f:
+            adshs: List[str] = json.load(f)
+
+        dm = xbrlxml.dataminer.NumericDataMiner()
+
+        for adsh in adshs:
+            print(adsh)
+            with self.subTest(adsh=adsh):
+                with open(os.path.join(res_dir, adsh + '.facts')) as f:
+                    facts: Dict[str, float] = json.load(f)
+                with open(os.path.join(res_dir, adsh + '.record')) as f:
+                    record = record_from_str(f.read())
+
+                r = dm.feed(
+                    record.__dict__, os.path.join(
+                        res_dir, adsh + '.zip'))
+                self.assertTrue(r)
+
+                msg = self.check_facts(dm, facts)
+                self.assertTrue(len(msg) == 0, msg='\n'.join(msg))
+
+
+def make_absolute(path: str) -> str:
+    dir_name = os.path.dirname(__file__)
+    return os.path.join(dir_name, path)
 
 
 if __name__ == '__main__':

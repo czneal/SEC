@@ -111,6 +111,7 @@ RawData
 Reports
 Test
 Outputs
+*/tests/res/*
 *.txt
 *.log
 *.npy

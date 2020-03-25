@@ -58,8 +58,8 @@ class SharesFilter():
 
 
 class DataMiner(metaclass=ABCMeta):
-    chapter_sheets = frozenset(['bs', 'is', 'cf', 'se'])
-    calculated_sheets = frozenset(['bs', 'is', 'cf'])
+    chapter_sheets = ('bs', 'is', 'cf', 'se')
+    calculated_sheets = ('bs', 'is', 'cf')
 
     def __init__(self):
         self.xbrlfile = XbrlFile()
@@ -116,7 +116,10 @@ class DataMiner(metaclass=ABCMeta):
         self.extentions = []
 
         warning_info = {}
-        for sheet, roleuri in self.sheets.mschapters.items():
+        for sheet in self.chapter_sheets:
+            if sheet not in self.sheets.mschapters:
+                continue
+            roleuri = self.sheets.mschapters[sheet]
             context = self.cntx.choose(roleuri)
             if context is None:
                 warning_info['details'] = 'context not found'
@@ -237,6 +240,10 @@ class DataMiner(metaclass=ABCMeta):
         self.numeric_facts = pd.concat(frames, ignore_index=True, sort=False)
         self.numeric_facts = self.numeric_facts[
             pd.notna(self.numeric_facts['value'])]
+
+        # values first came in order self.chapter_sheets
+        self.numeric_facts.drop_duplicates('name', keep='first', inplace=True)
+
         self.numeric_facts['adsh'] = self.adsh
         self.numeric_facts['fy'] = self.xbrlfile.fy
         self.numeric_facts['type'] = (
@@ -433,7 +440,7 @@ class DataMiner(metaclass=ABCMeta):
     def do_job(self):
         pass
 
-    def feed(self, record, zip_filename):
+    def feed(self, record: Dict[str, Any], zip_filename: str):
         logger = logs.get_logger(__name__)
         self._prepare(record, zip_filename)
 
