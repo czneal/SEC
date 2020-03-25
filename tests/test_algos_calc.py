@@ -56,7 +56,8 @@ class TestCalc(unittest.TestCase):
             with self.subTest(value=value,
                               value_sum=value_sum,
                               none_sum_err=none_sum_err):
-                err = Validator(0.02, none_sum_err)
+                err = Validator(0.02, none_sum_err,
+                                none_val_err=False)
                 v = err.check(value, value_sum, 'tag')
                 self.assertEqual(answers[index], v)
 
@@ -68,7 +69,8 @@ class TestCalc(unittest.TestCase):
             self.assertFalse(err.check(100, 103, 'tag'))
 
     def test_calc_one_node(self):
-        err = Validator(0.02, none_sum_err=True)
+        err = Validator(0.02, none_sum_err=True,
+                        none_val_err=False)
         chapters = make_chapters()
         n0 = chapters['roleuri1'].nodes['NodeLabel0']
         n4 = chapters['roleuri1'].nodes['NodeLabel4']

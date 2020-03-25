@@ -1,5 +1,6 @@
 import json
 import shutil
+import os
 
 from typing import Tuple, List
 from numpy import random
@@ -37,19 +38,39 @@ class DataReader(mysqlio.indio.MySQLIndicatorFeeder):
         return adshs
 
 
-def main():
+def repair_adshs():
     dir_to_save = add_app_dir("xbrlxml/tests/res/backward/")
-    if shutil.os.path.exists(dir_to_save):
-        shutil.rmtree(dir_to_save, ignore_errors=True)
-        while shutil.os.path.exists(dir_to_save):
-            pass
 
-    if not shutil.os.path.exists(dir_to_save):
-        shutil.os.mkdir(dir_to_save)
+    for _, _, filenames in os.walk(dir_to_save):
+        adshs = set([filename.split('.')[0]
+                     for filename in filenames
+                     if len(filename) >= 20])
+
+    adshs = list(adshs)
+
+    with open(os.path.join(dir_to_save, 'adshs.json'), 'w') as f:
+        json.dump(adshs, fp=f, indent=2)
+
+
+def main(append: bool, extra_adshs: List[str] = []):
+    dir_to_save = add_app_dir("xbrlxml/tests/res/backward/")
+
+    # clear dir
+    if not append:
+        if os.path.exists(dir_to_save):
+            shutil.rmtree(dir_to_save, ignore_errors=True)
+            while os.path.exists(dir_to_save):
+                pass
+
+    # create if not exist
+    if not os.path.exists(dir_to_save):
+        os.mkdir(dir_to_save)
 
     r = DataReader()
-    adshs = r.fetch_adshs(2013, sample_size=100)
-    adshs.append('0001564590-18-002832')
+    if not extra_adshs:
+        adshs = r.fetch_adshs(2013, sample_size=100)
+    else:
+        adshs = extra_adshs
 
     pb = ProgressBar()
     pb.start(len(adshs))
@@ -58,7 +79,7 @@ def main():
         facts = r.fetch_facts(adsh)
         record, file_link = r.fetch_record(adsh)
 
-        prefix = shutil.os.path.join(dir_to_save, adsh)
+        prefix = os.path.join(dir_to_save, adsh)
         try:
             with open(prefix + '.facts', 'w') as f:
                 f.write(json.dumps(facts, indent=2))
@@ -77,7 +98,7 @@ def main():
 
         try:
             shutil.copy(add_root_dir(file_link),
-                        shutil.os.path.join(dir_to_save, adsh + '.zip'))
+                        os.path.join(dir_to_save, adsh + '.zip'))
         except Exception:
             print(f'unable write zip: {adsh}')
             adshs.remove(adsh)
@@ -87,11 +108,11 @@ def main():
     print()
 
     try:
-        with open(shutil.os.path.join(dir_to_save, 'adshs.json'), 'w') as f:
-            f.write(json.dumps(adshs))
+        repair_adshs()
     except Exception:
         print('unable save adshs')
 
 
 if __name__ == '__main__':
-    main()
+    # main(append=True, extra_adshs=['0000882184-17-000103'])
+    repair_adshs()

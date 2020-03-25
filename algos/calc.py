@@ -10,9 +10,13 @@ TErrors = Dict[str, List[Union[str, float, None]]]
 
 
 class Validator():
-    def __init__(self, threshold: float, none_sum_err: bool):
+    def __init__(self,
+                 threshold: float,
+                 none_sum_err: bool,
+                 none_val_err: bool):
         self.thres = threshold
         self.none_sum_err = none_sum_err
+        self.none_val_err = none_val_err
         self.reset()
 
     def reset(self) -> None:
@@ -35,7 +39,11 @@ class Validator():
               value_sum: Optional[float],
               tag: str) -> bool:
         if value is None:
-            return True
+            if self.none_val_err:
+                self._loggin(tag, None, None, None)
+                return False
+            else:
+                return True
 
         if value_sum is None:
             if self.none_sum_err:
@@ -64,7 +72,7 @@ def calc_fact(node: Node,
     value = facts.get(node.name, None)
     s = []
     for child in node.children.values():
-        v = calc_fact(child, facts, err)
+        v = calc_fact(child, facts, err, repair)
         if v is not None:
             s.append(v * child.getweight())
     if s:

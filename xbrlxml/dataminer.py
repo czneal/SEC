@@ -134,7 +134,9 @@ class DataMiner(metaclass=ABCMeta):
                                               extra=warning_info)
 
     def _calculate(self):
-        validator = c.Validator(threshold=0.02, none_sum_err=True)
+        validator = c.Validator(threshold=0.02,
+                                none_sum_err=True,
+                                none_val_err=True)
         logger = logs.get_logger(__name__)
         new_facts_frames = []
 
@@ -163,8 +165,9 @@ class DataMiner(metaclass=ABCMeta):
                                     context=context,
                                     names=names)
             err = c.Validator(threshold=0.0,
-                              none_sum_err=True)
-            c.calc_chapter(chapter=calc, facts=facts, err=err)
+                              none_sum_err=True,
+                              none_val_err=True)
+            c.calc_chapter(chapter=calc, facts=facts, err=err, repair=False)
             missing = c.find_missing(chapter=calc, facts=facts, err=err)
 
             for name in missing:
@@ -202,10 +205,7 @@ class DataMiner(metaclass=ABCMeta):
     def _gather_numeric_facts(self):
         logger = logs.get_logger(__name__)
 
-        if self.new_facts is not None and self.new_facts.shape[0] > 0:
-            frames = [self.new_facts]
-        else:
-            frames = []
+        frames = []
 
         for e in self.extentions:
             pres = self.xbrlfile.schemes['pres'].get(e['roleuri'])
@@ -227,6 +227,9 @@ class DataMiner(metaclass=ABCMeta):
             frame = frame[(frame['name'].isin(tags)) &
                           (frame['context'] == e['context'])]
             frames.append(frame)
+
+        if self.new_facts is not None and self.new_facts.shape[0] > 0:
+            frames.append(self.new_facts)
 
         if not frames:
             if self.sheets.mschapters and self.xbrlfile.any_gaap_fact():

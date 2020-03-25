@@ -11,7 +11,11 @@ from xbrlxml.xbrlrss import record_from_str
 from utils import add_app_dir
 
 
+MYDEBUG: bool = False
+
+
 class TestDump(unittest.TestCase):
+    @unittest.skipIf(MYDEBUG, 'debug')
     def test_dumps_structure(self):
         with self.subTest(test='simple'):
             miner = unittest.mock.MagicMock()
@@ -63,6 +67,19 @@ class TestDump(unittest.TestCase):
 
 
 class TestConsistence(unittest.TestCase):
+    def test_calc_from_dim_fail(self):
+        with open(make_absolute('res/backward/0001047862-16-000225.record')) as f:
+            record = record_from_str(f.read())
+            file_link = make_absolute(
+                'res/backward/0001047862-16-000225.zip')
+
+        dm = xbrlxml.dataminer.NumericDataMiner()
+
+        dm.feed(record.__dict__, file_link)
+
+        df = dm.numeric_facts
+
+    @unittest.skipIf(MYDEBUG, 'debug')
     def test_NetIncomeLoss_fail(self):
         with open(make_absolute('res/0000097476-0001564590-18-002832.json')) as f:
             record = record_from_str(f.read())
@@ -111,8 +128,13 @@ class TestConsistence(unittest.TestCase):
             if new != value:
                 msg.append(f'value for {fact} differ old: {value}, new:{new}')
 
+        diff = names.difference(facts)
+        if diff:
+            msg.append(f'new facts parsed {diff}')
+
         return msg
 
+    @unittest.skipIf(MYDEBUG, 'debug')
     def test_backward_compatibility(self):
         res_dir = make_absolute('res/backward')
         with open(os.path.join(res_dir, 'adshs.json')) as f:
