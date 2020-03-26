@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from abc import ABCMeta, abstractmethod
-from typing import Optional, Set, cast
+from typing import Optional, Set, cast, List
 
 from indi.types import Nums, Facts, NoneFacts, NoneFact
 from indi.types import eph, nanmin, nanmax, nansum, nanprod, assign, Result
@@ -64,6 +64,18 @@ class IndicatorProcedural(Indicator):
 
     def get(self, nums: Nums, fy: int, name: str) -> NoneFact:
         return nums.get(fy, {}).get(name, eph)
+
+    def find_first(
+            self,
+            nums: Nums,
+            fy: int,
+            tags: List[str]) -> Optional[float]:
+        facts = nums.get(fy, {})
+        for tag in tags:
+            if tag in facts:
+                return facts[tag]
+
+        return None
 
     @abstractmethod
     def run_it(self, nums: Nums, fy: int) -> Optional[float]:
@@ -511,6 +523,8 @@ class mg_r_income(IndicatorStatic):
         super().__init__()
         self.dp = {'us-gaap:ProfitLoss',
                    'us-gaap:NetIncomeLoss',
+                   'NetIncomeLossAvailableToCommonStockholdersBasic',
+                   'IncomeLossFromContinuingOperations',
                    'mg_r_capitalized_costs_d',
                    'mg_r_income_noncontroling',
                    'mg_r_dividend_preferred'}
@@ -519,10 +533,16 @@ class mg_r_income(IndicatorStatic):
         facts = self.fill_none(params, fy)
         result = facts["us-gaap:NetIncomeLoss"]
         result = assign(result, facts["us-gaap:ProfitLoss"])
-        result = (result - (
-            facts["mg_r_capitalized_costs_d"] +
-            facts["mg_r_income_noncontroling"] +
-            facts["mg_r_dividend_preferred"]))
+        if result:
+            result = (result - (
+                facts["mg_r_dividend_preferred"] +
+                facts["mg_r_income_noncontroling"]))
+        else:
+            result = facts['NetIncomeLossAvailableToCommonStockholdersBasic']
+            result = assign(
+                result, facts['IncomeLossFromContinuingOperations'])
+
+        result -= facts["mg_r_capitalized_costs_d"]
 
         return self.result(result)
 
