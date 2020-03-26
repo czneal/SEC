@@ -48,6 +48,15 @@ class TestIndicator(unittest.TestCase):
 
             self.assertEqual(value, 26145000000.0)
 
+        cik, fy = 882184, 2017
+        with self.subTest(cik=cik, fy=fy):
+            fy_structure, fy_adsh = r.fetch_indicator_data(
+                cik=cik, fy=fy, deep=5)
+            nums = r.fetch_nums(fy_adsh)
+            value = indicator.calc(nums, fy, fy_structure[fy])
+
+            self.assertEqual(value, 14091000000.0)
+
 
 if __name__ == '__main__':
     unittest.main()

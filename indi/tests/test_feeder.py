@@ -71,9 +71,9 @@ class TestFeeder(unittest.TestCase):
             tags = feeder.filter(self.structure)
             self.assertEqual(len(tags), 0)
 
-        with self.subTest(test=5):
+        with self.subTest(test='flexible feeder one root structure'):
             feeder = Feeder('is', ['Liabilities'], strict=False)
-            node = feeder.find_start(self.structure)
+            chapter, node = feeder.find_start(self.structure)
             self.assertEqual(
                 node.name,
                 'us-gaap:NetIncomeLossAvailableToCommonStockholdersBasic')
@@ -83,12 +83,11 @@ class TestFeeder(unittest.TestCase):
             tags = feeder.filter(self.structure)
             self.assertNotEqual(len(tags), 0)
 
-        with self.subTest(test=7):
+        with self.subTest(test='flexible feeder multi root structure'):
             feeder = Feeder('is', ['Liabilities'], strict=False)
-            node = feeder.find_start(self.structure_3)
-            self.assertEqual(
-                node.name,
-                'us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesMinorityInterestAndIncomeLossFromEquityMethodInvestments')
+            chapter, node = feeder.find_start(self.structure_3)
+            self.assertEqual(node, None)
+            self.assertNotEqual(chapter, None)
 
     def test_classified_feeder(self):
         with self.subTest(test='zeros'):

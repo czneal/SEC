@@ -1,8 +1,8 @@
 import pandas as pd
 
-from typing import Dict, List, Optional, Container, Union, cast, Callable
+from typing import Dict, List, Optional, Container, Union, cast, Callable, Set
 
-from xbrlxml.xbrlchapter import Node, CalcChapter, DimChapter
+from xbrlxml.xbrlchapter import Node, CalcChapter, DimChapter, Chapter
 from algos.scheme import enum
 from xbrlxml.xbrlfileparser import TContextAsDictDim
 
@@ -172,12 +172,14 @@ def find_missing(chapter: CalcChapter,
 
 def calc_indicator(
         node: Node,
-        nums: Dict[str, float]) -> Optional[float]:
+        nums: Dict[str, float],
+        used_tags: Set[str]) -> Optional[float]:
 
     value: Optional[float] = None
+    used_tags.add(node.name)
 
     for child in node.children.values():
-        child_value = calc_indicator(child, nums)
+        child_value = calc_indicator(child, nums, used_tags)
         child_weight = child.getweight()
         if child_value is None:
             child_value = nums.get(child.name, None)
@@ -188,4 +190,29 @@ def calc_indicator(
                 value = child_value * child_weight
     if value is None:
         value = nums.get(node.name, None)
+    return value
+
+
+def calc_indicator_whole(
+        chapter: Chapter,
+        nums: Dict[str, float]) -> Optional[float]:
+
+    used_tags: Set[str] = set()
+    value: Optional[float] = None
+    for node in chapter.nodes.values():
+        if node.parent is not None:
+            continue
+
+        remain_nums = {k: v for k, v in nums.items()
+                       if k not in used_tags}
+
+        v = calc_indicator(node,
+                           nums=remain_nums,
+                           used_tags=used_tags)
+        if v:
+            if value:
+                value += v
+            else:
+                value = v
+
     return value

@@ -16,7 +16,7 @@ from indi.types import Nums
 from indi.indprocs import Indicator
 from indi.indprocs import create as create_proc
 from utils import class_for_name
-from algos.calc import calc_indicator
+from algos.calc import calc_indicator, calc_indicator_whole
 from algos.scheme import Chapters
 
 
@@ -33,7 +33,7 @@ class IndicatorRestated(Indicator):
 
     def calc(self, nums: Nums, fy: int, s: Chapters) -> Optional[float]:
         try:
-            node = self.feeder.find_start(s)
+            start_chapter, start_node = self.feeder.find_start(s)
         except IndexError:
             return None
 
@@ -47,7 +47,10 @@ class IndicatorRestated(Indicator):
             if c in nums_fy:
                 facts[c] = nums_fy[c]
 
-        return calc_indicator(node, facts)
+        if start_node is None:
+            return calc_indicator_whole(start_chapter, facts)
+        else:
+            return calc_indicator(start_node, facts, used_tags=set())
 
     def description(self) -> str:
         return 'indicator:{0}\nclass id: {1}\n{2}'.format(

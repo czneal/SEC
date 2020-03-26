@@ -1,5 +1,5 @@
-from typing import List, Tuple, Optional, cast, Dict, Iterator
-from algos.scheme import Chapters, Node, enum_filtered, enum
+from typing import List, Tuple, Optional, cast, Dict, Iterator, Union
+from algos.scheme import Chapters, Node, Chapter, enum_filtered, enum
 from indi.modclass import Classifier
 
 
@@ -9,7 +9,8 @@ class Feeder(object):
         self.names = names.copy()
         self.strict = strict
 
-    def find_start(self, structure: Chapters) -> Node:
+    def find_start(self, structure: Chapters) \
+            -> Tuple[Chapter, Optional[Node]]:
         """
         return Node for the first occurence in names if strict==True
         raise IndexError exception otherwise
@@ -29,7 +30,7 @@ class Feeder(object):
         if self.strict:
             for name in self.names:
                 if name in chapter.nodes:
-                    return chapter.nodes[name]
+                    return chapter, chapter.nodes[name]
             else:
                 raise IndexError()
         else:
@@ -39,28 +40,30 @@ class Feeder(object):
 
             # if only one root node
             if len(starts) == 1:
-                return starts[0][0]
+                return chapter, starts[0][0]
             if len(starts) == 0:
                 raise IndexError()
 
-            # try to find biggest node
-            for i in range(len(starts)):
-                starts[i] = (starts[i][0],
-                             len([0
-                                  for [c] in enum(starts[i][0],
-                                                  outpattern='c')])
-                             )
+            return chapter, None
 
-            starts = sorted(starts, key=lambda x: x[1], reverse=True)
-            if starts[0][1] > starts[1][1]:
-                return starts[0][0]
+            # # try to find biggest node
+            # for i in range(len(starts)):
+            #     starts[i] = (starts[i][0],
+            #                  len([0
+            #                       for [c] in enum(starts[i][0],
+            #                                       outpattern='c')])
+            #                  )
 
-            # find start by names
-            for name in self.names:
-                if name in chapter.nodes:
-                    return chapter.nodes[name]
-            else:
-                raise IndexError()
+            # starts = sorted(starts, key=lambda x: x[1], reverse=True)
+            # if starts[0][1] > starts[1][1]:
+            #     return starts[0][0]
+
+            # # find start by names
+            # for name in self.names:
+            #     if name in chapter.nodes:
+            #         return chapter.nodes[name]
+            # else:
+            #     raise IndexError()
 
     def filter(
             self, structure: Chapters) -> List[Tuple[str, str]]:
@@ -68,19 +71,23 @@ class Feeder(object):
         return list of pairs: [('us-gaap:Liabilities','us-gaap:LaibilitiesCurrent'), ...]
         """
         try:
-            node = self.find_start(structure)
+            chapter, node = self.find_start(structure)
         except IndexError:
             return ([])
+        start: Union[Node, Chapter] = chapter
+        if node:
+            start = node
 
         pairs: List[Tuple[str, str]] = []
         names: List[str] = []
-        for p, c in self._custom_filter(node):
+        for p, c in self._custom_filter(start):
             pairs.append((p, c))
         return pairs
 
-    def _custom_filter(self, node: Node) -> Iterator[Tuple[str, str]]:
+    def _custom_filter(
+            self, start: Union[Node, Chapter]) -> Iterator[Tuple[str, str]]:
         return cast(Iterator[Tuple[str, str]],
-                    enum(node,
+                    enum(start,
                          leaf=True,
                          outpattern='pc',
                          func=lambda x: cast(str, x.name)))
@@ -104,9 +111,10 @@ class ClassFeeder(Feeder):
         else:
             return False
 
-    def _custom_filter(self, node: Node) -> Iterator[Tuple[str, str]]:
+    def _custom_filter(
+            self, start: Union[Node, Chapter]) -> Iterator[Tuple[str, str]]:
         return cast(Iterator[Tuple[str, str]],
-                    enum_filtered(node,
+                    enum_filtered(start,
                                   outpattern='pc',
                                   leaf=True,
                                   nfunc=lambda x: cast(str, x.name),
