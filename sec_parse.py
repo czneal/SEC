@@ -105,5 +105,5 @@ def parse(method: str, after: dt.date, adsh: str = '') -> None:
 
 if __name__ == '__main__':
     logs.configure('file', level=logs.logging.INFO)
-    parse('explicit', dt.date(2013, 1, 1), adsh='0000065984-13-000050')
+    parse('explicit', dt.date(2013, 1, 1), adsh='0000882184-17-000103')
     #parse_mpc('new', dt.date(2013, 1, 1))
