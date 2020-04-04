@@ -8,7 +8,7 @@ from typing import Dict, List
 import xbrlxml.dataminer
 from xbrlxml.xbrlchapter import CalcChapter
 from xbrlxml.xbrlrss import record_from_str
-from utils import add_app_dir
+from utils import add_app_dir, add_root_dir
 
 
 MYDEBUG: bool = False
@@ -67,11 +67,14 @@ class TestDump(unittest.TestCase):
 
 
 class TestConsistence(unittest.TestCase):
+    @unittest.skipIf(not MYDEBUG, 'debug')
     def test_calc_from_dim_fail(self):
-        with open(make_absolute('res/backward/0001047862-16-000225.record')) as f:
-            record = record_from_str(f.read())
-            file_link = make_absolute(
-                'res/backward/0001047862-16-000225.zip')
+        adsh = '0000037996-16-000092'
+
+        record = record_from_str(
+            """{"company_name": "FORD MOTOR CO", "form_type": "10-K", "cik": 37996, "sic": 3711, "adsh": "0000037996-16-000092", "period": "2015-12-31", "file_date": "2016-02-11", "fye": "1231", "fy": 2015}""")
+        file_link = add_root_dir(
+            '2016/02/0000037996-0000037996-16-000092.zip')
 
         dm = xbrlxml.dataminer.NumericDataMiner()
 

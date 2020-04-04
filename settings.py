@@ -75,3 +75,7 @@ class Settings(object):
     @staticmethod
     def server_address() -> str:
         return cast(str, Settings.__open()["server_address"])
+
+    @staticmethod
+    def form4_dir() -> str:
+        return os.path.join(Settings.root_dir(), '3-4-5')
