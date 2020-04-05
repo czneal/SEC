@@ -117,6 +117,7 @@ res
 *.log
 *.npy
 *.settings
+py_path.bat
 
 #archives
 *.7z

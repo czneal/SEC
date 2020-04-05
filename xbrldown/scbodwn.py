@@ -45,6 +45,13 @@ class FormReader(r.MySQLReader):
         data = self.fetch(query, {'cik': cik})
         return [cast(str, r['doc_link']) for r in data]
 
+    def fetch_nasdaq_ciks(self) -> List[int]:
+        query = """
+        select cik from nasdaq group by cik
+        """
+        data = self.fetch(query, params={})
+        return [cast(int, row['cik']) for row in data]
+
 
 def find_form_link(rpt_url: str) -> str:
     rpt_body = fetch_with_delay(rpt_url)
@@ -119,9 +126,9 @@ def add_forms_to_zipfile(zipfile_name: str, form_links: List[str]):
                 exc_info=True)
 
         pb.measure()
-        print('\r' + pb.message(), end='')
+        # print('\r' + pb.message(), end='')
 
-    print()
+    print(f'downloaded {len(form_links)}')
 
 
 def download(ciks: List[int]) -> int:
@@ -143,11 +150,12 @@ def download_mpc(ciks: List[int]):
     manager.start(to_do=ciks,
                   configure_worker=configure_worker,
                   configure_writer=configure_writer,
-                  n_procs=6)
+                  n_procs=16)
 
 
 if __name__ == '__main__':
+    reader = FormReader()
+    ciks = reader.fetch_nasdaq_ciks()
 
-    ciks = [1067983, 70858, 19617, 732717, 1652044, 34088]
     download_mpc(ciks)
     # download(ciks[4:5])
