@@ -32,8 +32,8 @@ class SCBOWriter(MySQLWriter):
 
         self.owners = MySQLTable('owners', self.con)
 
-    def write(self, data: List[OwnerTuple]):
-        row_list = [dict(zip(OwnerColumns, row)) for row in data]
+    def write(self, obj: List[OwnerTuple]):
+        row_list = [dict(zip(OwnerColumns, row)) for row in obj]
 
         self.write_to_table(self.owners, row_list)
         self.flush()
