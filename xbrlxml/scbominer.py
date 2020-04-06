@@ -2,10 +2,38 @@ import datetime as dt
 import zipfile
 import os
 import pandas as pd
-from typing import List, Tuple, IO, Iterator
+from typing import List, Tuple, IO, Iterator, TypeVar, Optional
 
 import xbrlxml.scbo
 from settings import Settings
+from mysqlio.writers import MySQLWriter
+from mysqlio.basicio import MySQLTable, retry_mysql_write
+
+
+OwnerTuple = Tuple[int, dt.date, int, bool, bool, bool, bool, str, str]
+OwnerColumns = [
+    'issuer_cik',
+    'period',
+    'cik',
+    'is_director',
+    'is_officer',
+    'is_other',
+    'is_ten_percent',
+    'officer_text',
+    'other_text']
+
+
+class SCBOWriter(MySQLWriter):
+    def __init__(self):
+        super().__init__()
+
+        self.owners = MySQLTable('owners', self.con)
+
+    def write(self, data: List[OwnerTuple]):
+        row_list = [dict(zip(OwnerColumns, row)) for row in data]
+
+        self.write_to_table(self.owners, row_list)
+        self.flush()
 
 
 class Form4Archive():
@@ -22,13 +50,21 @@ class Form4Archive():
             yield self.zf.open(filename)
 
 
+_T = TypeVar('_T')
+
+
+def default(value: Optional[_T], default_value: _T) -> _T:
+    if value is None:
+        return default_value
+    return value
+
+
 class SCBOMiner():
     def __init__(self):
-        self.data: List[List[Any]] = []
+        self.data: List[OwnerTuple] = []
 
-    def mine_directors(self, cik: int) -> List[Tuple[int, str, dt.date]]:
+    def mine_owners(self, cik: int):
         archive = Form4Archive(cik)
-        data: List[Tuple[int, str, dt.date]] = []
 
         for f in archive.enum():
             d = xbrlxml.scbo.open_document(f)
@@ -37,14 +73,22 @@ class SCBOMiner():
 
             for owner in d.reportingOwner:
                 if owner.reportingOwnerRelationship.isDirector:
-                    data.append((owner.reportingOwnerId.rptOwnerCik,
-                                 owner.reportingOwnerId.rptOwnerName,
-                                 d.periodOfReport))
-        return data
+                    self.data.append(
+                        (cik, d.periodOfReport, owner.reportingOwnerId.rptOwnerCik, default(
+                            owner.reportingOwnerRelationship.isDirector, False), default(
+                            owner.reportingOwnerRelationship.isOfficer, False), default(
+                            owner.reportingOwnerRelationship.isOther, False), default(
+                            owner.reportingOwnerRelationship.isTenPercentOwner, False), default(
+                            owner.reportingOwnerRelationship.officerTitle, ''), default(
+                            owner.reportingOwnerRelationship.otherText, '')))
 
 
 if __name__ == '__main__':
     miner = SCBOMiner()
-    directors = miner.mine_directors(1652044)
+    writer = SCBOWriter()
 
-    d = pd.DataFrame(directors, columns=['cik', 'name', 'date'])
+    ciks = [1652044, 1750, 1800, 1788028]
+    for cik in ciks:
+        miner.mine_owners(cik)
+
+    writer.write(miner.data)

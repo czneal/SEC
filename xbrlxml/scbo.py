@@ -32,7 +32,7 @@ class Unit():
 
 class ReportingOwnerId(Unit):
     def __init__(self):
-        self.rptOwnerCik = 0
+        self.rptOwnerCik: int = 0
         self.rptOwnerCcc: Optional[str] = None
         self.rptOwnerName: Optional[str] = None
 
@@ -150,10 +150,10 @@ class Document(Unit):
         self.periodOfReport = dt.date.today()
         self.issuer = Issuer()
         self.reportingOwner: List[ReportingOwner] = []
-        self.nonDerivativeTable = []
-        self.nonDerivativeHolding = []
-        self.derivativeTable = []
-        self.derivativeHolding = []
+        self.nonDerivativeTable: List[NonDerivativeTransaction] = []
+        self.nonDerivativeHolding: List[NonDerivativeHolding] = []
+        self.derivativeTable: List[DerivativeTransaction] = []
+        self.derivativeHolding: List[DerivativeHolding] = []
         self.footnotes = []
         self.remarks = []
 

@@ -85,9 +85,17 @@ def add_forms_to_zipfile(zipfile_name: str, form_links: List[str]):
     zipfile_name = os.path.join(forms_dir, zipfile_name)
     try:
         if os.path.exists(zipfile_name):
-            zf = zipfile.ZipFile(zipfile_name, mode='a')
+            zf = zipfile.ZipFile(
+                zipfile_name,
+                mode='a',
+                compression=zipfile.ZIP_DEFLATED,
+                compresslevel=5)
         else:
-            zf = zipfile.ZipFile(zipfile_name, mode='w')
+            zf = zipfile.ZipFile(
+                zipfile_name,
+                mode='w',
+                compression=zipfile.ZIP_DEFLATED,
+                compresslevel=5)
     except Exception:
         logger.error(
             f'unable write to zip archive {zipfile_name}',
@@ -131,6 +139,35 @@ def add_forms_to_zipfile(zipfile_name: str, form_links: List[str]):
     print(f'downloaded {len(form_links)}')
 
 
+def compress():
+    import shutil
+
+    pb = ProgressBar()
+
+    forms_dir = add_root_dir('3-4-5')
+    for root, _, filenames in os.walk(forms_dir):
+        pb.start(len(filenames))
+        for filename in filenames:
+            try:
+                with zipfile.ZipFile(os.path.join(root, filename)) as in_zip, \
+                    zipfile.ZipFile(os.path.join(root, 'tmp.zip'),
+                                    mode='w',
+                                    compression=zipfile.ZIP_DEFLATED,
+                                    compresslevel=5) as out_zip:
+                    for info in in_zip.filelist:
+                        out_zip.writestr(
+                            zinfo_or_arcname=info.filename,
+                            data=in_zip.open(
+                                info.filename).read())
+                shutil.copy(src=os.path.join(root, 'tmp.zip'),
+                            dst=os.path.join(root, filename))
+                pb.measure()
+                print('\r' + pb.message(), end='')
+            except Exception:
+                print(f'{filename}')
+        print()
+
+
 def download(ciks: List[int]) -> int:
     reader = FormReader()
     logs.configure('file', level=logs.logging.INFO)
@@ -154,8 +191,11 @@ def download_mpc(ciks: List[int]):
 
 
 if __name__ == '__main__':
-    reader = FormReader()
-    ciks = reader.fetch_nasdaq_ciks()
+    # reader = FormReader()
+    # ciks = reader.fetch_nasdaq_ciks()
+    # ciks = [8670]
 
-    download_mpc(ciks)
-    # download(ciks[4:5])
+    # download_mpc(ciks)
+    # download(ciks)
+
+    compress()
