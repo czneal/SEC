@@ -8,6 +8,7 @@ import logs
 from abstractions import Worker, WriterProxy
 from utils import add_root_dir, ProgressBar
 from urltools import fetch_with_delay
+from settings import Settings
 import mysqlio.readers as r
 
 
@@ -78,7 +79,7 @@ def find_form_link(rpt_url: str) -> str:
 def add_forms_to_zipfile(zipfile_name: str, form_links: List[str]):
     logger = logs.get_logger(name=add_forms_to_zipfile.__name__)
 
-    forms_dir = add_root_dir('3-4-5')
+    forms_dir = add_root_dir(Settings.form4_dir())
     if not os.path.exists(forms_dir):
         os.mkdir(forms_dir)
 
