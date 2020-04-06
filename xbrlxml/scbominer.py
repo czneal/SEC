@@ -130,4 +130,4 @@ if __name__ == '__main__':
     reader = xbrldown.scbodwn.FormReader()
     ciks = reader.fetch_nasdaq_ciks()
 
-    parse_owners_mpc(ciks[:10], 'file', logs.logging.INFO, 8)
+    parse_owners_mpc(ciks, 'file', logs.logging.INFO, 8)
