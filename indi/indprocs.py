@@ -523,8 +523,8 @@ class mg_r_income(IndicatorStatic):
         super().__init__()
         self.dp = {'us-gaap:ProfitLoss',
                    'us-gaap:NetIncomeLoss',
-                   'NetIncomeLossAvailableToCommonStockholdersBasic',
-                   'IncomeLossFromContinuingOperations',
+                   'us-gaap:NetIncomeLossAvailableToCommonStockholdersBasic',
+                   'us-gaap:IncomeLossFromContinuingOperations',
                    'mg_r_capitalized_costs_d',
                    'mg_r_income_noncontroling',
                    'mg_r_dividend_preferred'}
@@ -538,9 +538,9 @@ class mg_r_income(IndicatorStatic):
                 facts["mg_r_dividend_preferred"] +
                 facts["mg_r_income_noncontroling"]))
         else:
-            result = facts['NetIncomeLossAvailableToCommonStockholdersBasic']
+            result = facts['us-gaap:NetIncomeLossAvailableToCommonStockholdersBasic']
             result = assign(
-                result, facts['IncomeLossFromContinuingOperations'])
+                result, facts['us-gaap:IncomeLossFromContinuingOperations'])
 
         result -= facts["mg_r_capitalized_costs_d"]
 
