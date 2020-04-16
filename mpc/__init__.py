@@ -87,7 +87,7 @@ def worker_proc(
             info_queue: mp.Queue,
             stop_event: mp.synchronize.Event,
             configure_worker: Callable[[], Worker],
-            level: int=Settings.n_proc()) -> None:
+            level: int) -> None:
     try:
         configure_logging(log_queue, level)
         logger = logs.get_logger(name=__name__)

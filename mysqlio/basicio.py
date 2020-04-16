@@ -15,11 +15,13 @@ import pandas as pd  # type: ignore
 
 import queries as q
 from settings import Settings
+from utils import retry
 
 WHITE_LIST_TABLES = frozenset(
     ['companies', 'nasdaq',
      'stocks_daily', 'stocks_shares', 'stocks_dividents',
      'stocks_index',
+     'owners',
      'mgnums', 'logs_parse',
      'siccodes', 'sec_forms', 'reports',
      'sec_xbrl_forms', 'sec_shares', 'sec_shares_ticker',
@@ -59,14 +61,7 @@ def open_connection(host: str = Settings.host(),
     return con
 
 
-def tryout(times, exc_cls, what, *args, **kwargs):
-    for i in range(times):
-        try:
-            return what(*args, **kwargs)
-        except exc_cls as e:
-            if i + 1 == times:
-                print('done {} tryouts'.format(times))
-                raise e
+retry_mysql_write = retry(5, mysql.connector.InternalError)
 
 
 class Table(object):

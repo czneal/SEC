@@ -3,5 +3,15 @@ channels:
   - defaults
 dependencies:
   - python=3.7
-prefix: C:\Users\Asus\Miniconda3\envs\sec
+  - pep8
+  - tensorflow=2.0
+  - autopep8
+  - lxml
+  - parameterized
+  - pandas
+  - python=3.7
+  - beautifulsoup4
+  - mypy
+  - notebook
+  - urllib3
 

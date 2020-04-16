@@ -111,11 +111,13 @@ RawData
 Reports
 Test
 Outputs
+res
 */tests/res/*
 *.txt
 *.log
 *.npy
 *.settings
+py_path.bat
 
 #archives
 *.7z
