@@ -9,9 +9,8 @@ from algos.calc import calc_from_dim
 
 import datetime as dt
 from utils import add_app_dir
+from tests.helper import read_report
 from xbrlxml.xbrlfile import XbrlFile
-from xbrlxml.xbrlzip import XBRLZipPacket
-from xbrlxml.xbrlrss import FileRecord
 
 from algos.tests.resource_chapters import make_chapters
 
@@ -19,24 +18,10 @@ from algos.tests.resource_chapters import make_chapters
 class TestCalc(unittest.TestCase):
     def open_xbrlfile(self) -> Tuple[XbrlFile, Dict[str, Dict[str, str]]]:
 
-        record = FileRecord()
-        record.company_name = "SOUTHERN CO"
-        record.form_type = "10-K"
-        record.cik = 92122
-        record.sic = 4911
-        record.adsh = "0000092122-19-000006"
-        record.period = dt.date(2018, 12, 31)
-        record.file_date = dt.date(2019, 2, 20)
-        record.fye = "1231"
-        record.fy = 2018
+        adsh = "0000092122-19-000006"
+        dm, record, r = read_report(adsh)
+        self.assertTrue(r)
 
-        zip_filename = add_app_dir('algos/tests/res/calc_missing.zip')
-        packet = XBRLZipPacket()
-        packet.open_packet(zip_filename)
-
-        xbrlfile = XbrlFile()
-        xbrlfile.prepare(packet, record)
-        xbrlfile.read_units_facts_fn()
         contexts = {
             'bs': {
                 "roleuri": "http://southerncompany.com/role/ConsolidatedBalanceSheets",
@@ -47,7 +32,7 @@ class TestCalc(unittest.TestCase):
             'cf': {
                 "roleuri": "http://southerncompany.com/role/ConsolidatedStatementsOfCashFlows",
                 "context": "FD2018Q4YTD"}}
-        return xbrlfile, contexts
+        return dm.xbrlfile, contexts
 
     def test_validator(self):
         answers = [True, True, True, True, False, True, False, False]

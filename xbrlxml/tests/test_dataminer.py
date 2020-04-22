@@ -7,37 +7,14 @@ import datetime
 from typing import Dict, List, Tuple
 
 import xbrlxml.dataminer
-import xbrlxml.xbrlrss
 from xbrlxml.xbrlchapter import CalcChapter
-from xbrlxml.xbrlrss import record_from_str, FileRecord
+from xbrlxml.xbrlrss import record_from_str
 from utils import add_app_dir, add_root_dir, remove_root_dir
 from mysqlio.basicio import MySQLTable, open_connection
-
+from tests.helper import read_report
 
 MYDEBUG: bool = False
 SKIP_LONG = True
-
-
-def read_report(adsh: str) -> Tuple[xbrlxml.dataminer.NumericDataMiner,
-                                    FileRecord,
-                                    bool]:
-
-    en = xbrlxml.xbrlrss.MySQLEnumerator()
-    en.set_filter_method(
-        'explicit', after=datetime.date(
-            2013, 1, 1), adsh=adsh)
-
-    records = en.filing_records()
-    if not records:
-        raise ValueError(f'no such adsh: {adsh}')
-
-    record, file_link = records[0]
-    file_link = add_root_dir(file_link)
-
-    dm = xbrlxml.dataminer.NumericDataMiner()
-    r = dm.feed(record, file_link)
-
-    return (dm, record, r)
 
 
 class TestDump(unittest.TestCase):
@@ -93,17 +70,9 @@ class TestConsistence(unittest.TestCase):
     @unittest.skipIf(MYDEBUG, 'debug')
     def test_calc_from_dim_fail(self):
         adsh = '0000037996-16-000092'
+        dm, record, r = read_report(adsh)
 
-        record = record_from_str(
-            """{"company_name": "FORD MOTOR CO", "form_type": "10-K", "cik": 37996, "sic": 3711, "adsh": "0000037996-16-000092", "period": "2015-12-31", "file_date": "2016-02-11", "fye": "1231", "fy": 2015}""")
-        file_link = add_root_dir(
-            '2016/02/0000037996-0000037996-16-000092.zip')
-
-        dm = xbrlxml.dataminer.NumericDataMiner()
-
-        r = dm.feed(record, file_link)
-
-        df = dm.numeric_facts
+        self.assertTrue(r)
 
     @unittest.skipIf(MYDEBUG, 'debug')
     def test_NetIncomeLoss_fail(self):
