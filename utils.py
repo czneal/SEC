@@ -152,7 +152,6 @@ def retry(retry: int, exc_cls: Type[Exception]) -> Any:
                     return function(*args, **kwargs)
                 except exc_cls as e:
                     if i + 1 == retry:
-                        print('done {} tryouts'.format(retry))
                         raise e
         return wrapper
     return decorator
@@ -211,6 +210,11 @@ def year_month_dir(year: int, month: int) -> str:
     """
     path = '{0}/{1}/'.format(str(year), str(month).zfill(2))
     return add_root_dir(path)
+
+
+def make_absolute(path: str, file_loc: str) -> str:
+    dir_name = os.path.dirname(file_loc)
+    return os.path.join(dir_name, path)
 
 
 if __name__ == '__main__':

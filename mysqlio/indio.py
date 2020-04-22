@@ -1,5 +1,5 @@
 from typing import Dict, Any, List, Tuple, cast
-from mysql.connector import InternalError
+from mysqlio.basicio import InternalError
 
 import indi.indinfo as I
 import indi.indcache as C

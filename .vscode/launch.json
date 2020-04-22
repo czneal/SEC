@@ -11,7 +11,10 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}",
-            "justMyCode": false
+            "justMyCode": false,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
         },
         {
             "name": "Python: Remote Attach",
@@ -30,7 +33,7 @@
             "name": "Python: Module",
             "type": "python",
             "request": "launch",
-            "module": "xbrlxml.scbominer",
+            "module": "algos.tests.test_algos_xbrljson",
             "console": "integratedTerminal"
         },
         {

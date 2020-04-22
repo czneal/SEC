@@ -6,6 +6,7 @@ import typing
 JobType = typing.Any
 WriteType = typing.Any
 
+
 class Writer(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def __init__(self, **kwargs): pass

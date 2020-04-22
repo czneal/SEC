@@ -8,14 +8,32 @@ import datetime
 import re
 from contextlib import contextmanager
 from exceptions import MySQLSyntaxError, MySQLTypeError
-from typing import Any, Dict, List, Optional, Set, Mapping, Union, cast, Iterable
+from typing import (Any, Dict, List, Optional,
+                    Set, Mapping, Union, cast, Iterable,
+                    Iterator, Type)
 
-import mysql.connector  # type :ignore
 import pandas as pd  # type: ignore
-
-import queries as q
 from settings import Settings
 from utils import retry
+
+#  'mysqldbw' backend:
+# from mysqlio.mysqldbw import (open_connection,
+#                               RptConnection,
+#                               RptCursor,
+#                               InternalError,
+#                               Error,
+#                               ProgrammingError,
+#                               activate_test_mode)
+# 'mysqlconw' backend:
+from mysqlio.mysqlconw import (open_connection,
+                               RptConnection,
+                               RptCursor,
+                               InternalError,
+                               Error,
+                               ProgrammingError,
+                               activate_test_mode,
+                               deactivate_test_mode)
+
 
 WHITE_LIST_TABLES = frozenset(
     ['companies', 'nasdaq',
@@ -27,9 +45,15 @@ WHITE_LIST_TABLES = frozenset(
      'sec_xbrl_forms', 'sec_shares', 'sec_shares_ticker',
      'indicators', 'ind_proc_info', 'ind_rest_info', 'ind_classified_pairs'])
 
+WHITE_LIST_TABLES_TEST = frozenset([
+    'simple_table', 'test_create_table'
+])
+
 
 @contextmanager
-def OpenConnection(host: str = Settings.host(), port: int = 3306):
+def OpenConnection(
+        host: str = Settings.host(),
+        port: int = 3306) -> Iterator[RptConnection]:
     con = open_connection(host, port)
     try:
         yield con
@@ -37,39 +61,17 @@ def OpenConnection(host: str = Settings.host(), port: int = 3306):
         con.close()
 
 
-def open_connection(host: str = Settings.host(),
-                    port: int = 3306) -> mysql.connector.MySQLConnection:
-    hosts = {"server": "192.168.88.113",
-             "remote": "95.31.1.243",
-             "localhost": "localhost",
-             "mgserver": "192.168.188.149"}
-    if host == 'remote':
-        port = 3456
-    con = mysql.connector.connect(
-        user="app",
-        password="Burkina!7faso",
-        host=hosts[host],
-        database="reports",
-        port=port,
-        ssl_ca=Settings.ssl_dir() +
-        "ca.pem",
-        ssl_cert=Settings.ssl_dir() +
-        "client-cert.pem",
-        ssl_key=Settings.ssl_dir() +
-        "client-key.pem",
-        connection_timeout=100)
-    return con
-
-
-retry_mysql_write = retry(5, mysql.connector.InternalError)
+retry_mysql_write = retry(5, InternalError)
 
 
 class Table(object):
-    def __init__(self, name, con, db_name="reports", buffer_size=1000):
+    def __init__(self, name, con, buffer_size=1000):
         self.table_name = name
         self.fields = set()
         self.not_null_fields = set()
         self.primary_keys = set()
+
+        db_name = con.database
 
         cur = con.cursor(dictionary=True)
         cur.execute(
@@ -101,56 +103,6 @@ class Table(object):
     def truncate(self, con):
         cur = con.cursor()
         cur.execute("truncate table " + self.table_name)
-        con.commit()
-
-    @staticmethod
-    def create(con: mysql.connector.connection,
-               name: str,
-               fields: list) -> None:
-
-        cmd = 'drop table if exists `{}`;\n'.format(name)
-        cmd += "create table `{0}` (\n".format(name)
-        columns = []
-        primary = []
-        try:
-            for field in fields:
-                column = '`{fname}` {ftype}{fsize} {not_null}'
-                if issubclass(field['type'], str):
-                    ftype = 'varchar'
-                    fsize = '({})'.format(field['size'])
-                elif issubclass(field['type'], int):
-                    ftype = 'int'
-                    fsize = '(11)'
-                elif issubclass(field['type'], float):
-                    ftype = 'decimal'
-                    fsize = '(24,4)'
-                elif issubclass(field['type'], datetime.date):
-                    ftype = 'date'
-                    fsize = ''
-                else:
-                    raise MySQLTypeError('Field type doesnt supported')
-
-                if field['notnull']:
-                    not_null = 'not null'
-                else:
-                    not_null = ''
-                columns.append(column.format(fname=field['name'],
-                                             ftype=ftype,
-                                             fsize=fsize,
-                                             not_null=not_null))
-
-                if field['primary']:
-                    primary.append('`{}`'.format(field['name']))
-        except KeyError as e:
-            raise MySQLSyntaxError('Fields list is not acceptable, ' + str(e))
-
-        cmd += ',\n'.join(columns)
-        cmd += ',\nprimary key ({})\n'.format(', '.join(primary))
-        cmd += ') ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;'
-
-        cur = con.cursor()
-        for result in cur.execute(cmd, multi=True):
-            pass
         con.commit()
 
     def __insert_command(self, fields=None):
@@ -207,7 +159,7 @@ class Table(object):
             if field not in header:
                 return False
 
-        #df_with_none.rename('`{}`'.format, axis='columns', inplace=True)
+        # df_with_none.rename('`{}`'.format, axis='columns', inplace=True)
 
         if df.shape[0] <= self.buffer_size:
             cur.executemany(self.__insert_command(header),
@@ -223,153 +175,13 @@ class Table(object):
         return True
 
 
-class ReportWriter(object):
-    def __init__(self, con):
-        self.cntx_tbl = Table('raw_contexts', con)
-        self.nums_tbl = Table('raw_nums', con)
-        self.reps_tbl = Table('raw_reps', con)
-
-    def write_raw_contexts(self, r, cur):
-        df = r.cntx_df
-        df['cik'] = r.rss['cik']
-        df['adsh'] = r.rss['adsh']
-        self.cntx_tbl.write_df(df, cur)
-
-    def write_raw_facts(self, r, cur):
-        df = r.facts_df
-        df['cik'] = r.rss['cik']
-        df['adsh'] = r.rss['adsh']
-        self.nums_tbl.write_df(df, cur)
-
-    def write_raw_report(self, r, cur):
-        data = {'adsh': r.rss['adsh'],
-                'cik': r.rss['cik'],
-                'file_date': r.rss['file_date'],
-                'file_link': r.file_link,
-                'period_rss': r.rss['period'],
-                'fy_rss': r.rss['fy'],
-                'fye_rss': r.rss['fye'],
-                'period_x': r.ddate,
-                'fy_x': r.fy,
-                'fye_x': r.fye,
-                'structure': r.structure_dumps(),
-                'form_type': r.rss['form_type'],
-                'taxonomy': r.rss['us-gaap'],
-                'period_dei': r.dei_edate}
-
-        if 'edate' in r.true_dates:
-            data['period'] = r.true_dates['edate']
-        else:
-            data['period'] = None
-        if 'fy' in r.true_dates:
-            data['fy'] = r.true_dates['fy']
-        else:
-            data['fy'] = None
-        if 'fye' in r.true_dates:
-            data['fye'] = r.true_dates['fye']
-        else:
-            data['fye'] = None
-
-        self.reps_tbl.write(data, cur)
-        self.reps_tbl.flush(cur)
-
-
-def read_reports_attr(years):
-    s = "("
-    for y in years:
-        s += "{0},".format(y)
-    s = s[:-1] + ")"
-
-    try:
-        con = OpenConnection()
-        cur = con.cursor(dictionary=True)
-        cur.execute("""select adsh, trusted,
-                    	case structure
-                    		when '{}' then 0
-                            else 1
-                        end as exist, company_name, c.cik
-                    from reports r, companies c
-                    where fin_year in """ + s + """
-                        and c.cik = r.cik""" + Settings.select_limit())
-
-        reports = pd.DataFrame(cur.fetchall())
-        reports.set_index("adsh", inplace=True)
-    finally:
-        con.close()
-
-    return reports
-
-
-def read_report_structures(adshs: List[str]) -> pd.DataFrame:
-    """
-    read reports table
-    return pandas.DataFrame object with columns [adsh, structure, fy]
-    if adshs list is empty return empty DataFrame
-    """
-    with OpenConnection() as con:
-        cur = con.cursor(dictionary=True)
-        cur.execute(q.create_tmp_adsh_table)
-        cur.executemany(
-            "insert into tmp_adshs (adsh) values (%s)", list(
-                (e,) for e in adshs))
-        cur.execute("""select r.adsh as adsh, structure, r.fin_year as fy
-                        from reports r, tmp_adshs a
-                        where r.adsh = a.adsh""")
-        df = pd.DataFrame(cur.fetchall(), columns=['adsh', 'structure', 'fy'])
-        df.set_index("adsh", inplace=True)
-
-    return df
-
-
-def read_reports_nums(adshs: List[str]) -> pd.DataFrame:
-    """
-    read mgnums table
-    return pd.DataFrame with columns [tag, version, value, fy, adsh, uom]
-    for all report with adsh firld in adshs list
-    if adshs list is empty return empty DataFrame
-    """
-
-    with OpenConnection() as con:
-        cur = con.cursor(dictionary=True)
-        cur.execute(q.create_tmp_adsh_table)
-        cur.executemany(q.insert_tmp_adsh, [(adsh,) for adsh in adshs])
-        cur.execute("""select tag, version, value, fy, n.adsh, uom
-                       from mgnums n, tmp_adshs t
-                       where n.adsh = t.adsh""")
-        df = (pd.DataFrame(cur.fetchall(),
-                           columns=['tag', 'version', 'value',
-                                    'fy', 'adsh', 'uom'])
-              .astype({'value': float}))
-
-    return df
-
-
-def read_reports_by_cik(ciks: List[int],
-                        columns: Optional[List[str]] = None) -> pd.DataFrame:
-    """
-    return pd.DataFrame with specified columns from reports table
-    for all cik in ciks list
-    if columns is None return all columns
-    """
-    if columns is None:
-        c_names = 'r.*'
-    else:
-        c_names = ', '.join(['r.' + c for c in columns])
-    with OpenConnection() as con:
-        cur = con.cursor(dictionary=True)
-        cur.execute(q.create_tmp_cik_table)
-        cur.executemany(q.insert_tmp_cik, [(cik,) for cik in ciks])
-        cur.execute("""select {c_names} from reports r, tmp_ciks t
-                       where r.cik=t.cik;""".format(c_names=c_names))
-        return pd.DataFrame(cur.fetchall())
-
-
 class MySQLTable(object):
     def __init__(self,
                  table_name: str,
-                 con: mysql.connector.MySQLConnection,
+                 con: RptConnection,
                  use_simple_insert: bool = False):
-        if table_name not in WHITE_LIST_TABLES:
+        if (table_name not in WHITE_LIST_TABLES and
+                table_name not in WHITE_LIST_TABLES_TEST):
             raise Exception(
                 'table name {0} is not white listed'.format(table_name))
 
@@ -383,7 +195,11 @@ class MySQLTable(object):
 
         types = re.compile(r'(\w+)\((\d+)\)', re.IGNORECASE)
         cur = con.cursor(dictionary=True)
-        cur.execute("show columns from " + table_name + " from reports")
+        cur.execute(
+            "show columns from " +
+            table_name +
+            " from " +
+            con.database)
         for r in cur.fetchall():
             field_name = r["Field"].lower()
             if r["Extra"] == "auto_increment":
@@ -405,7 +221,7 @@ class MySQLTable(object):
         cur.execute(
             "show index from " +
             self.name +
-            " from reports " +
+            " from " + con.database +
             " where non_unique = 0 and column_name <> 'id'")
         for r in cur.fetchall():
             self.primary_keys.add(r["Column_name"].lower())
@@ -431,7 +247,7 @@ class MySQLTable(object):
             primary_keys=self.primary_keys,
             if_field=if_field)
 
-    def write(self, obj: Any, cur: mysql.connector.cursor.MySQLCursor) -> None:
+    def write(self, obj: Any, cur: RptCursor) -> None:
         if isinstance(obj, pd.DataFrame):
             self.write_df(obj, cur)
         elif isinstance(obj, dict):
@@ -446,7 +262,7 @@ class MySQLTable(object):
     def write_df(
             self,
             df: pd.DataFrame,
-            cur: mysql.connector.cursor.MySQLCursor) -> None:
+            cur: RptCursor) -> None:
         if not self.fields.issubset(df.columns):
             raise MySQLTypeError(f'DataFrame should contain all table fields')
 
@@ -455,14 +271,14 @@ class MySQLTable(object):
 
     def write_row(
             self, row: Dict[str, Any],
-            cur: mysql.connector.cursor.MySQLCursor) -> None:
+            cur: RptCursor) -> None:
 
         data = self._prepare_row(row)
         cur.execute(self.insert_command, data)
 
     def write_row_list(
             self, row_list: List[Dict[str, Any]],
-            cur: mysql.connector.cursor.MySQLCursor) -> None:
+            cur: RptCursor) -> None:
 
         for i in range(int(len(row_list) / self.chunk_size) + 1):
             new_row_list = [self._prepare_row(row)
@@ -470,7 +286,7 @@ class MySQLTable(object):
                                                 (i + 1) * self.chunk_size]]
             cur.executemany(self.insert_command, new_row_list)
 
-    def truncate(self, cur) -> None:
+    def truncate(self, cur: RptCursor) -> None:
         cur.execute(f'truncate table `{self.name}`;')
 
     def update_row(
@@ -478,7 +294,7 @@ class MySQLTable(object):
             row: Dict[str, Any],
             key_fields: Iterable[str],
             update_fields: Iterable[str],
-            cur: mysql.connector.cursor.MySQLCursor) -> None:
+            cur: RptCursor) -> None:
         data = self._prepare_row(row, check=False)
         cur.execute(simple_update_command(
             self.name,
@@ -505,6 +321,82 @@ class MySQLTable(object):
             else:
                 data[k] = v
         return data
+
+
+FieldType = Union[Type[str], Type[int], Type[float], Type[datetime.date]]
+
+
+class TableField(object):
+    def __init__(self,
+                 name: str,
+                 ftype: FieldType,
+                 notnull: bool = False,
+                 primary: bool = False,
+                 size: int = 0):
+        self.name = name
+        self.ftype = ftype
+        self.notnull = notnull
+        self.primary = primary
+        self.size = size
+
+
+def create_table(con: RptConnection,
+                 name: str,
+                 fields: List[TableField]):
+    """
+    create table with name = 'name'
+    fields is a list TableField structures
+    """
+
+    commands: List[str] = []
+    commands.append(f'drop table if exists `{name}`;\n')
+
+    create = f"create table `{name}` (\n"
+
+    columns = []
+    primary = []
+
+    for field in fields:
+        column = '`{fname}` {ftype}{fsize} {not_null}'
+        if issubclass(field.ftype, str):
+            ftype = 'varchar'
+            fsize = '({})'.format(field.size)
+        elif issubclass(field.ftype, int):
+            ftype = 'int'
+            fsize = '(11)'
+        elif issubclass(field.ftype, float):
+            ftype = 'decimal'
+            fsize = '(24,4)'
+        elif issubclass(field.ftype, datetime.date):
+            ftype = 'date'
+            fsize = ''
+        else:
+            raise ValueError(f'field type: {field.ftype} doesnt supported')
+
+        if field.notnull:
+            not_null = 'not null'
+        else:
+            not_null = ''
+
+        if field.primary:
+            primary.append('`{}`'.format(field.name))
+            not_null = 'not null'
+
+        columns.append(column.format(fname=field.name,
+                                     ftype=ftype,
+                                     fsize=fsize,
+                                     not_null=not_null))
+
+    create += ',\n'.join(columns)
+    create += ',\nprimary key ({})\n'.format(', '.join(primary))
+    create += ') ENGINE=InnoDB DEFAULT CHARSET=UTF8MB4;'
+
+    commands.append(create)
+
+    cur = con.cursor()
+
+    for cmd in commands:
+        cur.execute(cmd)
 
 
 def simple_insert_command(table_name: str,

@@ -1,0 +1,421 @@
+{
+    "bs": {
+        "roleuri": "http://www.drhorton.com/role/ConsolidatedBalanceSheets",
+        "nodes": {
+            "us-gaap:Assets": {
+                "name": "us-gaap:Assets",
+                "weight": 1.0,
+                "children": {
+                    "us-gaap:CashAndCashEquivalentsAtCarryingValue": {
+                        "name": "us-gaap:CashAndCashEquivalentsAtCarryingValue",
+                        "weight": 1.0,
+                        "children": null
+                    },
+                    "us-gaap:RestrictedCashAndCashEquivalents": {
+                        "name": "us-gaap:RestrictedCashAndCashEquivalents",
+                        "weight": 1.0,
+                        "children": null
+                    },
+                    "us-gaap:InventoryRealEstate": {
+                        "name": "us-gaap:InventoryRealEstate",
+                        "weight": 1.0,
+                        "children": {
+                            "us-gaap:InventoryHomesUnderConstruction": {
+                                "name": "us-gaap:InventoryHomesUnderConstruction",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:InventoryRealEstateLandAndLandDevelopmentCosts": {
+                                "name": "us-gaap:InventoryRealEstateLandAndLandDevelopmentCosts",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:InventoryLandHeldForDevelopmentAndSale": {
+                                "name": "us-gaap:InventoryLandHeldForDevelopmentAndSale",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:InventoryLandHeldForSale": {
+                                "name": "us-gaap:InventoryLandHeldForSale",
+                                "weight": 1.0,
+                                "children": null
+                            }
+                        }
+                    },
+                    "us-gaap:DeferredTaxAssetsLiabilitiesNet": {
+                        "name": "us-gaap:DeferredTaxAssetsLiabilitiesNet",
+                        "weight": 1.0,
+                        "children": null
+                    },
+                    "us-gaap:PropertyPlantAndEquipmentNet": {
+                        "name": "us-gaap:PropertyPlantAndEquipmentNet",
+                        "weight": 1.0,
+                        "children": null
+                    },
+                    "us-gaap:Goodwill": {
+                        "name": "us-gaap:Goodwill",
+                        "weight": 1.0,
+                        "children": null
+                    },
+                    "us-gaap:OtherAssets": {
+                        "name": "us-gaap:OtherAssets",
+                        "weight": 1.0,
+                        "children": null
+                    },
+                    "us-gaap:LoansReceivableHeldForSaleNetNotPartOfDisposalGroupMortgage": {
+                        "name": "us-gaap:LoansReceivableHeldForSaleNetNotPartOfDisposalGroupMortgage",
+                        "weight": 1.0,
+                        "children": null
+                    }
+                }
+            },
+            "us-gaap:LiabilitiesAndStockholdersEquity": {
+                "name": "us-gaap:LiabilitiesAndStockholdersEquity",
+                "weight": 1.0,
+                "children": {
+                    "us-gaap:Liabilities": {
+                        "name": "us-gaap:Liabilities",
+                        "weight": 1.0,
+                        "children": {
+                            "us-gaap:AccountsPayableAndOtherAccruedLiabilities": {
+                                "name": "us-gaap:AccountsPayableAndOtherAccruedLiabilities",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:AccruedLiabilitiesCurrentAndNoncurrent": {
+                                "name": "us-gaap:AccruedLiabilitiesCurrentAndNoncurrent",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:NotesPayable": {
+                                "name": "us-gaap:NotesPayable",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:OtherAccountsPayableAndAccruedLiabilities": {
+                                "name": "us-gaap:OtherAccountsPayableAndAccruedLiabilities",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:AssetsSoldUnderAgreementsToRepurchaseRepurchaseLiability": {
+                                "name": "us-gaap:AssetsSoldUnderAgreementsToRepurchaseRepurchaseLiability",
+                                "weight": 1.0,
+                                "children": null
+                            }
+                        }
+                    },
+                    "us-gaap:StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest": {
+                        "name": "us-gaap:StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest",
+                        "weight": 1.0,
+                        "children": {
+                            "us-gaap:StockholdersEquity": {
+                                "name": "us-gaap:StockholdersEquity",
+                                "weight": 1.0,
+                                "children": {
+                                    "us-gaap:PreferredStockValue": {
+                                        "name": "us-gaap:PreferredStockValue",
+                                        "weight": 1.0,
+                                        "children": null
+                                    },
+                                    "us-gaap:CommonStockValue": {
+                                        "name": "us-gaap:CommonStockValue",
+                                        "weight": 1.0,
+                                        "children": null
+                                    },
+                                    "us-gaap:AdditionalPaidInCapitalCommonStock": {
+                                        "name": "us-gaap:AdditionalPaidInCapitalCommonStock",
+                                        "weight": 1.0,
+                                        "children": null
+                                    },
+                                    "us-gaap:RetainedEarningsAccumulatedDeficit": {
+                                        "name": "us-gaap:RetainedEarningsAccumulatedDeficit",
+                                        "weight": 1.0,
+                                        "children": null
+                                    },
+                                    "us-gaap:TreasuryStockValue": {
+                                        "name": "us-gaap:TreasuryStockValue",
+                                        "weight": -1.0,
+                                        "children": null
+                                    }
+                                }
+                            },
+                            "us-gaap:MinorityInterest": {
+                                "name": "us-gaap:MinorityInterest",
+                                "weight": 1.0,
+                                "children": null
+                            }
+                        }
+                    },
+                    "us-gaap:CommitmentsAndContingencies": {
+                        "name": "us-gaap:CommitmentsAndContingencies",
+                        "weight": 1.0,
+                        "children": null
+                    }
+                }
+            }
+        },
+        "label": "Consolidated Balance Sheets"
+    },
+    "cf": {
+        "roleuri": "http://www.drhorton.com/role/ConsolidatedStatementsOfCashFlows",
+        "nodes": {
+            "us-gaap:CashAndCashEquivalentsPeriodIncreaseDecrease": {
+                "name": "us-gaap:CashAndCashEquivalentsPeriodIncreaseDecrease",
+                "weight": 1.0,
+                "children": {
+                    "us-gaap:NetCashProvidedByUsedInOperatingActivities": {
+                        "name": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+                        "weight": 1.0,
+                        "children": {
+                            "us-gaap:IncreaseDecreaseInDeferredIncomeTaxes": {
+                                "name": "us-gaap:IncreaseDecreaseInDeferredIncomeTaxes",
+                                "weight": -1.0,
+                                "children": null
+                            },
+                            "us-gaap:DepreciationDepletionAndAmortization": {
+                                "name": "us-gaap:DepreciationDepletionAndAmortization",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:ProductionRelatedImpairmentsOrCharges": {
+                                "name": "us-gaap:ProductionRelatedImpairmentsOrCharges",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:GoodwillImpairmentLoss": {
+                                "name": "us-gaap:GoodwillImpairmentLoss",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:IncreaseDecreaseInFinishedGoodsAndWorkInProcessInventories": {
+                                "name": "us-gaap:IncreaseDecreaseInFinishedGoodsAndWorkInProcessInventories",
+                                "weight": -1.0,
+                                "children": null
+                            },
+                            "us-gaap:ExcessTaxBenefitFromShareBasedCompensationOperatingActivities": {
+                                "name": "us-gaap:ExcessTaxBenefitFromShareBasedCompensationOperatingActivities",
+                                "weight": -1.0,
+                                "children": null
+                            },
+                            "us-gaap:IncreaseDecreaseInInventoryForLongTermContractsOrPrograms": {
+                                "name": "us-gaap:IncreaseDecreaseInInventoryForLongTermContractsOrPrograms",
+                                "weight": -1.0,
+                                "children": null
+                            },
+                            "us-gaap:IncreaseDecreaseInMortgageLoansHeldForSale": {
+                                "name": "us-gaap:IncreaseDecreaseInMortgageLoansHeldForSale",
+                                "weight": -1.0,
+                                "children": null
+                            },
+                            "us-gaap:AmortizationOfFinancingCostsAndDiscounts": {
+                                "name": "us-gaap:AmortizationOfFinancingCostsAndDiscounts",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:IncreaseDecreaseInAccountsPayableAndAccruedLiabilities": {
+                                "name": "us-gaap:IncreaseDecreaseInAccountsPayableAndAccruedLiabilities",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:IncreaseDecreaseInOtherOperatingAssets": {
+                                "name": "us-gaap:IncreaseDecreaseInOtherOperatingAssets",
+                                "weight": -1.0,
+                                "children": null
+                            },
+                            "us-gaap:ProfitLoss": {
+                                "name": "us-gaap:ProfitLoss",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:ShareBasedCompensation": {
+                                "name": "us-gaap:ShareBasedCompensation",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:GainLossOnSaleOfDebtInvestments": {
+                                "name": "us-gaap:GainLossOnSaleOfDebtInvestments",
+                                "weight": -1.0,
+                                "children": null
+                            }
+                        }
+                    },
+                    "us-gaap:NetCashProvidedByUsedInInvestingActivities": {
+                        "name": "us-gaap:NetCashProvidedByUsedInInvestingActivities",
+                        "weight": 1.0,
+                        "children": {
+                            "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment": {
+                                "name": "us-gaap:PaymentsToAcquirePropertyPlantAndEquipment",
+                                "weight": -1.0,
+                                "children": null
+                            },
+                            "us-gaap:ProceedsFromSaleOfProductiveAssets": {
+                                "name": "us-gaap:ProceedsFromSaleOfProductiveAssets",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:IncreaseDecreaseInRestrictedCash": {
+                                "name": "us-gaap:IncreaseDecreaseInRestrictedCash",
+                                "weight": -1.0,
+                                "children": null
+                            },
+                            "us-gaap:PaymentsForProceedsFromLoansReceivable": {
+                                "name": "us-gaap:PaymentsForProceedsFromLoansReceivable",
+                                "weight": -1.0,
+                                "children": null
+                            },
+                            "us-gaap:PaymentsForProceedsFromAvailableforsaleSecuritiesShortterm": {
+                                "name": "us-gaap:PaymentsForProceedsFromAvailableforsaleSecuritiesShortterm",
+                                "weight": -1.0,
+                                "children": null
+                            },
+                            "us-gaap:PaymentsToAcquireBusinessesNetOfCashAcquired": {
+                                "name": "us-gaap:PaymentsToAcquireBusinessesNetOfCashAcquired",
+                                "weight": -1.0,
+                                "children": null
+                            }
+                        }
+                    },
+                    "us-gaap:NetCashProvidedByUsedInFinancingActivities": {
+                        "name": "us-gaap:NetCashProvidedByUsedInFinancingActivities",
+                        "weight": 1.0,
+                        "children": {
+                            "us-gaap:ProceedsFromNotesPayable": {
+                                "name": "us-gaap:ProceedsFromNotesPayable",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:RepaymentsOfNotesPayable": {
+                                "name": "us-gaap:RepaymentsOfNotesPayable",
+                                "weight": -1.0,
+                                "children": null
+                            },
+                            "us-gaap:ProceedsFromIssuanceOfSharesUnderIncentiveAndShareBasedCompensationPlansIncludingStockOptions": {
+                                "name": "us-gaap:ProceedsFromIssuanceOfSharesUnderIncentiveAndShareBasedCompensationPlansIncludingStockOptions",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:ExcessTaxBenefitFromShareBasedCompensationFinancingActivities": {
+                                "name": "us-gaap:ExcessTaxBenefitFromShareBasedCompensationFinancingActivities",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:PaymentsOfDividendsCommonStock": {
+                                "name": "us-gaap:PaymentsOfDividendsCommonStock",
+                                "weight": -1.0,
+                                "children": null
+                            },
+                            "us-gaap:PaymentsForRepurchaseOfCommonStock": {
+                                "name": "us-gaap:PaymentsForRepurchaseOfCommonStock",
+                                "weight": -1.0,
+                                "children": null
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "label": "Consolidated Statements of Cash Flows"
+    },
+    "is": {
+        "roleuri": "http://www.drhorton.com/role/ConsolidatedStatementsOfOperationsAndComprehensiveIncomeLoss",
+        "nodes": {
+            "us-gaap:ComprehensiveIncomeNetOfTaxIncludingPortionAttributableToNoncontrollingInterest": {
+                "name": "us-gaap:ComprehensiveIncomeNetOfTaxIncludingPortionAttributableToNoncontrollingInterest",
+                "weight": 1.0,
+                "children": {
+                    "us-gaap:ProfitLoss": {
+                        "name": "us-gaap:ProfitLoss",
+                        "weight": 1.0,
+                        "children": {
+                            "us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest": {
+                                "name": "us-gaap:IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest",
+                                "weight": 1.0,
+                                "children": {
+                                    "us-gaap:FinancialServicesRevenue": {
+                                        "name": "us-gaap:FinancialServicesRevenue",
+                                        "weight": 1.0,
+                                        "children": null
+                                    },
+                                    "us-gaap:GeneralAndAdministrativeExpense": {
+                                        "name": "us-gaap:GeneralAndAdministrativeExpense",
+                                        "weight": -1.0,
+                                        "children": null
+                                    },
+                                    "us-gaap:OtherOperatingIncome": {
+                                        "name": "us-gaap:OtherOperatingIncome",
+                                        "weight": 1.0,
+                                        "children": null
+                                    }
+                                }
+                            },
+                            "us-gaap:IncomeTaxExpenseBenefit": {
+                                "name": "us-gaap:IncomeTaxExpenseBenefit",
+                                "weight": -1.0,
+                                "children": null
+                            }
+                        }
+                    },
+                    "us-gaap:OtherComprehensiveIncomeUnrealizedHoldingGainLossOnSecuritiesArisingDuringPeriodNetOfTax": {
+                        "name": "us-gaap:OtherComprehensiveIncomeUnrealizedHoldingGainLossOnSecuritiesArisingDuringPeriodNetOfTax",
+                        "weight": 1.0,
+                        "children": null
+                    },
+                    "us-gaap:OtherComprehensiveIncomeLossReclassificationAdjustmentFromAOCIForSaleOfSecuritiesNetOfTax": {
+                        "name": "us-gaap:OtherComprehensiveIncomeLossReclassificationAdjustmentFromAOCIForSaleOfSecuritiesNetOfTax",
+                        "weight": -1.0,
+                        "children": null
+                    }
+                }
+            },
+            "us-gaap:GrossProfit": {
+                "name": "us-gaap:GrossProfit",
+                "weight": 1.0,
+                "children": {
+                    "us-gaap:RealEstateRevenueNet": {
+                        "name": "us-gaap:RealEstateRevenueNet",
+                        "weight": 1.0,
+                        "children": {
+                            "us-gaap:HomeBuildingRevenue": {
+                                "name": "us-gaap:HomeBuildingRevenue",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:LandSales": {
+                                "name": "us-gaap:LandSales",
+                                "weight": 1.0,
+                                "children": null
+                            }
+                        }
+                    },
+                    "us-gaap:CostOfRealEstateRevenue": {
+                        "name": "us-gaap:CostOfRealEstateRevenue",
+                        "weight": -1.0,
+                        "children": {
+                            "us-gaap:HomeBuildingCosts": {
+                                "name": "us-gaap:HomeBuildingCosts",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:CostsOfRealEstateServicesAndLandSales": {
+                                "name": "us-gaap:CostsOfRealEstateServicesAndLandSales",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:ProductionRelatedImpairmentsOrCharges": {
+                                "name": "us-gaap:ProductionRelatedImpairmentsOrCharges",
+                                "weight": 1.0,
+                                "children": null
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "label": "Consolidated Statements of Operations and Comprehensive Income (Loss)"
+    },
+    "se": {
+        "roleuri": "http://www.drhorton.com/role/ConsolidatedStatementsOfTotalEquity",
+        "nodes": {},
+        "label": "Consolidated Statements of Total Equity"
+    }
+}

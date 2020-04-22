@@ -7,9 +7,6 @@ Created on Wed Jul 31 18:28:09 2019
 import sys
 import atexit
 import pandas as pd
-import mysql.connector
-from mysql.connector.errors import InternalError, Error
-from mysql.connector.cursor import MySQLCursor  # type: ignore
 from abc import ABCMeta, abstractmethod
 from typing import Any, Dict, List, Tuple, Optional
 
@@ -47,14 +44,14 @@ class ReportToDB(MySQLWriter):
 
         logger = logs.get_logger(name=__name__)
         try:
-            retry(self.retrys, InternalError)(self.write_company)(obj[0])
-            retry(self.retrys, InternalError)(self.write_report)(obj[1])
-            retry(self.retrys, InternalError)(self.write_nums)(obj[2])
-            retry(self.retrys, InternalError)(self.write_shares)(obj[3])
+            do.retry_mysql_write(self.write_company)(obj[0])
+            do.retry_mysql_write(self.write_report)(obj[1])
+            do.retry_mysql_write(self.write_nums)(obj[2])
+            do.retry_mysql_write(self.write_shares)(obj[3])
             self.flush()
             logger.info('report data has been writen')
             return True
-        except InternalError:
+        except do.InternalError:
             logger.error(msg='mysql super dead lock', exc_info=True)
         except Exception:
             logger.error(msg='unexpected error', exc_info=True)

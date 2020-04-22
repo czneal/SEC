@@ -1,16 +1,19 @@
 import unittest
 
 from mysqlio.readers import MySQLReader
+from mysqlio.basicio import activate_test_mode
+
+from mysqlio.tests.dbtest import DBTestBase  # type: ignore
 
 
-class TestReader(unittest.TestCase):
+class TestReader(DBTestBase):
     def test_fetch(self):
         r = MySQLReader()
 
-        data = r._fetch('select * from mgnums limit 10;')
+        data = r.fetch('select * from mgnums limit 10;')
         self.assertEqual(len(data), 10)
 
-        data = r._fetch(
+        data = r.fetch(
             'select * from mgnums where adsh = %(adsh)s limit 10;',
             {'adsh': '0000002178-13-000014'})
         self.assertEqual(len(data), 10)

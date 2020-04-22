@@ -1,0 +1,1 @@
+python -m unittest discover -s . -t . -p "test_*.py" -v

@@ -2,10 +2,9 @@
 import pandas as pd
 
 from typing import Dict
-from mysql.connector.cursor import MySQLCursor  # type: ignore
 
 from mysqlio.basicio import OpenConnection
-from mysqlio.basicio import Table, MySQLTable
+from mysqlio.basicio import Table, MySQLTable, RptCursor
 from firms.tickers import stock_data, StockData
 
 
@@ -45,7 +44,7 @@ def write_stocks(data: StockData) -> None:
 
 
 def write_stocks_shares(data: StockData,
-                        cur: MySQLCursor,
+                        cur: RptCursor,
                         table: MySQLTable) -> None:
     select = """select * from stocks_shares
                 where ticker = %(ticker)s

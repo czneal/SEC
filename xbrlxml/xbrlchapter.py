@@ -7,7 +7,7 @@ Created on Sat May 25 16:55:50 2019
 import lxml  # type: ignore
 import re
 
-from typing import Optional, Dict
+from typing import Optional, Dict, Any, Union, List, Set, Tuple
 
 
 class Node():
@@ -17,32 +17,32 @@ class Node():
     <calculationArc>, <presentationArc>, <definitionArc> block
     """
 
-    def __init__(self, version=None, tag=None, label=None):
-        self.version = version
-        self.tag = tag
-        self.label = label
-        self.arc = None
-        self.parent = None
-        self.children = {}
-        if version is not None and tag is not None:
-            self.name = self.getname()
-        else:
-            self.name = None
+    def __init__(self,
+                 version: str = '',
+                 tag: str = ''):
+        self.version: str = version
+        self.tag: str = tag
+        self.arc: Dict[str, int] = {}
+        self.parent = None  # type: Optional[Node]
+        self.children: Dict[str, Node] = {}
+        self.name: str = self.getname()
 
-    def getname(self):
+        # self.label = label
+
+    def getname(self) -> str:
         "unittested"
-        return '{0}:{1}'.format(self.version, self.tag)
+        if self.version != '':
+            return f'{self.version}:{self.tag}'
+        else:
+            return self.tag
 
     def getweight(self) -> int:
-        if self.arc is not None:
-            return int(self.arc.get('weight', 0))
-        return 1
+        return int(self.arc.get('weight', 1))
 
-    def asdict(self):
+    def asdict(self) -> Dict[str, Union[str, int]]:
         "unittested"
-        r = {'tag': self.name}
-        if self.arc is not None:
-            r.update(self.arc.items())
+        r: Dict[str, Union[str, int]] = {'tag': self.name}
+        r.update(self.arc.items())
         return r
 
     def copy(self):
@@ -50,18 +50,17 @@ class Node():
         return makenodecopy(self)
 
     def __simple_eq(self, node):
-        if node is None:
-            return False
+        # type: (Node) -> bool
 
         if (self.version == node.version and
             self.tag == node.tag and
-            self.arc == node.arc and
-                self.label == node.label):
+                self.arc == node.arc):
             return True
         else:
             return False
 
     def __parent_eq(self, node):
+        # type: (Node) -> bool
         if (node.parent is None and self.parent is None):
             return True
         if (node.parent is not None and
@@ -69,7 +68,10 @@ class Node():
             return self.parent.__simple_eq(node.parent)
         return False
 
-    def __eq__(self, node):
+    def __eq__(self, node) -> bool:
+        if not isinstance(node, Node):
+            raise NotImplementedError()
+
         if (not self.__simple_eq(node)):
             return False
         if (not self.__parent_eq(node)):
@@ -81,32 +83,22 @@ class Node():
         return False
 
 
-class ChapterFactory():
-    @staticmethod
-    def chapter(ref_type):
-        "unittested"
-        assert (ref_type in {'calculation', 'presentation', 'definition'})
-
-        if ref_type == 'calculation':
-            return CalcChapter()
-        if ref_type == 'definition':
-            return DimChapter()
-        if ref_type == 'presentation':
-            return DimChapter()
-
-
 class Chapter(object):
     """
     implements single scheme
     represents <calculationLink>, <presentationLink>, <definitionLink> block
     """
 
-    def __init__(self, roleuri: str = '', label: str = ''):
+    def __init__(self,
+                 roleuri: str = '',
+                 label: str = ''):
         self.roleuri = roleuri
         self.label = label
         self.nodes: Dict[str, Node] = {}
 
-    def update_arc(self, arc, labels: Dict[str, str]):
+    def update_arc(
+            self, arc: Dict[str, Any],
+            labels: Dict[str, str]):
         "unittested"
         n_from = self.nodes[labels[arc['from']]]
         n_to = self.nodes[labels[arc['to']]]
@@ -114,26 +106,15 @@ class Chapter(object):
         n_from.children[n_to.name] = n_to
         n_to.arc = arc['attrib']
 
-    def getnodes(self):
+    def getnodes(self) -> List[Dict[str, Any]]:
         "unittested"
-        return [n.asdict() for _, n in self.nodes.items()]
+        return [n.asdict() for n in self.nodes.values()]
 
-    def gettags(self):
+    def gettags(self) -> Set[str]:
         "unittested"
         return set([n.name for n in self.nodes.values()])
 
-    def getnode(self, name: str) -> Optional[Node]:
-        node = self.nodes.get(name, None)
-        if node is not None:
-            return node
-
-        for n in self.nodes.values():
-            if n.name == name:
-                return n
-
-        return None
-
-    def __eq__(self, chapter):
+    def __eq__(self, chapter) -> bool:
         if (chapter is None):
             return False
         if (self.roleuri != chapter.roleuri):
@@ -144,11 +125,15 @@ class Chapter(object):
         return True
 
 
-class CalcChapter(Chapter):
-    def dimmembers(self):
-        return [[None, None]]
+DimMembersType = List[Tuple[Optional[str], Optional[str]]]
+DimsType = List[Optional[str]]
 
-    def dims(self):
+
+class CalcChapter(Chapter):
+    def dimmembers(self) -> DimMembersType:
+        return [(None, None)]
+
+    def dims(self) -> DimsType:
         return [None]
 
     def extend(self, calc, pres):
@@ -156,38 +141,48 @@ class CalcChapter(Chapter):
 
 
 class DimChapter(Chapter):
-    def dimmembers(self):
+    def dimmembers(self) -> DimMembersType:
         "unittested"
-        retval = [[None, None]]
+        retval: DimMembersType = [(None, None)]
         for n in self.nodes.values():
             if not re.match('.*member', n.tag, re.IGNORECASE):
                 continue
             p = n.parent
             while p is not None:
                 if re.match('.*axis', p.tag, re.I):
-                    retval.append([p.name, n.name])
+                    retval.append((p.name, n.name))
                     break
                 p = p.parent
 
         return retval
 
-    def dims(self):
+    def dims(self) -> DimsType:
         "unittested"
-#        retval = [None]
-#        for n in self.nodes.values():
-#            if re.match('.*axis', n.tag, re.I):
-#                retval.append(n.name)
-#        return retval
-        retval = set([dim for [dim, _] in self.dimmembers()])
+        retval = set([dim for (dim, _) in self.dimmembers()])
         return list(retval)
 
 
+class ChapterFactory():
+    @staticmethod
+    def chapter(ref_type: str) -> Chapter:
+        "unittested"
+
+        if ref_type == 'calculation':
+            return CalcChapter()
+        if ref_type == 'definition':
+            return DimChapter()
+        if ref_type == 'presentation':
+            return DimChapter()
+
+        raise ValueError(f'unsupported reference type')
+
+
 class ReferenceParser(object):
-    def __init__(self, ref_type):
+    def __init__(self, ref_type: str):
         """
         ref_type = {'calculation', 'presentation', 'definition'}
         """
-        self.__ref_type = None
+        self.__ref_type = ''
         self.setreftype(ref_type)
         self.decimal_re = re.compile(r'[\+,\-]{0,1}\d*(\.\d+)?$')
 
@@ -195,11 +190,11 @@ class ReferenceParser(object):
         assert (ref_type in {'calculation', 'presentation', 'definition'})
         self.__ref_type = ref_type
 
-    def parse(self, file):
+    def parse(self, file) -> Dict[str, Chapter]:
         etree = lxml.etree.parse(file)
         root = etree.getroot()
 
-        chapters = {}
+        chapters: Dict[str, Chapter] = {}
 
         for link in root.findall('{*}' + self.__ref_type + 'Link'):
             chapter = self.parse_chapter(link)
@@ -208,7 +203,7 @@ class ReferenceParser(object):
 
         return chapters
 
-    def parse_chapter(self, link):
+    def parse_chapter(self, link) -> Chapter:
         """
         return Chapter object
         unittested
@@ -219,9 +214,8 @@ class ReferenceParser(object):
         chapter.roleuri = link.attrib['{%s}role' % link.nsmap['xlink']]
 
         for loc in link.findall('{*}' + 'loc'):
-            node = self.parse_node(loc)
-            labels[node.label] = node.name
-            node.label = node.name
+            node, label = self.parse_node(loc)
+            labels[label] = node.name
             chapter.nodes[node.name] = node
 
         for arc in link.findall('{*}' + self.__ref_type + 'Arc'):
@@ -230,27 +224,25 @@ class ReferenceParser(object):
 
         return chapter
 
-    def parse_node(self, loc):
+    def parse_node(self, loc) -> Tuple[Node, str]:
         "unittested"
         """
-        return Node object
+        return tuple (Node, label)
         """
-        n = Node()
-        n.label = loc.attrib['{%s}label' % loc.nsmap['xlink']]
+
+        label = loc.attrib['{%s}label' % loc.nsmap['xlink']]
         href = loc.attrib['{%s}href' %
                           loc.nsmap['xlink']].split('#')[-1].split('_')
-        n.version = href[0]
-        n.tag = href[1]
-        n.name = n.getname()
+        n = Node(version=href[0], tag=href[1])
 
-        return n
+        return n, label
 
-    def parse_arc(self, arc):
+    def parse_arc(self, arc) -> Dict[str, Any]:
         "unittested"
         """
         return dict of attributes
         """
-        arcdict = {'attrib': {}}
+        arcdict: Dict[str, Any] = {'attrib': {}}
 
         for attr, value in arc.attrib.items():
             attr = re.sub('{.*}', '', attr, re.IGNORECASE)

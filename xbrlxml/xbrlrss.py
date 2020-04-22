@@ -7,7 +7,7 @@ import re
 from abc import ABCMeta, abstractmethod
 from typing import Iterator, List, Set, TextIO, Tuple, Union, cast
 
-import lxml
+import lxml  # type: ignore
 
 import utils
 from mysqlio.basicio import OpenConnection
@@ -28,12 +28,13 @@ class FileRecord(object):
         self.fye: str = ""
         self.fy: int = 0
 
-    def __str__(self) -> str:        
+    def __str__(self) -> str:
         return json.dumps(self.__dict__, cls=ForDBJsonEncoder)
 
     def aslist(self) -> List[Union[str, int, dt.date, None]]:
         return list(self.__dict__.values())
-    
+
+
 def record_from_xbrl(elem: lxml.etree.Element) -> FileRecord:
     record = FileRecord()
 
@@ -57,11 +58,12 @@ def record_from_xbrl(elem: lxml.etree.Element) -> FileRecord:
             record.file_date = utils.str2date(text, 'mdy')
         if name == 'assignedsic':
             record.sic = int(e.text.strip())
-            
+
     if record.period is not None:
-        record.fy = (record.period - dt.timedelta(days=365/2)).year
+        record.fy = (record.period - dt.timedelta(days=365 / 2)).year
 
     return record
+
 
 def record_from_str(data: str) -> FileRecord:
     record = FileRecord()
@@ -72,35 +74,35 @@ def record_from_str(data: str) -> FileRecord:
     if record.period is not None:
         record.period = utils.str2date(record.period, 'ymd')
         if record.fy == 0:
-            record.fy = (record.period - dt.timedelta(days=365/2)).year
+            record.fy = (record.period - dt.timedelta(days=365 / 2)).year
     if record.file_date is not None:
         record.file_date = utils.str2date(record.file_date, 'ymd')
 
     return record
 
+
 class FilingRSS(object):
     def __init__(self):
-        self.tree = None        
+        self.tree = None
         return
-    
+
     def open_file(self, filename: str) -> None:
         FilingRSS.__init__(self)
 
         try:
             self.tree = lxml.etree.parse(filename).getroot()
-        except:
-            self.tree = None        
-    
+        except BaseException:
+            self.tree = None
+
     def filing_records(self) -> Iterator[FileRecord]:
         if self.tree is None:
             return
-        
+
         for item in self.tree.findall(".//item"):
             yield record_from_xbrl(item)
 
 
-
-def records_to_file(records: List[Tuple[FileRecord, str]], 
+def records_to_file(records: List[Tuple[FileRecord, str]],
                     filename: str) -> None:
     with open(filename, 'w') as file:
         for (record, zip_filename) in records:
@@ -109,61 +111,59 @@ def records_to_file(records: List[Tuple[FileRecord, str]],
             file.write(zip_filename)
             file.write('\n')
 
+
 class RecordsEnumerator(metaclass=ABCMeta):
-    @abstractmethod    
-    def filing_records(self,
-            all_types: bool=False,
-            form_types: Set[str]={'10-K', '10-K/A'}) -> List[Tuple[FileRecord, str]]:
+    @abstractmethod
+    def filing_records(self, all_types: bool = False, form_types: Set[str] = {
+                       '10-K', '10-K/A'}) -> List[Tuple[FileRecord, str]]:
         pass
-    
-    
-    
+
+
 class XBRLEnumerator(RecordsEnumerator):
     def __init__(self, years: List[int], months: List[int]):
         self.years: List[int] = []
         self.months: List[int] = []
         self.setperiod(years, months)
-        
+
     def setperiod(self, years: List[int], months: List[int]):
         self.years = years.copy()
         self.months = months.copy()
-        
-    def filing_records(self,
-                       all_types: bool=False,
-                       form_types: Set[str]={'10-K', '10-K/A'}) -> List[Tuple[FileRecord, str]]:
+
+    def filing_records(self, all_types: bool = False, form_types: Set[str] = {
+                       '10-K', '10-K/A'}) -> List[Tuple[FileRecord, str]]:
         records: List[Tuple[FileRecord, str]] = []
 
         rss = FilingRSS()
-        
+
         for y in self.years:
             for m in self.months:
                 year_month_dir = utils.year_month_dir(y, m)
                 rssfilename = os.path.join(
-                                    year_month_dir,
-                                    'rss-{0}-{1}.xml'.format(y,str(m).zfill(2)))
+                    year_month_dir,
+                    'rss-{0}-{1}.xml'.format(y, str(m).zfill(2)))
 
                 rss.open_file(rssfilename)
-                for record in rss.filing_records():                    
+                for record in rss.filing_records():
                     if not (all_types or record.form_type in form_types):
                         continue
 
                     zip_filename = utils.posix_join(
-                                        year_month_dir,
-                                        '{0}-{1}.zip'.format(
-                                            str(record.cik).zfill(10), 
-                                            record.adsh))                    
-                    
+                        year_month_dir,
+                        '{0}-{1}.zip'.format(
+                            str(record.cik).zfill(10),
+                            record.adsh))
+
                     records.append((record, zip_filename))
         return records
-                    
+
+
 class CustomEnumerator(RecordsEnumerator):
     def __init__(self, filename: str):
         assert os.path.exists(filename)
         self.__filename = filename
-    
-    def filing_records(self, 
-                       all_types: bool=False,
-                       form_types: Set[str]={'10-K', '10-K/A'}) -> List[Tuple[FileRecord, str]]:
+
+    def filing_records(self, all_types: bool = False, form_types: Set[str] = {
+                       '10-K', '10-K/A'}) -> List[Tuple[FileRecord, str]]:
         records = []
         adshs: Set[str] = set()
         with open(self.__filename) as f:
@@ -177,21 +177,21 @@ class CustomEnumerator(RecordsEnumerator):
                 if not (all_types or record.form_type in form_types):
                     continue
 
-                adshs.add(record.adsh)                
+                adshs.add(record.adsh)
                 records.append((record, filename))
-                
+
         return records
 
+
 class MySQLEnumerator(RecordsEnumerator):
-    def __init__(self):        
+    def __init__(self):
         self.query: str = ''
         self.after: dt.date = dt.date.today() - dt.timedelta(days=365)
         self.adsh: str = ''
         self.set_filter_method('all', self.after)
 
-    def filing_records(self, 
-                       all_types: bool=False,
-                       form_types: Set[str]={'10-K', '10-K/A'}) -> List[Tuple[FileRecord, str]]:
+    def filing_records(self, all_types: bool = False, form_types: Set[str] = {
+                       '10-K', '10-K/A'}) -> List[Tuple[FileRecord, str]]:
         records: List[Tuple[FileRecord, str]] = []
         with OpenConnection() as con:
             cur = con.cursor(dictionary=True)
@@ -203,7 +203,11 @@ class MySQLEnumerator(RecordsEnumerator):
                 records.append((record, add_root_dir(row['file_link'])))
         return records
 
-    def set_filter_method(self, method: str, after: dt.date, adsh: str='') -> None:
+    def set_filter_method(
+            self,
+            method: str,
+            after: dt.date,
+            adsh: str = '') -> None:
         assert method in {'new', 'bad', 'all', 'explicit'}
         if method == 'all':
             self.query = 'select * from sec_xbrl_forms where filed>=%(after)s'
@@ -211,7 +215,7 @@ class MySQLEnumerator(RecordsEnumerator):
             self.query = """select f.* from sec_xbrl_forms f
                             left outer join reports r
                                 on r.adsh = f.adsh
-                            left outer join 
+                            left outer join
                             (
                                 select state as adsh from logs_parse
                                 where levelname='error'
@@ -225,7 +229,7 @@ class MySQLEnumerator(RecordsEnumerator):
             self.query = """select f.* from sec_xbrl_forms f
                             left outer join reports r
                                 on r.adsh = f.adsh
-                            left outer join 
+                            left outer join
                             (
                                 select state as adsh from logs_parse
                                 where levelname='error'
@@ -240,6 +244,7 @@ class MySQLEnumerator(RecordsEnumerator):
                             where adsh = %(adsh)s"""
         self.after = after
         self.adsh = adsh
+
 
 if __name__ == "__main__":
     pass

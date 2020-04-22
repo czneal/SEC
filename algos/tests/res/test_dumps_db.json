@@ -1,0 +1,68 @@
+{
+    "bs": {
+        "roleuri": "roleuri1",
+        "nodes": {
+            "us-gaap:NodeName0": {
+                "name": "us-gaap:NodeName0",
+                "weight": 1.0,
+                "children": {
+                    "us-gaap:NodeName1": {
+                        "name": "us-gaap:NodeName1",
+                        "weight": 1.0,
+                        "children": {
+                            "us-gaap:NodeName3": {
+                                "name": "us-gaap:NodeName3",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "us-gaap:NodeName4": {
+                                "name": "us-gaap:NodeName4",
+                                "weight": -1.0,
+                                "children": null
+                            }
+                        }
+                    },
+                    "us-gaap:NodeName2": {
+                        "name": "us-gaap:NodeName2",
+                        "weight": -1.0,
+                        "children": null
+                    }
+                }
+            }
+        },
+        "label": "balance sheet"
+    },
+    "is": {
+        "roleuri": "roleuri2",
+        "nodes": {
+            "us-gaap:NodeName2": {
+                "name": "us-gaap:NodeName2",
+                "weight": 1.0,
+                "children": {
+                    "mg:NodeName1": {
+                        "name": "mg:NodeName1",
+                        "weight": -1.0,
+                        "children": null
+                    },
+                    "mg:NodeName2": {
+                        "name": "mg:NodeName2",
+                        "weight": 1.0,
+                        "children": {
+                            "mg:NodeName3": {
+                                "name": "mg:NodeName3",
+                                "weight": 1.0,
+                                "children": null
+                            },
+                            "mg:NodeName4": {
+                                "name": "mg:NodeName4",
+                                "weight": -1.0,
+                                "children": null
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "label": "income statement"
+    }
+}

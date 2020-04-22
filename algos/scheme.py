@@ -4,6 +4,7 @@ import re
 from typing import Dict, List, Tuple, Callable, Iterator, Union, Any, cast
 
 from xbrlxml.xbrlchapter import Chapter, Node
+from xbrlxml.xsdfile import XSDChapter
 from xbrlxml.xbrlexceptions import XBRLDictException
 
 Chapters = Dict[str, Chapter]
@@ -189,7 +190,10 @@ def enum_filtered(structure: Structure,
         yield retval
 
 
-def find_extentions(roleuri, calc, pres, xsds) -> \
+def find_extentions(roleuri: str,
+                    calc: Chapters,
+                    pres: List[str],
+                    xsds: List[str]) -> \
         Tuple[Dict[str, str], List[str]]:
     """
     try to find extention for calculation scheme roleuri
@@ -214,10 +218,10 @@ def find_extentions(roleuri, calc, pres, xsds) -> \
 
             c = calc[xsd_roleuri]
             # only look for not leaf nodes
-            if n.label not in c.nodes or len(c.nodes[n.label].children) == 0:
+            if n.name not in c.nodes or len(c.nodes[n.name].children) == 0:
                 continue
 
-            extnode = c.nodes[n.label]
+            extnode = c.nodes[n.name]
             try:
                 # check possibility of extention
                 check_extention(chapter, extnode)
@@ -227,12 +231,12 @@ def find_extentions(roleuri, calc, pres, xsds) -> \
                 warnings.append(str(exc))
                 continue
 
-            extentions[n.label] = xsd_roleuri
+            extentions[n.name] = xsd_roleuri
 
     return extentions, warnings
 
 
-def check_extention(chapter, newnode):
+def check_extention(chapter: Chapter, newnode: Node):
     """
     Check whether possible extend calculation scheme.
     newnode may containts children which is allready in chapter.nodes
@@ -243,19 +247,21 @@ def check_extention(chapter, newnode):
     newchildren = set([elem
                        for [elem] in enum(structure=newnode,
                                           outpattern='c',
-                                          func=lambda x:x.label)])
+                                          func=lambda x:x.name)])
     warnchildren = newchildren.intersection(set(chapter.nodes.keys()))
 
     for newchild in warnchildren:
         if len(chapter.nodes[newchild].children) != 0:
             exc_data = {
                 'message': 'extention fails, base chapter has nodes with children',
-                'node in ext chapter': newnode.label,
+                'node in ext chapter': newnode.name,
                 'node in base chapter with children': newchild}
             raise XBRLDictException(exc_data)
 
 
-def extend_clac_scheme(roleuri, calc, extentions):
+def extend_clac_scheme(roleuri: str,
+                       calc: Chapters,
+                       extentions: Dict[str, str]):
     """
     extend calculation scheme
     use only after find_extentions
@@ -266,41 +272,42 @@ def extend_clac_scheme(roleuri, calc, extentions):
         return
 
     chapter = calc[roleuri]
-    for label, exturi in extentions.items():
+    for name, exturi in extentions.items():
         c = calc[exturi]
-        node = chapter.nodes[label]
-        extnode = c.nodes[label]
+        node = chapter.nodes[name]
+        extnode = c.nodes[name]
 
         # remove leaf nodes from chapter which is in extnode.children
         remove_leaf_nodes(chapter, extnode)
 
         newnode = extnode.copy()
         node.children = newnode.children
-        for [newlabel, newchild] in enum(node,
-                                         outpattern='cn',
-                                         func=lambda x: x.label):
-            chapter.nodes[newlabel] = newchild
+        for [newname, newchild] in enum(node,
+                                        outpattern='cn',
+                                        func=lambda x: x.name):
+            chapter.nodes[newname] = newchild
 
 
-def remove_leaf_nodes(chapter, newnode):
+def remove_leaf_nodes(chapter: Chapter, newnode: Node):
     """
     remove leaf nodes from chapter which is in extnode.children
     """
     # find children to be add
     newchildren = set([elem for [elem] in enum(
-        newnode, outpattern='c', func=lambda x:x.label)])
+        newnode, outpattern='c', func=lambda x:x.name)])
     # find children which is already in chapter.nodes
     warnchildren = newchildren.intersection(set(chapter.nodes.keys()))
 
     # remove them from parent.children
     # and remove them from chapter.nodes collection
     for newchild in warnchildren:
-        if chapter.nodes[newchild].parent is not None:
-            chapter.nodes[newchild].parent.children.pop(newchild)
+        parent = chapter.nodes[newchild].parent
+        if parent is not None:
+            parent.children.pop(newchild)
         chapter.nodes.pop(newchild)
 
 
-def makenodecopy(node):
+def makenodecopy(node: Node) -> Node:
     """
     make deep copy of node
     """
@@ -308,14 +315,14 @@ def makenodecopy(node):
 
     assert isinstance(node, Node)
 
-    n = Node(tag=node.tag, version=node.version, label=node.label)
+    n = Node(tag=node.tag, version=node.version)
 
     if node.arc is not None:
         n.arc = node.arc.copy()
 
-    for label, child in node.children.items():
-        n.children[label] = child.copy()
-        n.children[label].parent = n
+    for name, child in node.children.items():
+        n.children[name] = child.copy()
+        n.children[name].parent = n
 
     return n
 

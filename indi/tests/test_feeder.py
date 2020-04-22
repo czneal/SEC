@@ -32,6 +32,9 @@ class TestFeeder(unittest.TestCase):
         with open('indi/tests/res/test_structure_3.json') as f:
             self.structure_3 = loads(f.read())
 
+        with open('indi/tests/res/test_structure_4.json') as f:
+            self.structure_4 = loads(f.read())
+
         indi.indcache.reset()
 
     def test_feed_simple(self):
@@ -132,6 +135,24 @@ class TestFeeder(unittest.TestCase):
 
             self.assertEqual(len(tags), 5)
             self.assertEqual(tags[0][0].startswith('us-gaap'), True)
+
+        with self.subTest(test='real model adsh="0000896878-19-000132"'):
+            indi.indcache.reset()
+            model = get_model('all_gaap_tags_binary_v2019-03-13.h5')
+            cl = SingleOnlyChild(
+                'dictionary.csv', 0, 60,
+                'all_gaap_tags_binary_v2019-03-13.h5', model)
+            feeder = ClassFeeder(
+                chapter='cf',
+                names=[
+                    "us-gaap:CashAndCashEquivalentsPeriodIncreaseDecrease",
+                    "us-gaap:CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalentsPeriodIncreaseDecreaseIncludingExchangeRateEffect"],
+                strict=False,
+                cl=cl,
+                cl_id=1)
+            tags = feeder.filter(self.structure_4)
+
+            self.assertEqual(len(tags), 0)
 
 
 if __name__ == '__main__':

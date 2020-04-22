@@ -1,4 +1,0 @@
-fmodel	filter_model	answer_id
-cashflow_st_cashtype_pch_v2019-03-13.h5	all_gaap_tags_binary_v2019-03-13.h5	1
-cashflow_st_multiclass_pch_v2019-03-14.h5	all_gaap_tags_binary_v2019-03-13.h5	1
-liabilities_curr_noncurr_v2019-03-13.h5	liabilities_class_pch_v2019-03-13.h5	1

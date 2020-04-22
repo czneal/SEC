@@ -66,9 +66,7 @@ class ForDBJsonEncoder(CustomJsonEncoder):
     def node_json(self, obj: Node) -> Dict[str, Any]:
         j = {
             'name': obj.name,
-            'weight': obj.arc.get(
-                'weight',
-                1.0) if obj.arc is not None else 1.0,
+            'weight': obj.arc.get('weight', 1.0),
             'children': None}
         if len(obj.children) > 0:
             j['children'] = {v.name: v for k, v in obj.children.items()}
@@ -94,7 +92,7 @@ def custom_decoder(obj):
 
     if 'name' in obj and 'weight' in obj and 'children' in obj:
         [version, tag] = obj['name'].split(":")
-        n = Node(tag=tag, version=version, label=obj['name'])
+        n = Node(tag=tag, version=version)
         n.arc = {'weight': float(obj['weight'])}
 
         n.children = obj['children'] if obj['children'] is not None else {}

@@ -1,8 +1,8 @@
 import pandas as pd
 import typing
 import atexit
-import mysql.connector.errors as mysql_err
 
+from mysqlio.basicio import retry_mysql_write
 from abstractions import Writer
 
 import mysqlio.basicio as do
@@ -51,8 +51,7 @@ class MySQLWriter(Writer):
                              use_simple_insert=use_simple_insert)
 
     def write_to_table(self, table: do.MySQLTable, data) -> None:
-        utils.retry(
-            self.n_retry, mysql_err.InternalError)(
+        retry_mysql_write(
             table.write)(
             data, self.cur)
 
@@ -76,8 +75,7 @@ class StocksWriter(MySQLWriter):
             return
 
         if row.get('shares', None) is not None:
-            utils.retry(
-                5, mysql_err.InternalError)(
+            retry_mysql_write(
                 sio.write_stocks_shares)(
                 data=row, cur=self.cur, table=self.stocks_shares)
         else:
@@ -86,16 +84,14 @@ class StocksWriter(MySQLWriter):
                     row['ticker']))
 
         if not(row['ttype'] == '' or row['ttype'] is None):
-            utils.retry(
-                5, mysql_err.InternalError)(
+            retry_mysql_write(
                 self.nasdaq.update_row)(
                     row=row,
                     key_fields=['ticker'],
                     update_fields=['ttype'],
                     cur=self.cur)
 
-        utils.retry(
-            5, mysql_err.InternalError)(
+        retry_mysql_write(
             self.stocks_daily.write_row)(
             row, self.cur)
         self.con.commit()
@@ -120,13 +116,11 @@ class HistoricalStocksWriter(MySQLWriter):
         stocks = obj[0].where((pd.notnull(obj[0])), None).reset_index()
         dividents = obj[1].where((pd.notnull(obj[1])), None).reset_index()
 
-        utils.retry(
-            5, mysql_err.InternalError)(
+        retry_mysql_write(
             self.stocks_daily.write_df)(
             stocks, self.cur)
 
-        utils.retry(
-            5, mysql_err.InternalError)(
+        retry_mysql_write(
             self.stocks_dividents.write_df)(
             dividents, self.cur)
 

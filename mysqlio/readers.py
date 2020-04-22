@@ -9,6 +9,7 @@ import mysqlio.basicio as do
 class MySQLReader():
     def __init__(self):
         self.con = do.open_connection()
+
         self.cur = self.con.cursor(dictionary=True)
         atexit.register(self.close)
 
@@ -175,3 +176,8 @@ where r.cik = %(cik)s
     and member = %(member)s
 group by member, ticker;
 """
+
+if __name__ == '__main__':
+    r = MySQLReader()
+    data = r.fetch("select * from companies limit 10", {})
+    print(data)

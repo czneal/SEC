@@ -9,7 +9,7 @@ import re
 import datetime
 import contextlib
 
-from typing import Optional, List, Dict, Union, cast
+from typing import Optional, List, Dict, Union, cast, Tuple, Any, Set
 
 import utils
 import logs
@@ -19,59 +19,45 @@ TContextAsDictDim = List[Dict[str, Union[Optional[str],
                                          Optional[datetime.date],
                                          List[Optional[str]]]]]
 
-class Fact():
-    default_decimals = 19
-    default_value = None
-    
-    def __init__(self):
-        self.tag = None
-        self.version = None
-        self.value = None
-        self.context = None
-        self.unitid = None
-        self.decimals = None
-        self.factid = None
-    
-    def decimalize(self):
-        "unittested"
-        if self.decimals is None or self.decimals == '':
-            self.decimals = self.default_decimals
-        else:
-            try:
-                self.decimals = abs(int(self.decimals))
-            except ValueError:
-                self.decimals = Fact.default_decimals
-            
-        if self.value is None or self.value == '':
-            self.value = Fact.default_value
-        else:
-            try:
-                self.value = float(self.value)
-                if abs(self.value) >= 10**19:
-                    self.value = 0
-            except ValueError:
-                self.value = self.default_value
-            
+default_decimals = 19
+
+
+class Fact(object):
+    def __init__(self,
+                 version: str = '',
+                 tag: str = '',
+                 value: float = None,
+                 context: str = '',
+                 unitid: str = '',
+                 decimals: int = default_decimals,
+                 factid: str = ''):
+        self.tag = tag
+        self.version = version
+        self.value: Optional[float] = value
+        self.context = context
+        self.unitid = unitid
+        self.decimals = decimals
+        self.factid = factid
+
     def update(self, fact):
+        # type: (Fact) -> None
         "unittested"
-        fact.decimalize()
-        self.decimalize()
         if (fact.value is None):
             return
-        
+
         if self.decimals > fact.decimals:
             self.value = fact.value
             self.decimals = fact.decimals
-    
-    def name(self):
+
+    def name(self) -> str:
         "unittested"
         return '{0}:{1}'.format(self.version, self.tag)
-    
-    def key(self):
+
+    def key(self) -> Tuple[str, str]:
         "unittested"
         return (self.name(), self.context)
-    
-    def asdict(self):
+
+    def asdict(self) -> Dict[str, Any]:
         "unittested"
         return {'name': self.name(),
                 'tag': self.tag,
@@ -81,194 +67,248 @@ class Fact():
                 'unitid': self.unitid,
                 'decimals': self.decimals,
                 'factid': self.factid}
-        
-    def __eq__(self, f):
+
+    def __eq__(self, f: object) -> bool:
         "unittested"
+        if not isinstance(f, Fact):
+            raise NotImplementedError()
+
         if f.name() == self.name() and f.context == self.context:
             return True
         else:
             return False
-    
+
+
 class Context():
     def __init__(self):
-        self.contextid: Optional[str] = None
+        self.contextid: str = ''
         self.sdate: Optional[datetime.date] = None
-        self.edate: Optional[datetime.date] = None
-        self.entity: Optional[str] = None
+        self.edate: datetime.date = datetime.date.today()
+        self.entity: int = 0
         self.dim: List[Optional[str]] = [None]
         self.member: List[Optional[str]] = [None]
-    
+
     def axises(self) -> int:
         return len(self.dim) - 1
-    
+
     def isinstant(self) -> bool:
         "unittested"
         if self.sdate is None:
             return True
         else:
             return False
-        
+
     def asdictdim(self) -> TContextAsDictDim:
         "unittested"
         retval: TContextAsDictDim = []
         for d, m in zip(self.dim, self.member):
-            retval.append({'context':self.contextid,
-                           'sdate':self.sdate,
-                           'edate':self.edate,
+            retval.append({'context': self.contextid,
+                           'sdate': self.sdate,
+                           'edate': self.edate,
                            'dim': d,
                            'member': m})
         return retval
-    
-    def asdict(self):
+
+    def asdict(self) -> Dict[str, Any]:
         "unittested"
-        return {'context':self.contextid,
-                'sdate':self.sdate,
-                'edate':self.edate}
-        
-    def isdimentional(self):
+        return {'context': self.contextid,
+                'sdate': self.sdate,
+                'edate': self.edate}
+
+    def isdimentional(self) -> bool:
         "unittested"
         return (len(self.dim) > 1)
-    
-    def issuccessor(self):
+
+    def issuccessor(self) -> bool:
         "unittested"
         for m in self.member:
-            if m is None: continue
+            if m is None:
+                continue
             if re.match('.*successor.*', m, flags=re.I):
                 return True
-            
+
         return False
-    
-    def isparent(self):
+
+    def isparent(self) -> bool:
         "unittested"
         for m in self.member:
-            if m is None: continue
+            if m is None:
+                continue
             if re.match('.*parent.*', m, flags=re.I):
                 return True
-            
+
         return False
-            
-        
+
+
 class Unit():
-    def __init__(self):
-        self.unitid = None        
-        self.num = None
-        self.denom = None
-        
+    def __init__(self, unitid: str = '',
+                 nom: str = '',
+                 denom: Optional[str] = None):
+        self.unitid: str = unitid
+        self.nom: str = nom
+        self.denom: Optional[str] = denom
+
     def unitstr(self):
         "unittested"
-        ret = self.num
+        ret = self.nom
         if self.denom is not None:
             ret += '/' + self.denom
         return ret
-    
+
     def __str__(self):
         "unittested"
         return self.unitstr()
-    
+
+    def __repr__(self):
+        return str(self)
+
+
 class FootNote():
     def __init__(self):
-        self.footnote = None
-        self.footnoteid = None
-    
+        self.footnote: Optional[str] = None
+        self.footnoteid: str = ''
+
+
+def to_float(value: Optional[str]) -> Optional[float]:
+    if value is None or value == '':
+        return None
+
+    try:
+        return float(value)
+    except ValueError:
+        return None
+
+
+def to_decimals(value: Optional[str]) -> int:
+    if value in {'INF', 'inf'}:
+        return 0
+
+    v = to_float(value)
+    if v is None:
+        return default_decimals
+    return abs(int(v))
+
+
+class DEI(object):
+    def __init__(self):
+        self.period: List[Tuple[datetime.date, str]] = []
+        self.fye: List[Tuple[str, str]] = []
+        self.shares: List[Tuple[float, str]] = []
+        self.fy: List[Tuple[int, str]] = []
+        self.cik: List[Tuple[int, str]] = []
+        self.company_name: List[Tuple[str, str]] = []
+        self.us_gaap: datetime.date.today()
+
+
+Facts = Dict[Tuple[str, str], Fact]
+FootNotes = Dict[Tuple[str, str], FootNote]
+Units = Dict[str, Unit]
+Contexts = Dict[str, Context]
+TextBlocks = Dict[Tuple[str, str], str]
+
 
 class XbrlParser(object):
     def __init__(self):
         self.nsmapi = None
-    
-    def parse_fact(self, factelem):
+
+    def parse_fact(self, factelem) -> Fact:
         """
         factelem - Element from lxml.etree
         return Fact class
         """
-        
+
         f = Fact()
         f.tag = re.sub('{.*}', '', factelem.tag)
-        f.version = self.nsmapi[re.sub('{|}', '', factelem.tag.replace(f.tag, ''))]
-        
+        f.version = self.nsmapi[re.sub(
+            '{|}', '', factelem.tag.replace(f.tag, ''))]
+
         for attr, value in factelem.attrib.items():
-            attr = re.sub('{.*}','', attr)
-            value = value.strip()
+            attr = re.sub('{.*}', '', attr)
+            value = cast(str, value.strip())
             if attr == 'contextRef':
                 f.context = value
             if attr == 'id':
                 f.factid = value
             if attr == 'decimals':
-                if value in {'INF', 'inf'}:
-                    f.decimals = '0'
-                else:
-                    f.decimals = value
+                f.decimals = to_decimals(value)
             if attr == 'unitRef':
                 f.unitid = value
-        
-        f.value = factelem.text        
-        
-        return f        
-    
-    def parse_context(self, contextelem):
+
+        f.value = to_float(factelem.text)
+
+        return f
+
+    def parse_context(self, contextelem) -> Context:
         """
         contextelem - Element from lxml.etree
         return Context class
         """
-        
+
         c = Context()
+        c.contextid = contextelem.attrib['id'].strip()
+
         for i in contextelem.iter('{*}identifier'):
             c.entity = int(i.text.strip())
-        
-        for d in contextelem.iter('{*}startDate'):            
+
+        for d in contextelem.iter('{*}startDate'):
             c.sdate = utils.str2date(d.text.strip())
-        
-        for d in contextelem.iter('{*}endDate'):            
-            c.edate = utils.str2date(d.text.strip())
-            
-        for d in contextelem.iter('{*}instant'):            
-            c.edate = utils.str2date(d.text.strip())
-            
-        c.contextid = contextelem.attrib['id'].strip()
-        
+
+        for d in contextelem.iter('{*}endDate'):
+            edate = utils.str2date(d.text.strip())
+            if edate is None:
+                raise ValueError(f'context {c.contextid} has no end date')
+            c.edate = edate
+
+        for d in contextelem.iter('{*}instant'):
+            edate = utils.str2date(d.text.strip())
+            if edate is None:
+                raise ValueError(f'context {c.contextid} has no end date')
+
+            c.edate = edate
+
         for ex in contextelem.iter('{*}explicitMember'):
             c.dim.append(ex.attrib['dimension'])
             c.member.append(ex.text.strip())
-        
+
         return c
-    
-    def parse_footnote(self, footelem):
+
+    def parse_footnote(self, footelem) -> FootNote:
         """
         contextelem - Element from lxml.etree
         return FootNote class
         """
-        
+
         fn = FootNote()
         if footelem.text is None:
             fn.footnote = ''
         else:
             fn.footnote = footelem.text.strip()
-            
-        fn.footnoteid = footelem.attrib['{%s}label'%footelem.nsmap['xlink']]
-        
+
+        fn.footnoteid = footelem.attrib['{%s}label' % footelem.nsmap['xlink']]
+
         return fn
-        
-    
-    def parse_unit(self, unitelem):
+
+    def parse_unit(self, unitelem) -> Unit:
         """
         unitelem - Element from lxml.etree
         return Unit class
         """
         u = Unit()
-        
+
         u.unitid = unitelem.attrib['id'].strip()
         div = unitelem.find('{*}divide')
         if div is not None:
-            num = div.find('{*}unitNumerator').find('{*}measure')
+            nom = div.find('{*}unitNumerator').find('{*}measure')
             denom = div.find('{*}unitDenominator').find('{*}measure')
-            u.num = re.sub('.*:', '', num.text).lower()
+            u.nom = re.sub('.*:', '', nom.text).lower()
             u.denom = re.sub('.*:', '', denom.text).lower()
         else:
             m = unitelem.find('{*}measure')
-            u.num = re.sub('.*:', '', m.text).lower()
-            
+            u.nom = re.sub('.*:', '', m.text).lower()
+
         return u
-    
-    def parse_units(self, root):
+
+    def parse_units(self, root) -> Units:
         """
         return dict {unitid:Unit()}
         """
@@ -276,62 +316,63 @@ class XbrlParser(object):
         for unitelem in root.iter('{*}unit'):
             u = self.parse_unit(unitelem)
             units[u.unitid] = u
-            
+
         return units
-    
-    def parse_facts(self, root, ignore_textblocks=True):
+
+    def parse_facts(self, root, ignore_textblocks=True) -> List[Fact]:
         """
-        return list: [Fact()]
+        return list of Fact
         """
-        self.nsmapi = {v:k for k,v in root.nsmap.items()}
+        self.nsmapi = {v: k for k, v in root.nsmap.items()}
         facts = []
-        
+
         for factelem in root.findall('.//*[@unitRef]'):
-            if (ignore_textblocks and 
-               factelem.tag.lower().endswith('textblock')):
+            if (ignore_textblocks and
+                    factelem.tag.lower().endswith('textblock')):
                 continue
-            
+
             f = self.parse_fact(factelem)
-            facts.append(f)            
-            
+            facts.append(f)
+
         return facts
-            
-    def parse_contexts(self, root):
+
+    def parse_contexts(self, root) -> Contexts:
         """
-        return dict: {contextid:Context()}
+        return dict: {contextid: Context()}
         """
         contexts = {}
         for contextelem in root.iter('{*}context'):
             c = self.parse_context(contextelem)
             contexts[c.contextid] = c
-        
+
         return contexts
-    
-    def parse_footnotes(self, root):
+
+    def parse_footnotes(self, root) -> FootNotes:
         """
-        return dect: {factid:FootNote()}
+        return dict: {factid: FootNote()}
         """
         fnlink = root.find('{*}footnoteLink')
         if fnlink is None:
             return {}
-        
+
         footnotes = {}
-        for footelem in fnlink.findall('{*}footnote'):            
+        for footelem in fnlink.findall('{*}footnote'):
             fn = self.parse_footnote(footelem)
             footnotes[fn.footnoteid] = fn
-            
+
         factids = {}
         for loc in fnlink.findall('{*}loc'):
-            href = re.sub('.*#', '', loc.attrib['{%s}href' % loc.nsmap['xlink']])
+            href = re.sub('.*#', '', loc.attrib
+                          ['{%s}href' % loc.nsmap['xlink']])
             label = loc.attrib['{%s}label' % loc.nsmap['xlink']]
             factids[label] = href
-        
+
         arcs = {}
         for arc in fnlink.findall('{*}footnoteArc'):
             fr = arc.attrib['{%s}from' % loc.nsmap['xlink']]
             to = arc.attrib['{%s}to' % loc.nsmap['xlink']]
             arcs[factids[fr]] = footnotes[to]
-            
+
         return arcs
 
     def parse_cik(self, root) -> int:
@@ -340,92 +381,86 @@ class XbrlParser(object):
             if e.text is None:
                 continue
             with contextlib.suppress(ValueError):
-                cik = int(e.text.strip())    
-                ciks[cik] = ciks.get(cik, 0) + 1                
-        
+                cik = int(e.text.strip())
+                ciks[cik] = ciks.get(cik, 0) + 1
+
         if len(ciks) == 0:
             return 0
-        
+
         return sorted(ciks.items(), key=lambda x: x[1], reverse=True)[0][0]
 
-    def parse_dei(self, root, units):
-        """return dict object with main Document Entity Facts
-        {'fye': [[fey, context], ...],
-           'period': [[period, context], ...],
-           'shares': [[shares, context], ...],
-           'fy': [[fy, context], ...],
-           'cik': [[cik, context], ...],
-           'company_name': [[company_name, context], ...]
-           'us-gaap':'yyyy-mm-dd'}
-        """
+    def parse_dei(self, root, units: Units) -> DEI:
+        """return DEI object"""
         "unittested"
-        
-        dei = {'fye': [],
-               'period': [],
-               'shares': [],
-               'fy': [],
-               'cik': [],
-               'company_name': []}
+
+        dei = DEI()
+
         if 'dei' not in root.nsmap:
-            msg='no dei section in xbrl file'
+            msg = 'no dei section in xbrl file'
             logs.get_logger(__name__).error(msg=msg)
             raise XbrlException(msg=msg)
         if 'us-gaap' not in root.nsmap:
-            msg="taxonomy doesn't definded"
+            msg = "taxonomy doesn't definded"
             logs.get_logger(__name__).error(msg=msg)
             raise XbrlException(msg=msg)
-        
-        dei['us-gaap'] = root.nsmap['us-gaap'].split('/')[-1]
-        
+
+        dei.us_gaap = root.nsmap['us-gaap'].split('/')[-1]
+
         for e in root.iter('{%s}*' % root.nsmap['dei']):
             if e.text is None:
                 continue
-            
-            tag = re.sub('{.*}', '', e.tag.strip())                        
+
+            tag = re.sub('{.*}', '', e.tag.strip())
             text = e.text.strip()
             unit = e.attrib.get('unitRef', None)
             context = e.attrib.get('contextRef', None)
-            if unit is not None and units[unit].unitstr() == 'shares':
-                dei['shares'].append([text, context, tag])
+            if context is None:
                 continue
-            
-            if tag == 'DocumentFiscalYearFocus':
-                dei['fy'].append([text, context])
-            if tag == 'CurrentFiscalYearEndDate':
-                dei['fye'].append([text, context])
-            if tag  == 'DocumentPeriodEndDate':
-                dei['period'].append([text, context])
-            if tag == 'EntityCentralIndexKey':
-                dei['cik'].append([text, context])
-            if tag == 'EntityRegistrantName':
-                dei['company_name'].append([text, context])
-                
+
+            if unit is not None and units[unit].unitstr() == 'shares':
+                shares = to_float(text)
+                if shares and shares > 0:
+                    dei.shares.append((shares, context))
+                continue
+
+            try:
+                if tag == 'DocumentFiscalYearFocus':
+                    dei.fy.append((int(text), context))
+                if tag == 'CurrentFiscalYearEndDate':
+                    dei.fye.append((text, context))
+                if tag == 'DocumentPeriodEndDate':
+                    period = utils.str2date(text)
+                    if period:
+                        dei.period.append((period, context))
+                if tag == 'EntityCentralIndexKey':
+                    dei.cik.append((int(text), context))
+                if tag == 'EntityRegistrantName':
+                    dei.company_name.append((text, context))
+            except ValueError:
+                pass
+
         return dei
-    
-    def parse_textblocks(self, root, text_blocks):
-        """Return list[{"name": text_block_name,
-                        "context": str,
-                        "value": str
-                        }
-                      ]
+
+    def parse_textblocks(self, root,
+                         text_blocks: Set[str]) -> TextBlocks:
+        """return Dict[(name, context), text]
         """
         "unittested"
-        data = []
+
+        data: TextBlocks = {}
         for name in text_blocks:
-            for e in root.iter('{*}'+ name):
-                data.append({'name': name,
-                             'context': e.attrib['contextRef'],
-                             'value': e.text.strip()
-                                            .replace('\r', '')
-                                            .replace('\n', '')                                             
-                            })
-            
+            for e in root.iter('{*}' + name):
+                data[(name, e.attrib['contextRef'])] = (e.text.strip()
+                                                        .replace('\r', '')
+                                                        .replace('\n', ''))
+
         return(data)
-    
+
+
 class xbrltrans():
-    @staticmethod        
-    def transform_facts(facts):
-        tfacts = {}
+    @staticmethod
+    def transform_facts(facts: List[Fact]) -> Facts:
+        tfacts: Facts = {}
         for f in facts:
             key = f.key()
             if key in tfacts:
@@ -433,78 +468,75 @@ class xbrltrans():
             else:
                 tfacts[key] = f
         return tfacts
-    
+
     @staticmethod
-    def transform_fn(facts, footnotes):
-        fn = {}
+    def transform_fn(facts: Facts,
+                     footnotes: Dict[str,
+                                     FootNote]) -> FootNotes:
+        fn: FootNotes = {}
         for key, f in facts.items():
             if f.factid in footnotes:
                 fn[key] = footnotes[f.factid]
-                
-        return fn        
-    
+
+        return fn
+
+
 class XbrlCleanUp():
     def __init__(self):
-        self.currencies = [None, 
+        self.currencies = [None,
                            'usd', 'eur', 'cad', 'aud',
                            'shares', 'pure']
         pass
-    
-    def cleanup(self, facts, units, contexts, footnotes):
+
+    def cleanup(self, facts: Facts,
+                units: Units,
+                contexts: Contexts,
+                footnotes: FootNotes):
         units = self.cleanupunits(units)
         facts = self.cleanupfacts(facts, units)
-        #pure contexts needed when parse TextBlocks and other 
-        #nonnumeric facts
-        #contexts = self.cleanupcontexts(contexts, facts)
+        # pure contexts needed when parse TextBlocks and other
+        # nonnumeric facts
+        # contexts = self.cleanupcontexts(contexts, facts)
         footnotes = self.cleanupfn(footnotes, facts)
-        
+
         return facts, units, contexts, footnotes
-    
-    def cleanupfacts(self, facts, units):
-        facts_cu = {}
+
+    def cleanupfacts(self, facts: Facts, units: Units) -> Facts:
+        facts_cu: Facts = {}
         for key, f in facts.items():
             if f.unitid not in units or f.value is None:
-                continue            
-                
-            f.decimalize()
+                continue
+
             facts_cu[key] = f
-                
+
         return facts_cu
-    
-    def cleanupunits(self, units):
-        units_cu = {}
+
+    def cleanupunits(self, units: Units) -> Units:
+        units_cu: Units = {}
         for u in units.values():
-            if (u.num in self.currencies and u.denom in self.currencies):
+            if (u.nom in self.currencies and u.denom in self.currencies):
                 units_cu[u.unitid] = u
-                
+
         return units_cu
-    
-    def cleanupcontexts(self, contexts, facts):
+
+    def cleanupcontexts(self, contexts: Contexts, facts: Facts) -> Contexts:
         fact_contexts = set([f.context for f in facts.values()])
-        contexts_cu = {}
+        contexts_cu: Contexts = {}
         for c in contexts.values():
             if c.contextid in fact_contexts:
                 contexts_cu[c.contextid] = c
-                
+
         return contexts_cu
-    
-    def cleanupfn(self, footnotes, facts):
-        footnotes_cu = {}
+
+    def cleanupfn(self, footnotes: FootNotes, facts: Facts) -> FootNotes:
+        footnotes_cu: FootNotes = {}
         for key, f in facts.items():
-             fn = footnotes.get(key, None)
-             if fn:
-                 footnotes_cu[f.key()] = fn
-                 
+            fn = footnotes.get(key, None)
+            if fn:
+                footnotes_cu[f.key()] = fn
+
         return footnotes_cu
+
 
 if __name__ == '__main__':
     pass
-    
-    
-    
-    
-    
-        
-    
-    
-    

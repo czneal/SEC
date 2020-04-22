@@ -13,34 +13,13 @@ import algos.calc as c
 import logs
 from algos.scheme import enum
 from utils import remove_root_dir
-from xbrlxml.selectors import ChapterChooser, ChapterExtender, ContextChooser
+from xbrlxml.pickup import ChapterChooser, ChapterExtender, ContextChooser
 from xbrlxml.xbrlexceptions import XbrlException
 from xbrlxml.xbrlfile import XbrlFile
 from xbrlxml.xbrlfileparser import Context
 from xbrlxml.xbrlzip import XBRLZipPacket
 from xbrlxml.xbrlrss import FileRecord
 from xbrlxml.xbrlchapter import CalcChapter
-
-
-class TextBlocks(object):
-    def __init__(self):
-        self.data = []
-
-    def extend(self, blocks, record) -> None:
-        self.data.extend(
-            [{'adsh': record['adsh'],
-              'cik': record['cik'],
-              'name': block['name'],
-              'context': block['context'],
-              'text': block['value'].replace('&lt;', '<')
-              .replace('&gt;', '>')
-              .replace('&amp;', '&')}
-             for block in blocks]
-        )
-
-    def write(self, filename) -> None:
-        df = pd.DataFrame(self.data)
-        df.to_csv(filename)
 
 
 class SharesFilter():
@@ -82,7 +61,7 @@ class DataMiner(metaclass=ABCMeta):
         logger = logs.get_logger(__name__)
         if func == {'_mine_bs_parent_for_shares',
                     '_mine_se_for_shares'}:
-            if self.xbrlfile.dfacts is None:
+            if self.xbrlfile.dfacts.shape[0] == 0:
                 det = 'call {0} after xbrlfile.read_units_facts_fn'.format(
                     func)
                 logger.error(msg='logic error', extra={'details': det})
@@ -149,8 +128,8 @@ class DataMiner(metaclass=ABCMeta):
 
             context = self.sheet_context[roleuri]
 
-            calc = self.xbrlfile.schemes['calc'].get(roleuri, None)
-            pres = self.xbrlfile.schemes['pres'].get(roleuri, None)
+            calc = self.xbrlfile.calc.get(roleuri, None)
+            pres = self.xbrlfile.pres.get(roleuri, None)
 
             if calc is None or pres is None:
                 logger.warning(msg='calculation failed',
@@ -208,8 +187,8 @@ class DataMiner(metaclass=ABCMeta):
         frames = []
 
         for e in self.extentions:
-            pres = self.xbrlfile.schemes['pres'].get(e['roleuri'])
-            calc = self.xbrlfile.schemes['calc'].get(e['roleuri'], pres)
+            pres = self.xbrlfile.pres.get(e['roleuri'])
+            calc = self.xbrlfile.calc.get(e['roleuri'], pres)
             if 'label' in e:
                 tags = set()
                 if e['label'] in pres.nodes:
@@ -263,8 +242,8 @@ class DataMiner(metaclass=ABCMeta):
             self) -> List[Tuple[str, str, int,
                                 Optional[datetime.date],
                                 datetime.date, str]]:
-        shares = self.xbrlfile.dei.get('shares', None)
-        if shares is None or not shares:
+        shares = self.xbrlfile.dei.shares
+        if not shares:
             logs.get_logger(__name__).warning('dei shares not found')
             return []
 
@@ -272,7 +251,8 @@ class DataMiner(metaclass=ABCMeta):
                          Optional[datetime.date],
                          datetime.date, str]] = []
 
-        for shares_count, context_name, shares_tag in shares:
+        shares_tag = 'EntityCommonStockSharesOutstanding'
+        for shares_count, context_name in shares:
             context = self.xbrlfile.contexts[context_name]
             if SharesFilter.filter_shares_context(context):
                 member = context.member[-1]
@@ -285,6 +265,8 @@ class DataMiner(metaclass=ABCMeta):
                              context.edate,
                              member))
         if not data:
+            logs.get_logger(__name__).warning(
+                'dei shares not found after filter')
             return data
 
         max_date = max(data, key=lambda x: x[4])[4]
@@ -301,7 +283,7 @@ class DataMiner(metaclass=ABCMeta):
         if roleuri is None:
             return data
 
-        pres = self.xbrlfile.schemes['pres'].get(roleuri, None)
+        pres = self.xbrlfile.pres.get(roleuri, None)
         if pres is None:
             logger.warning(msg='se shares not found')
             return data
@@ -352,7 +334,7 @@ class DataMiner(metaclass=ABCMeta):
             logger.warning(msg='bs parentical shares not found')
             return data
 
-        xsd = self.xbrlfile.schemes['xsd']
+        xsd = self.xbrlfile.xsd
         bs_label = xsd[bs_roleuri].label[0:-2]
 
         for roleuri, chapter in xsd.items():
@@ -363,7 +345,7 @@ class DataMiner(metaclass=ABCMeta):
             logger.warning(msg='bs parentical shares not found')
             return data
 
-        pres = self.xbrlfile.schemes['pres'].get(roleuri, None)
+        pres = self.xbrlfile.pres.get(roleuri, None)
         if pres is None:
             logger.warning(msg='bs parentical shares not found')
             return data
@@ -407,34 +389,39 @@ class DataMiner(metaclass=ABCMeta):
     def _read_text_blocks(self):
         raise NotImplementedError('_read_text_blocks is not implemented')
 
-    def _find_proper_company_name_cik(self, record: Dict[str, Any]) -> None:
+    def _find_proper_company_name_cik(self, record: FileRecord) -> None:
+        """
+        some filers file they report under child company name
+        read proper cik from xbrl file, then find company name
+        change cik and company_name fields in record
+        if fails throw XbrlException()
+        """
         if self.cik == self.xbrlfile.cik:
             return
 
         try:
             (cik, context) = [(int(e[0]), e[1]) for e in filter(
-                lambda x: int(x[0]) == self.xbrlfile.cik, self.xbrlfile.dei['cik'])][0]
+                lambda x: int(x[0]) == self.xbrlfile.cik, self.xbrlfile.dei.cik)][0]
             company_name = [
                 e
                 for e in filter(
-                    lambda x: x[1] == context, self.xbrlfile.dei
-                    ['company_name'])][0][0]
+                    lambda x: x[1] == context, self.xbrlfile.dei.company_name)][0][0]
             self.cik = cik
-            record['cik'] = cik
-            record['company_name'] = company_name
+            record.cik = cik
+            record.company_name = company_name
 
         except (IndexError, ValueError):
             logger = logs.get_logger(name=__name__)
             logger.error("couldn't find proper company name and CIK")
             raise XbrlException('')
 
-    def _prepare(self, record, zip_filename):
+    def _prepare(self, record: FileRecord, zip_filename: str):
         self.extentions = []
         self.numeric_facts = None
         self.shares_facts = None
         self.new_facts = None
-        self.cik = record['cik']
-        self.adsh = record['adsh']
+        self.cik = record.cik
+        self.adsh = record.adsh
         self.zip_filename = zip_filename
 
         logger = logs.get_logger(__name__)
@@ -443,7 +430,7 @@ class DataMiner(metaclass=ABCMeta):
     def do_job(self):
         pass
 
-    def feed(self, record: Dict[str, Any], zip_filename: str):
+    def feed(self, record: FileRecord, zip_filename: str):
         logger = logs.get_logger(__name__)
         self._prepare(record, zip_filename)
 
@@ -492,12 +479,12 @@ class ChapterNamesMiner(DataMiner):
 
 def prepare_report(miner: DataMiner, record: FileRecord) -> Dict[str, Any]:
     file_link = remove_root_dir(miner.zip_filename)
-    report = {'adsh': miner.adsh,
-              'cik': miner.cik,
+    report = {'adsh': record.adsh,
+              'cik': record.cik,
               'period': miner.xbrlfile.period,
               'period_end': miner.xbrlfile.fye,
               'fin_year': miner.xbrlfile.fy,
-              'taxonomy': miner.xbrlfile.dei['us-gaap'],
+              'taxonomy': miner.xbrlfile.dei.us_gaap,
               'form': record.form_type,
               'quarter': 0,
               'file_date': record.file_date,
@@ -529,13 +516,13 @@ def prepare_company(miner: DataMiner, record: FileRecord) -> Dict[str, Any]:
 def _dump_structure(miner: DataMiner) -> str:
     structure = {}
     for sheet, roleuri in miner.sheets.mschapters.items():
-        xsd_chapter = miner.xbrlfile.schemes['xsd'].get(roleuri, None)
+        xsd_chapter = miner.xbrlfile.xsd.get(roleuri, None)
         if not xsd_chapter:
             continue
 
         calc_chapter = (miner
                         .xbrlfile
-                        .schemes['calc']
+                        .calc
                         .get(roleuri, None))
         if calc_chapter is None:
             calc_chapter = CalcChapter(roleuri=roleuri,

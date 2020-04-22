@@ -3,8 +3,10 @@ import unittest
 import mysqlio.stocksio as sio
 import mysqlio.basicio as do
 
+from mysqlio.tests.dbtest import DBTestBase  # type: ignore
 
-class TestStocksIO(unittest.TestCase):
+
+class TestStocksIO(DBTestBase):
     stock_data_list = [{'ticker': 'AAPL',
                         'trade_date': '2019-10-31',
                         'market_cap': 1124191216800,

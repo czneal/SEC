@@ -1,0 +1,94 @@
+{
+    "bs": {
+        "roleuri": "roleuri1",
+        "nodes": {
+            "us-gaap:NodeName0": {
+                "tag": "NodeName0",
+                "version": "us-gaap",
+                "arc": {},
+                "children": {
+                    "us-gaap:NodeName1": {
+                        "tag": "NodeName1",
+                        "version": "us-gaap",
+                        "arc": {
+                            "weight": 1.0
+                        },
+                        "children": {
+                            "us-gaap:NodeName3": {
+                                "tag": "NodeName3",
+                                "version": "us-gaap",
+                                "arc": {
+                                    "weight": 1.0
+                                },
+                                "children": null
+                            },
+                            "us-gaap:NodeName4": {
+                                "tag": "NodeName4",
+                                "version": "us-gaap",
+                                "arc": {
+                                    "weight": -1.0
+                                },
+                                "children": null
+                            }
+                        }
+                    },
+                    "us-gaap:NodeName2": {
+                        "tag": "NodeName2",
+                        "version": "us-gaap",
+                        "arc": {
+                            "weight": -1.0
+                        },
+                        "children": null
+                    }
+                }
+            }
+        },
+        "label": "balance sheet"
+    },
+    "is": {
+        "roleuri": "roleuri2",
+        "nodes": {
+            "us-gaap:NodeName2": {
+                "tag": "NodeName2",
+                "version": "us-gaap",
+                "arc": {},
+                "children": {
+                    "mg:NodeName1": {
+                        "tag": "NodeName1",
+                        "version": "mg",
+                        "arc": {
+                            "weight": -1.0
+                        },
+                        "children": null
+                    },
+                    "mg:NodeName2": {
+                        "tag": "NodeName2",
+                        "version": "mg",
+                        "arc": {
+                            "weight": 1.0
+                        },
+                        "children": {
+                            "mg:NodeName3": {
+                                "tag": "NodeName3",
+                                "version": "mg",
+                                "arc": {
+                                    "weight": 1.0
+                                },
+                                "children": null
+                            },
+                            "mg:NodeName4": {
+                                "tag": "NodeName4",
+                                "version": "mg",
+                                "arc": {
+                                    "weight": -1.0
+                                },
+                                "children": null
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "label": "income statement"
+    }
+}

@@ -2,16 +2,42 @@ import unittest
 import unittest.mock
 import os
 import json
+import datetime
 
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import xbrlxml.dataminer
+import xbrlxml.xbrlrss
 from xbrlxml.xbrlchapter import CalcChapter
-from xbrlxml.xbrlrss import record_from_str
-from utils import add_app_dir, add_root_dir
+from xbrlxml.xbrlrss import record_from_str, FileRecord
+from utils import add_app_dir, add_root_dir, remove_root_dir
+from mysqlio.basicio import MySQLTable, open_connection
 
 
 MYDEBUG: bool = False
+SKIP_LONG = True
+
+
+def read_report(adsh: str) -> Tuple[xbrlxml.dataminer.NumericDataMiner,
+                                    FileRecord,
+                                    bool]:
+
+    en = xbrlxml.xbrlrss.MySQLEnumerator()
+    en.set_filter_method(
+        'explicit', after=datetime.date(
+            2013, 1, 1), adsh=adsh)
+
+    records = en.filing_records()
+    if not records:
+        raise ValueError(f'no such adsh: {adsh}')
+
+    record, file_link = records[0]
+    file_link = add_root_dir(file_link)
+
+    dm = xbrlxml.dataminer.NumericDataMiner()
+    r = dm.feed(record, file_link)
+
+    return (dm, record, r)
 
 
 class TestDump(unittest.TestCase):
@@ -28,13 +54,12 @@ class TestDump(unittest.TestCase):
             xsd2 = unittest.mock.MagicMock()
             xsd2.label = 'label2'
 
-            miner.xbrlfile.schemes = {
-                'xsd': {
-                    'roleuri1': xsd1,
-                    'roleuri2': xsd2},
-                'calc': {
-                    'roleuri1': CalcChapter('roleuri1'),
-                    'roleuri2': CalcChapter('roleuri2')}}
+            miner.xbrlfile.xsd = {
+                'roleuri1': xsd1,
+                'roleuri2': xsd2}
+            miner.xbrlfile.calc = {
+                'roleuri1': CalcChapter('roleuri1'),
+                'roleuri2': CalcChapter('roleuri2')}
 
             s = xbrlxml.dataminer._dump_structure(miner)
             self.assertEqual(
@@ -52,13 +77,11 @@ class TestDump(unittest.TestCase):
             xsd2 = unittest.mock.MagicMock()
             xsd2.label = 'label2'
 
-            miner.xbrlfile.schemes = {
-                'xsd': {
-                    'roleuri1': xsd1,
-                    'roleuri2': xsd2},
-                'calc': {
-                    'roleuri1': CalcChapter('roleuri1')}
-            }
+            miner.xbrlfile.xsd = {
+                'roleuri1': xsd1,
+                'roleuri2': xsd2}
+            miner.xbrlfile.calc = {
+                'roleuri1': CalcChapter('roleuri1')}
 
             s = xbrlxml.dataminer._dump_structure(miner)
             self.assertEqual(
@@ -67,7 +90,7 @@ class TestDump(unittest.TestCase):
 
 
 class TestConsistence(unittest.TestCase):
-    @unittest.skipIf(not MYDEBUG, 'debug')
+    @unittest.skipIf(MYDEBUG, 'debug')
     def test_calc_from_dim_fail(self):
         adsh = '0000037996-16-000092'
 
@@ -78,20 +101,15 @@ class TestConsistence(unittest.TestCase):
 
         dm = xbrlxml.dataminer.NumericDataMiner()
 
-        dm.feed(record.__dict__, file_link)
+        r = dm.feed(record, file_link)
 
         df = dm.numeric_facts
 
     @unittest.skipIf(MYDEBUG, 'debug')
     def test_NetIncomeLoss_fail(self):
-        with open(make_absolute('res/0000097476-0001564590-18-002832.json')) as f:
-            record = record_from_str(f.read())
-            file_link = make_absolute(
-                'res/0000097476-0001564590-18-002832.zip')
-
-        dm = xbrlxml.dataminer.NumericDataMiner()
-
-        dm.feed(record.__dict__, file_link)
+        adsh = '0001564590-18-002832'
+        dm, record, r = read_report(adsh)
+        self.assertTrue(r)
 
         df = dm.numeric_facts
         self.assertEqual(
@@ -137,11 +155,14 @@ class TestConsistence(unittest.TestCase):
 
         return msg
 
-    @unittest.skipIf(MYDEBUG, 'debug')
+    @unittest.skipIf(SKIP_LONG, 'skip long test')
     def test_backward_compatibility(self):
         res_dir = make_absolute('res/backward')
-        with open(os.path.join(res_dir, 'adshs.json')) as f:
-            adshs: List[str] = json.load(f)
+
+        adshs: Set[str] = set()
+        for root, dirs, filenames in os.walk(res_dir):
+            for filename in filenames:
+                adshs.add(filename[:20])
 
         dm = xbrlxml.dataminer.NumericDataMiner()
 
@@ -150,16 +171,177 @@ class TestConsistence(unittest.TestCase):
             with self.subTest(adsh=adsh):
                 with open(os.path.join(res_dir, adsh + '.facts')) as f:
                     facts: Dict[str, float] = json.load(f)
-                with open(os.path.join(res_dir, adsh + '.record')) as f:
-                    record = record_from_str(f.read())
 
-                r = dm.feed(
-                    record.__dict__, os.path.join(
-                        res_dir, adsh + '.zip'))
+                dm, record, r = read_report(adsh)
                 self.assertTrue(r)
 
                 msg = self.check_facts(dm, facts)
                 self.assertTrue(len(msg) == 0, msg='\n'.join(msg))
+
+    @unittest.skipIf(MYDEBUG, 'debug')
+    def test_find_proper_company_name(self):
+        adsh = '0000065100-13-000016'
+        dm, record, result = read_report(adsh)
+        self.assertTrue(result, msg=f'fail to load report {adsh}')
+
+        self.assertEqual(record.cik, 1051829)
+        self.assertEqual(record.company_name,
+                         'MERRILL LYNCH PREFERRED CAPITAL TRUST III')
+
+    @unittest.skipIf(MYDEBUG, 'debug')
+    def test_mine_dei_for_shares(self):
+        with self.subTest('dei shares not found'):
+            with unittest.mock.patch('logs.get_logger') as get_logger:
+                logger = unittest.mock.MagicMock()
+                get_logger.return_value = logger
+                adsh = '0001387131-19-002347'
+                dm, record, result = read_report(adsh)
+                self.assertTrue(result, msg=f'fail to load report {adsh}')
+
+                logger.warning.assert_has_calls(
+                    [unittest.mock.call('dei shares not found')])
+
+        with self.subTest('dei shares not found after filter'):
+            with unittest.mock.patch('logs.get_logger') as get_logger:
+                logger = unittest.mock.MagicMock()
+                get_logger.return_value = logger
+                adsh = '0001104659-19-011995'
+                dm, record, result = read_report(adsh)
+                self.assertTrue(result, msg=f'fail to load report {adsh}')
+
+                logger.warning.assert_has_calls(
+                    [unittest.mock.call('dei shares not found after filter')])
+
+        with self.subTest('success'):
+            adsh = '0001652044-19-000004'
+            dm, record, result = read_report(adsh)
+
+            self.assertTrue(result, msg=f'fail to load report {adsh}')
+            self.assertEqual(dm.shares_facts.shape, (3, 6))
+
+    @unittest.skipIf(MYDEBUG, 'debug')
+    def test_calculate(self):
+        with self.subTest('calculation failed, unable calculate chapter without'):
+            with unittest.mock.patch('logs.get_logger') as get_logger:
+                logger = unittest.mock.MagicMock()
+                get_logger.return_value = logger
+                adsh = '0001477932-20-000261'
+                dm, record, result = read_report(adsh)
+                self.assertTrue(result, msg=f'fail to load report {adsh}')
+
+                logger.warning.assert_called()
+                kall = logger.warning.call_args
+                self.assertTrue('msg' in kall[1])
+                self.assertEqual(kall[1]['msg'], 'calculation failed')
+                self.assertTrue('extra' in kall[1])
+                self.assertTrue(
+                    'unable calculate chapter without'
+                    in kall[1]['extra']['details'])
+
+        with self.subTest('calculation failed, calc from dim returns none'):
+            with unittest.mock.patch('logs.get_logger') as get_logger:
+                logger = unittest.mock.MagicMock()
+                get_logger.return_value = logger
+                adsh = '0001493152-20-000510'
+                dm, record, result = read_report(adsh)
+                self.assertTrue(result, msg=f'fail to load report {adsh}')
+
+                logger.warning.assert_called()
+                kall = logger.warning.call_args
+                self.assertTrue('msg' in kall[1])
+                self.assertEqual(kall[1]['msg'], 'calculation failed')
+                self.assertTrue('extra' in kall[1])
+                self.assertTrue(
+                    'calc_from_dim returns none'
+                    in kall[1]['extra']['details'])
+
+        with self.subTest('calculation failed, calc_from_dim returns more than'):
+            with unittest.mock.patch('logs.get_logger') as get_logger:
+                logger = unittest.mock.MagicMock()
+                get_logger.return_value = logger
+                adsh = '0001005276-19-000018'
+                dm, record, result = read_report(adsh)
+                self.assertTrue(result, msg=f'fail to load report {adsh}')
+
+                logger.warning.assert_any_call(
+                    msg='calculation failed',
+                    extra={
+                        'details': 'calc_from_dim returns more than one value',
+                        'fact': 'us-gaap:CostOfGoodsAndServicesSold',
+                        'sheet': 'is',
+                        'roleuri': 'http://www.mtga.com/role/ConsolidatedStatementsOfIncomeLossAndComprehensiveIncomeLoss'})
+
+
+class TestPrepare(unittest.TestCase):
+    @unittest.skipIf(MYDEBUG, 'debug')
+    def test_prepare_report(self):
+        adsh = '0000065100-13-000016'
+        with self.subTest(adsh=adsh):
+            dm, record, result = read_report(adsh)
+            self.assertTrue(result, msg=f'fail to load report {dm.adsh}')
+
+            report = xbrlxml.dataminer.prepare_report(dm, record)
+            self.assertEqual(report['cik'], 1051829)
+            self.assertEqual(dm.xbrlfile.period, report['period'])
+            self.assertEqual(adsh, report['adsh'])
+            self.assertEqual(
+                report['file_link'],
+                remove_root_dir(
+                    dm.zip_filename))
+
+            self.assertSetEqual(set(report.keys()), {'adsh', 'cik', 'period',
+                                                     'period_end',
+                                                     'fin_year',
+                                                     'taxonomy',
+                                                     'form',
+                                                     'quarter',
+                                                     'file_date',
+                                                     'file_link',
+                                                     'trusted',
+                                                     'structure',
+                                                     'contexts'})
+
+    @unittest.skipIf(MYDEBUG, 'debug')
+    def test_prepare_nums(self):
+        adsh = '0000065100-13-000016'
+        with self.subTest(adsh=adsh):
+            dm, record, result = read_report(adsh)
+            self.assertTrue(result, msg=f'fail to load report {dm.adsh}')
+
+            nums = xbrlxml.dataminer.prepare_nums(dm)
+            con = open_connection()
+            table = MySQLTable('mgnums', con)
+            con.close()
+
+            self.assertTrue(table.fields.issubset(nums.columns))
+
+    @unittest.skipIf(MYDEBUG, 'debug')
+    def test_prepare_company(self):
+        adsh = '0000065100-13-000016'
+        with self.subTest(adsh=adsh):
+            dm, record, result = read_report(adsh)
+            self.assertTrue(result, msg=f'fail to load report {dm.adsh}')
+
+            company = xbrlxml.dataminer.prepare_company(dm, record)
+            con = open_connection()
+            table = MySQLTable('companies', con)
+            con.close()
+
+            self.assertTrue(table.fields.issubset(company.keys()))
+
+    @unittest.skipIf(MYDEBUG, 'debug')
+    def test_prepare_share(self):
+        adsh = '0001652044-19-000004'
+        with self.subTest(adsh=adsh):
+            dm, record, result = read_report(adsh)
+            self.assertTrue(result, msg=f'fail to load report {dm.adsh}')
+
+            shares = xbrlxml.dataminer.prepare_shares(dm)
+            con = open_connection()
+            table = MySQLTable('sec_shares', con)
+            con.close()
+
+            self.assertTrue(table.fields_not_null.issubset(shares.keys()))
 
 
 def make_absolute(path: str) -> str:
