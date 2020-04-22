@@ -1,0 +1,123 @@
+<?xml version="1.0"?>
+
+<edgarSubmission>
+
+    <submissionType>3/A</submissionType>
+
+    <testOrLive>TEST</testOrLive>
+
+    <pointOfContact>
+        <contactName>JoeFiler</contactName>
+        <contactPhoneNumber>123-456-7890</contactPhoneNumber>
+        <contactEmailAddress>joefiler@xyz.com</contactEmailAddress>
+    </pointOfContact>
+
+    <returnCopy>1</returnCopy>
+
+    <notificationAddresses>
+        <notificationEmailAddress>donaldduck@disneycharacter.com</notificationEmailAddress>
+        <notificationEmailAddress>goofy@disneycharacter.com</notificationEmailAddress>
+        <notificationEmailAddress>mickeymouse@disneycharacter.com</notificationEmailAddress>
+    </notificationAddresses>
+
+    <edgarDocument>
+        <documentName>doc3.xml</documentName>
+        <documentType>3/A</documentType>
+        <documentDescription>Primary Document</documentDescription>
+        <documentMimeBlock>
+            PD94bWwgdmVyc2lvbj0iMS4wIj8+DQoNCjxvd25lcnNoaXBEb2N1bWVudD4N
+            Cg0KICAgIDxkb2N1bWVudFR5cGU+My9BPC9kb2N1bWVudFR5cGU+DQoNCiAg
+            ICA8cGVyaW9kT2ZSZXBvcnQ+MjAwMi0wOS0xNTwvcGVyaW9kT2ZSZXBvcnQ+
+            DQoNCiAgICA8ZGF0ZU9mT3JpZ2luYWxTdWJtaXNzaW9uPjIwMDMtMDMtMDE8
+            L2RhdGVPZk9yaWdpbmFsU3VibWlzc2lvbj4NCg0KICAgIDxpc3N1ZXI+DQog
+            ICAgICAgIDxpc3N1ZXJDaWs+MTIxMjEyMTIxMjwvaXNzdWVyQ2lrPg0KICAg
+            ICAgICA8aXNzdWVyVHJhZGluZ1N5bWJvbD5BV0k8L2lzc3VlclRyYWRpbmdT
+            eW1ib2w+DQogICAgPC9pc3N1ZXI+DQoNCiAgICA8cmVwb3J0aW5nT3duZXI+
+            DQogICAgICAgIDxyZXBvcnRpbmdPd25lcklkPg0KICAgICAgICAgICAgPHJw
+            dE93bmVyQ2lrPjM0MzQzNDwvcnB0T3duZXJDaWs+DQogICAgICAgICAgICA8
+            cnB0T3duZXJDY2M+YSNvZmMwcm48L3JwdE93bmVyQ2NjPg0KICAgICAgICA8
+            L3JlcG9ydGluZ093bmVySWQ+DQogICAgICAgIDxyZXBvcnRpbmdPd25lckFk
+            ZHJlc3M+DQogICAgICAgICAgICA8cnB0T3duZXJTdHJlZXQxPjEyMyBNYWlu
+            IFN0PC9ycHRPd25lclN0cmVldDE+DQogICAgICAgICAgICA8cnB0T3duZXJT
+            dHJlZXQyPkFwdCAjNDQ8L3JwdE93bmVyU3RyZWV0Mj4NCiAgICAgICAgICAg
+            IDxycHRPd25lckNpdHk+QW55d2hlcmU8L3JwdE93bmVyQ2l0eT4NCiAgICAg
+            ICAgICAgIDxycHRPd25lclN0YXRlPlZBPC9ycHRPd25lclN0YXRlPg0KICAg
+            ICAgICAgICAgPHJwdE93bmVyWmlwQ29kZT4yMTIxMjwvcnB0T3duZXJaaXBD
+            b2RlPg0KICAgICAgICA8L3JlcG9ydGluZ093bmVyQWRkcmVzcz4NCiAgICAg
+            ICAgPHJlcG9ydGluZ093bmVyUmVsYXRpb25zaGlwPg0KICAgICAgICAgICAg
+            PGlzRGlyZWN0b3I+dHJ1ZTwvaXNEaXJlY3Rvcj4NCiAgICAgICAgICAgIDxp
+            c09mZmljZXI+MTwvaXNPZmZpY2VyPg0KICAgICAgICAgICAgPGlzVGVuUGVy
+            Y2VudE93bmVyPmZhbHNlPC9pc1RlblBlcmNlbnRPd25lcj4NCiAgICAgICAg
+            ICAgIDxpc090aGVyPnRydWU8L2lzT3RoZXI+DQogICAgICAgICAgICA8b2Zm
+            aWNlclRpdGxlPlByZXNpZGVudCBhbmQgQ0VPPC9vZmZpY2VyVGl0bGU+DQog
+            ICAgICAgICAgICA8b3RoZXJUZXh0PlB1YmxpYyBBZmZhaXJzIE9mZmljZXI8
+            L290aGVyVGV4dD4NCiAgICAgICAgPC9yZXBvcnRpbmdPd25lclJlbGF0aW9u
+            c2hpcD4NCiAgICA8L3JlcG9ydGluZ093bmVyPg0KDQoJPG5vbkRlcml2YXRp
+            dmVUYWJsZT4NCg0KCQk8bm9uRGVyaXZhdGl2ZUhvbGRpbmc+DQoJCQk8c2Vj
+            dXJpdHlUaXRsZT4NCgkJCQk8dmFsdWU+UHJlZmVycmVkIFN0b2NrIE9wdGlv
+            bnM8L3ZhbHVlPg0KCQkJCTxmb290bm90ZUlkIGlkPSJGMSIvPg0KCQkJPC9z
+            ZWN1cml0eVRpdGxlPg0KCQkJPHBvc3RUcmFuc2FjdGlvbkFtb3VudHM+DQoJ
+            CQkJPHNoYXJlc093bmVkRm9sbG93aW5nVHJhbnNhY3Rpb24+DQoJCQkJCTx2
+            YWx1ZT4zMzMzMzwvdmFsdWU+DQoJCQkJPC9zaGFyZXNPd25lZEZvbGxvd2lu
+            Z1RyYW5zYWN0aW9uPg0KCQkJPC9wb3N0VHJhbnNhY3Rpb25BbW91bnRzPg0K
+            CQkJPG93bmVyc2hpcE5hdHVyZT4NCgkJCQk8ZGlyZWN0T3JJbmRpcmVjdE93
+            bmVyc2hpcD4NCgkJCQkJPHZhbHVlPkQ8L3ZhbHVlPg0KCQkJCTwvZGlyZWN0
+            T3JJbmRpcmVjdE93bmVyc2hpcD4NCgkJCQk8bmF0dXJlT2ZPd25lcnNoaXA+
+            DQoJCQkJCTx2YWx1ZT48L3ZhbHVlPg0KCQkJCTwvbmF0dXJlT2ZPd25lcnNo
+            aXA+DQoJCQk8L293bmVyc2hpcE5hdHVyZT4NCgkJPC9ub25EZXJpdmF0aXZl
+            SG9sZGluZz4NCg0KCTwvbm9uRGVyaXZhdGl2ZVRhYmxlPg0KDQoJPGRlcml2
+            YXRpdmVUYWJsZT4NCg0KCQk8ZGVyaXZhdGl2ZUhvbGRpbmc+DQoJCQk8c2Vj
+            dXJpdHlUaXRsZT4NCgkJCQk8dmFsdWU+RGVyaXZlZCBTdG9jayAoSE9MRElO
+            Ryk8L3ZhbHVlPg0KCQkJPC9zZWN1cml0eVRpdGxlPg0KCQkJPGNvbnZlcnNp
+            b25PckV4ZXJjaXNlUHJpY2U+DQoJCQkJPHZhbHVlPjUwLjU1PC92YWx1ZT4N
+            CgkJCQk8Zm9vdG5vdGVJZCBpZD0iRjUiLz4NCgkJCTwvY29udmVyc2lvbk9y
+            RXhlcmNpc2VQcmljZT4NCgkJCTxleGVyY2lzZURhdGU+DQoJCQkJPGZvb3Ru
+            b3RlSWQgaWQ9IkYyIi8+DQoJCQk8L2V4ZXJjaXNlRGF0ZT4NCgkJCTxleHBp
+            cmF0aW9uRGF0ZT4NCgkJCQk8dmFsdWU+MTk4MC0xMi0yNTwvdmFsdWU+DQoJ
+            CQkJPGZvb3Rub3RlSWQgaWQ9IkY0Ii8+DQoJCQk8L2V4cGlyYXRpb25EYXRl
+            Pg0KCQkJPHVuZGVybHlpbmdTZWN1cml0eT4NCgkJCQk8dW5kZXJseWluZ1Nl
+            Y3VyaXR5VGl0bGU+DQoJCQkJCTx2YWx1ZT5EZXJpdmVkIFN0b2NrIChIT0xE
+            SU5HKTwvdmFsdWU+DQoJCQkJPC91bmRlcmx5aW5nU2VjdXJpdHlUaXRsZT4N
+            CgkJCQk8dW5kZXJseWluZ1NlY3VyaXR5VmFsdWU+DQoJCQkJCTx2YWx1ZT4x
+            MDAuMTI8L3ZhbHVlPg0KCQkJCQk8Zm9vdG5vdGVJZCBpZD0iRjMiLz4NCgkJ
+            CQk8L3VuZGVybHlpbmdTZWN1cml0eVZhbHVlPg0KCQkJPC91bmRlcmx5aW5n
+            U2VjdXJpdHk+DQoJCQk8b3duZXJzaGlwTmF0dXJlPg0KCQkJCTxkaXJlY3RP
+            ckluZGlyZWN0T3duZXJzaGlwPg0KCQkJCQk8dmFsdWU+RDwvdmFsdWU+DQoJ
+            CQkJPC9kaXJlY3RPckluZGlyZWN0T3duZXJzaGlwPg0KCQkJPC9vd25lcnNo
+            aXBOYXR1cmU+DQoJCTwvZGVyaXZhdGl2ZUhvbGRpbmc+DQoNCgk8L2Rlcml2
+            YXRpdmVUYWJsZT4NCg0KICAgIDxmb290bm90ZXM+DQoJCTxmb290bm90ZSBp
+            ZD0iRjEiPkZvb3Rub3RlIDEuPC9mb290bm90ZT4NCgkJPGZvb3Rub3RlIGlk
+            PSJGMiI+Rm9vdG5vdGUgMi48L2Zvb3Rub3RlPg0KCQk8Zm9vdG5vdGUgaWQ9
+            IkYzIj5Gb290bm90ZSAzLjwvZm9vdG5vdGU+DQoJCTxmb290bm90ZSBpZD0i
+            RjQiPkZvb3Rub3RlIDQuPC9mb290bm90ZT4NCgkJPGZvb3Rub3RlIGlkPSJG
+            NSI+Rm9vdG5vdGUgNS48L2Zvb3Rub3RlPg0KICAgIDwvZm9vdG5vdGVzPg0K
+            DQoJPHJlbWFya3M+VGhpcyBpcyBqdXN0IGEgZ2VuZXJhbCBjb21tZW50Ljwv
+            cmVtYXJrcz4NCg0KICAgIDxvd25lclNpZ25hdHVyZT4NCiAgICAgICAgPHNp
+            Z25hdHVyZU5hbWU+SmFuZSBEb2U8L3NpZ25hdHVyZU5hbWU+DQogICAgICAg
+            IDxzaWduYXR1cmVEYXRlPjIwMDItMTEtMjM8L3NpZ25hdHVyZURhdGU+DQog
+            ICAgPC9vd25lclNpZ25hdHVyZT4NCiAgICA8b3duZXJTaWduYXR1cmU+DQog
+            ICAgICAgIDxzaWduYXR1cmVOYW1lPkpvaG4gUS4gUHVibGljPC9zaWduYXR1
+            cmVOYW1lPg0KICAgICAgICA8c2lnbmF0dXJlRGF0ZT4yMDAyLTExLTIyPC9z
+            aWduYXR1cmVEYXRlPg0KICAgIDwvb3duZXJTaWduYXR1cmU+DQogICAgPG93
+            bmVyU2lnbmF0dXJlPg0KICAgICAgICA8c2lnbmF0dXJlTmFtZT5VbmNsZSBT
+            YW08L3NpZ25hdHVyZU5hbWU+DQogICAgICAgIDxzaWduYXR1cmVEYXRlPjIw
+            MDItMTEtMjQ8L3NpZ25hdHVyZURhdGU+DQogICAgPC9vd25lclNpZ25hdHVy
+            ZT4NCg0KPC9vd25lcnNoaXBEb2N1bWVudD4NCg==
+        </documentMimeBlock>
+    </edgarDocument>
+
+    <edgarDocument>
+        <documentName>cover01.txt</documentName>
+        <documentType>COVER</documentType>
+        <documentDescription>Cover Document</documentDescription>
+        <documentMimeBlock>
+            PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PSAgIGNvdmVyIGxldHRl
+            ciAgID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0NCg0KVGhpcyBp
+            cyBhIHByaXZhdGUgY292ZXIgbGV0dGVyIHRoYXQgZG9lcyBub3QgY29udGFp
+            biBhbnkgcmVkbGluZQ0KdGFncy4gVGhpcyBpcyBzdHJpY3RseSBhIHRlc3Qu
+            DQoNCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+            PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09DQo=
+        </documentMimeBlock>
+    </edgarDocument>
+
+</edgarSubmission>

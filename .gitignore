@@ -125,7 +125,7 @@ py_path.bat
 *.jar
 *.rar
 *.tar
-*.zip
+# *.zip
 .settings
 .vscode/settings.json
 MGparams/*.xlsx

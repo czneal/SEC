@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+
+<!-- Filename: ownership3ADocument.xsd.xml -->
+<!-- Purpose:  Defines the elements specific to a 3/A Ownership primary document. -->
+<!-- Version:  X0206 -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            elementFormDefault="qualified">
+
+<xs:include schemaLocation=".//ownershipDocumentCommon.xsd.xml"/>
+
+    <!-- this schema applies exclusively to a "3/A" document -->
+    <xs:simpleType name="DOCUMENT_TYPE">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="3/A"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="NONDERIVATIVE_HOLDING">
+        <xs:sequence>
+            <xs:element name="securityTitle"                type="SECURITY_TITLE"             minOccurs="1"/>
+            <xs:element name="postTransactionAmounts"       type="POST_TRANSACTION_AMOUNTS"   minOccurs="1"/>
+            <xs:element name="ownershipNature"              type="OWNERSHIP_NATURE"           minOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="DERIVATIVE_HOLDING">
+        <xs:sequence>
+            <xs:element name="securityTitle"                type="SECURITY_TITLE"             minOccurs="1"/>
+            <xs:element name="conversionOrExercisePrice"    type="OPT_NUMBER_WITH_FOOTNOTE"   minOccurs="1"/>
+            <xs:element name="exerciseDate"                 type="OPT_DATE_WITH_FOOTNOTE"     minOccurs="1"/>
+            <xs:element name="expirationDate"               type="OPT_DATE_WITH_FOOTNOTE"     minOccurs="1"/>
+            <xs:element name="underlyingSecurity"           type="UNDERLYING_SECURITY"        minOccurs="1"/>
+            <xs:element name="ownershipNature"              type="OWNERSHIP_NATURE"           minOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="NONDERIVATIVE_TABLE">
+        <xs:annotation>
+            <xs:documentation>
+                Can have up to 30 Holdings in the Non-Derivative Table. This is Table 1 on the printed form.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="0" maxOccurs="30">
+			<xs:element name="nonDerivativeHolding"     type="NONDERIVATIVE_HOLDING"/>
+		</xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="DERIVATIVE_TABLE">
+        <xs:annotation>
+            <xs:documentation>
+                Can have up to 30 Holdings in the Derivative Table. This is Table 2 on the printed form.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="0" maxOccurs="30">
+			<xs:element name="derivativeHolding"     type="DERIVATIVE_HOLDING"/>
+		</xs:choice>
+    </xs:complexType>
+
+    <xs:element name="ownershipDocument">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="schemaVersion"             type="SCHEMA_VERSION"       minOccurs="0" maxOccurs="1"/>
+                <xs:element name="documentType"              type="DOCUMENT_TYPE"        minOccurs="1" maxOccurs="1"/>
+                <xs:element name="periodOfReport"            type="xs:date"              minOccurs="1" maxOccurs="1"/>
+                <xs:element name="dateOfOriginalSubmission"  type="xs:date"              minOccurs="1" maxOccurs="1"/>
+                <xs:element name="noSecuritiesOwned"         type="xs:boolean"           minOccurs="0" maxOccurs="1"/>
+                <xs:element name="issuer"                    type="ISSUER"               minOccurs="1" maxOccurs="1"/>
+                <xs:element name="reportingOwner"            type="REPORTING_OWNER"      minOccurs="1" maxOccurs="10"/>
+                <xs:element name="nonDerivativeTable"        type="NONDERIVATIVE_TABLE"  minOccurs="0" maxOccurs="1"/>
+                <xs:element name="derivativeTable"           type="DERIVATIVE_TABLE"     minOccurs="0" maxOccurs="1"/>
+                <xs:element name="footnotes"                 type="FOOTNOTE_GROUP"       minOccurs="0" maxOccurs="1"/>
+                <xs:element name="remarks"                   type="STRING_2000"          minOccurs="0" maxOccurs="1"/>
+                <xs:element name="ownerSignature"            type="SIGNATURE"            minOccurs="1" maxOccurs="10"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+
+<!-- Filename: edgarSubmission.xsd.xml -->
+<!-- Purpose:  Defines the elements of an Ownership submission file. -->
+<!-- Version:  X0202 -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            elementFormDefault="qualified">
+
+    <xs:simpleType name="SUBMISSION_TYPE">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="3|4|5|3/A|4/A|5/A"/>
+        </xs:restriction>
+    </xs:simpleType> 
+
+    <xs:simpleType name="LIVE_OR_TEST">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="LIVE|TEST"/>
+        </xs:restriction>
+    </xs:simpleType> 
+
+    <xs:simpleType name="STRING_80">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="80"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="POINT_OF_CONTACT">
+        <xs:sequence>
+            <xs:element name="contactName" minOccurs="0">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="30"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="contactPhoneNumber" minOccurs="0">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="20"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="contactEmailAddress" type="STRING_80" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="EDGAR_DOCUMENT">
+        <xs:sequence>
+			<xs:annotation>
+				<xs:documentation>
+					EDGAR will only accept documents of type
+					.xml, .htm, .txt, .gif, and .jpg for the
+					Ownership submission types. PDF documents
+					are not supported.
+				</xs:documentation>
+			</xs:annotation>
+            <xs:element name="documentName" minOccurs="1">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:minLength value="1"/>
+                        <xs:maxLength value="32"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="documentType" minOccurs="1">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:minLength value="1"/>
+                        <xs:maxLength value="20"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="documentDescription" minOccurs="0">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="255"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="documentMimeBlock" minOccurs="1">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:minLength value="1"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="NOTIFY_GROUP">
+        <xs:sequence>
+            <xs:element name="notificationEmailAddress" type="STRING_80" minOccurs="0" maxOccurs="30"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="edgarSubmission">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="submissionType"         type="SUBMISSION_TYPE"  minOccurs="1"/>
+                <xs:element name="testOrLive"             type="LIVE_OR_TEST"     minOccurs="1"/>
+                <xs:element name="pointOfContact"         type="POINT_OF_CONTACT" minOccurs="0"/>
+                <xs:element name="returnCopy"             type="xs:boolean"       minOccurs="0"/>
+                <xs:element name="notificationAddresses"  type="NOTIFY_GROUP"     minOccurs="0"/>
+                <xs:element name="edgarDocument"          type="EDGAR_DOCUMENT"   minOccurs="1" maxOccurs="611"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

@@ -1,0 +1,890 @@
+<?xml version="1.0"?>
+
+<!-- Filename: ownershipDocumentCommon.xsd.xml -->
+<!-- Purpose:  Defines the elements common to all Ownership primary documents. -->
+<!-- Version:  X0304 -->
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+    <xs:simpleType name="TRANS_CODE_PICKLIST">
+        <xs:annotation>
+            <xs:documentation>
+                These are the Transaction Codes that can be used
+                for "4" and "5" transactions.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="A|C|D|E|F|G|H|I|J|L|M|O|P|S|U|W|X|Z"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="TRANS_TIMELY_PICKLIST">
+        <xs:annotation>
+            <xs:documentation>
+                The two possible values for this transaction
+                timeliness indicator are (E)arly and (L)ate.
+                Also allow no value.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:whiteSpace value="collapse"/>
+            <xs:pattern value="[E|L]{0,1}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ACQ_DISP_CODE_PICKLIST">
+        <xs:annotation>
+            <xs:documentation>
+                The two possible values for this field are (A)cquired and (D)isposed.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="A|D"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="OWNERSHIP_TYPE_PICKLIST">
+        <xs:annotation>
+            <xs:documentation>
+                The two possible values for this field are (D)irect and (I)ndirect.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="D|I"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="FID">
+        <xs:annotation>
+            <xs:documentation>
+                A footnote ID must be of the format
+                capital "F" followed by a number from 1 to 99.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:ID">
+            <xs:pattern value="F[1-9][0-9]?"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="FOOTNOTE" mixed="true">
+        <xs:attribute name="id" type="FID" use="required"/>
+    </xs:complexType>
+
+    <xs:simpleType name="FIDREF">
+        <xs:annotation>
+            <xs:documentation>
+                A footnote reference ID must be of the format
+                capital "F" followed by a number from 1 to 99.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:IDREF">
+            <xs:pattern value="F[1-9][0-9]?"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="FOOTNOTE_ID">
+        <xs:attribute name="id" type="FIDREF" use="required"/>
+    </xs:complexType>
+
+    <xs:simpleType name="STRING_30">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="30"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="STRING_2000">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="2000"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="POSITIVE_DECIMAL">
+        <xs:restriction base="xs:decimal">
+            <xs:minInclusive value="0.0"/>
+            <xs:maxInclusive value="999999999999.9999"/>
+            <xs:totalDigits value="16"/>
+            <xs:fractionDigits value="4"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="SCHEMA_VERSION">
+        <xs:annotation>
+            <xs:documentation>
+                The schema version element applies only to the submission's primary document.
+                It does not apply to the submission file. This element should not be included
+                in a Reduced Content submission. EDGAR inserts this element in the version of
+                the primary document that gets disseminated. If you do provide a value for this
+                element and it does not match the current version of this schema file being
+                used by EDGAR, then EDGAR will generate a WARNING.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:length value="5"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="NUMBER_WITH_FOOTNOTE">
+        <xs:sequence>
+            <xs:element name="value"     type="POSITIVE_DECIMAL"/>
+            <xs:element name="footnoteId" type="FOOTNOTE_ID" minOccurs="0" maxOccurs="99"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="OPT_NUMBER_WITH_FOOTNOTE">
+        <xs:annotation>
+            <xs:documentation>
+                Some numeric fields may have just footnotes. Either a numeric value or
+				a footnoteId is required. Additional footnoteIds may also be provided.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:choice>
+                <xs:element name="value"      type="POSITIVE_DECIMAL"/>
+                <xs:element name="footnoteId" type="FOOTNOTE_ID"/>
+            </xs:choice>
+            <xs:element name="footnoteId" type="FOOTNOTE_ID" minOccurs="0" maxOccurs="98"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="DATE_WITH_FOOTNOTE">
+        <xs:sequence>
+            <xs:element name="value"      type="xs:date"/>
+            <xs:element name="footnoteId" type="FOOTNOTE_ID" minOccurs="0" maxOccurs="99"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="DATE_AND_OR_FOOTNOTE">
+        <xs:annotation>
+            <xs:documentation>
+                For a truly optional date field, such as Deemed Execution Date,
+				allow a date value and/or footnotes. Can have a footnote without a date value.
+				Do not need a value or a footnoteId.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="value"      type="xs:date"     minOccurs="0"/>
+            <xs:element name="footnoteId" type="FOOTNOTE_ID" minOccurs="0" maxOccurs="99"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="OPT_DATE_WITH_FOOTNOTE">
+        <xs:annotation>
+            <xs:documentation>
+                Some date fields may have just footnotes. Either a date value or
+				a footnoteId is required. Additional footnoteIds may also be provided.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:choice>
+                <xs:element name="value"      type="xs:date"/>
+                <xs:element name="footnoteId" type="FOOTNOTE_ID"/>
+            </xs:choice>
+            <xs:element name="footnoteId" type="FOOTNOTE_ID" minOccurs="0" maxOccurs="98"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="BOOLEAN_WITH_FOOTNOTE">
+        <xs:sequence>
+            <xs:element name="value"      type="xs:boolean"/>
+            <xs:element name="footnoteId" type="FOOTNOTE_ID" minOccurs="0" maxOccurs="99"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ACQ_DISP_CODE">
+        <xs:sequence>
+            <xs:element name="value"      type="ACQ_DISP_CODE_PICKLIST"/>
+            <xs:element name="footnoteId" type="FOOTNOTE_ID" minOccurs="0" maxOccurs="99"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="TRANSACTION_TIMELINESS_NOFOOT">
+        <xs:sequence>
+            <xs:element name="value" type="TRANS_TIMELY_PICKLIST" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ACQ_DISP_NO_FOOT">
+        <xs:annotation>
+            <xs:documentation>
+                This element cannot have a footnote.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="value"      type="ACQ_DISP_CODE_PICKLIST"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="DERIV_TRANSACT_NO_FOOT">
+        <xs:annotation>
+            <xs:documentation>
+                Must provide a number of shares or a total dollar value.
+                Must provide a price per share and/or a footnote.
+                Must provide a code indicating Acquired or Disposed Of.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:choice>
+                <xs:element name="transactionShares"           type="NUMBER_WITH_FOOTNOTE"/>
+                <xs:element name="transactionTotalValue"       type="NUMBER_WITH_FOOTNOTE"/>
+            </xs:choice>
+            <xs:element name="transactionPricePerShare"        type="OPT_NUMBER_WITH_FOOTNOTE"/>
+            <xs:element name="transactionAcquiredDisposedCode" type="ACQ_DISP_NO_FOOT"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="OWNERSHIP_TYPE">
+        <xs:sequence>
+            <xs:element name="value"      type="OWNERSHIP_TYPE_PICKLIST"/>
+            <xs:element name="footnoteId" type="FOOTNOTE_ID" minOccurs="0" maxOccurs="99"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="FOOTNOTE_GROUP">
+        <xs:sequence>
+            <xs:element name="footnote" type="FOOTNOTE" minOccurs="0" maxOccurs="99"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="INDIRECT_NATURE">
+        <xs:sequence>
+            <xs:element name="value">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="100"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="footnoteId" type="FOOTNOTE_ID" minOccurs="0" maxOccurs="99"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="CIK">
+        <xs:annotation>
+            <xs:documentation>
+                A CIK can be up to 10 digits. You do not need to provide the leading zeroes.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="10"/>
+            <xs:pattern value="[0-9]+"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="SIGNATURE">
+        <xs:sequence>
+            <xs:element name="signatureName">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:minLength value="1"/>
+                        <xs:maxLength value="255"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="signatureDate" type="xs:date"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="SECURITY_TITLE">
+        <xs:sequence>
+            <xs:element name="value">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:minLength value="1"/>
+                        <xs:maxLength value="60"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="footnoteId" type="FOOTNOTE_ID" minOccurs="0" maxOccurs="99"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ISSUER">
+        <xs:sequence>
+            <xs:element name="issuerCik" type="CIK"/>
+            <xs:element name="issuerName" minOccurs="0">
+                <xs:simpleType>
+                    <xs:annotation>
+                        <xs:documentation>
+                            A document submitted as part of a Reduced Content submission
+                            should not include this element. EDGAR will retrieve the
+                            Issuer's name based upon the provided CIK.
+                            This element is part of this specification since it is
+                            included in the version of the document that is disseminated.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="150"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="issuerTradingSymbol">
+                <xs:simpleType>
+                    <xs:annotation>
+                        <xs:documentation>
+                            This is the Stock Exchange Trading Symbol for the issuing company.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:restriction base="xs:string">
+                        <xs:minLength value="1"/>
+                        <xs:maxLength value="10"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="TRANSACTION_TIMELINESS">
+        <xs:sequence>
+            <xs:element name="value"      type="TRANS_TIMELY_PICKLIST" minOccurs="0"/>
+            <xs:element name="footnoteId" type="FOOTNOTE_ID"           minOccurs="0" maxOccurs="99"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="UNDERLYING_SECURITY">
+        <xs:sequence>
+            <xs:element name="underlyingSecurityTitle"      type="SECURITY_TITLE"/>
+            <xs:choice>
+                <xs:element name="underlyingSecurityShares" type="OPT_NUMBER_WITH_FOOTNOTE" minOccurs="0"/>
+                <xs:element name="underlyingSecurityValue"  type="OPT_NUMBER_WITH_FOOTNOTE" minOccurs="0"/>
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="NONDERIV_TRANSACT_AMOUNTS">
+        <xs:annotation>
+            <xs:documentation>
+                Must provide a number of shares.
+                Must provide a dollar value and/or a footnote.
+                Must provide a code indicating Acquired or Disposed Of.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="transactionShares"               type="NUMBER_WITH_FOOTNOTE"/>
+            <xs:element name="transactionPricePerShare"        type="OPT_NUMBER_WITH_FOOTNOTE"/>
+            <xs:element name="transactionAcquiredDisposedCode" type="ACQ_DISP_CODE"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="DERIV_TRANSACT_AMOUNTS">
+        <xs:annotation>
+            <xs:documentation>
+                Must provide a number of shares or a total dollar value.
+                Must provide a price per share and/or a footnote.
+                Must provide a code indicating Acquired or Disposed Of.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:choice>
+                <xs:element name="transactionShares"           type="NUMBER_WITH_FOOTNOTE"/>
+                <xs:element name="transactionTotalValue"       type="NUMBER_WITH_FOOTNOTE"/>
+            </xs:choice>
+            <xs:element name="transactionPricePerShare"        type="OPT_NUMBER_WITH_FOOTNOTE"/>
+            <xs:element name="transactionAcquiredDisposedCode" type="ACQ_DISP_CODE"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="POST_TRANSACTION_AMOUNTS">
+        <xs:choice>
+            <xs:element name="sharesOwnedFollowingTransaction" type="NUMBER_WITH_FOOTNOTE"/>
+            <xs:element name="valueOwnedFollowingTransaction"  type="NUMBER_WITH_FOOTNOTE"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="OWNERSHIP_NATURE">
+        <xs:annotation>
+            <xs:documentation>
+                If you set directOrIndirectOwnership to (I)ndirect, then
+                natureOfOwnership is actually mandatory.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="directOrIndirectOwnership" type="OWNERSHIP_TYPE"/>
+            <xs:element name="natureOfOwnership"         type="INDIRECT_NATURE" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="REPORTING_ID">
+        <xs:sequence>
+            <xs:element name="rptOwnerCik" type="CIK"/>
+            <xs:element name="rptOwnerCcc" minOccurs="0">
+                <xs:simpleType>
+                    <xs:annotation>
+                        <xs:documentation>
+                            This element is marked as optional here but it is really mandatory.
+                            It is marked as optional so that the CCC can be removed from the
+                            version of the document that is disseminated. In this way, the
+                            disseminated document will still conform to this specification.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:restriction base="xs:string">
+                        <xs:length value="8"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="rptOwnerName" minOccurs="0">
+                <xs:simpleType>
+                    <xs:annotation>
+                        <xs:documentation>
+                            A document submitted as part of a Reduced Content submission
+                            should not include this element. EDGAR will retrieve the
+                            Reporting Owner's name based upon the provided CIK.
+                            This element is part of this specification since it is
+                            included in the version of the document that is disseminated.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:restriction base="xs:string">
+                        <xs:maxLength value="150"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="REPORTING_ADDRESS">
+        <xs:annotation>
+            <xs:documentation>
+                A document submitted as part of a Reduced Content submission
+                can include an address for a Reporting Owner.
+                All address elements are optional.
+                
+                If you do not include any address element, EDGAR will retrieve
+                the Reporting Owner's address based upon the provided CIK.
+                This address will be included in the version of the document
+                that is disseminated.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="rptOwnerStreet1" minOccurs="0">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:minLength value="0"/>
+                        <xs:maxLength value="40"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="rptOwnerStreet2" minOccurs="0">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:minLength value="0"/>
+                        <xs:maxLength value="40"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="rptOwnerCity" minOccurs="0">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:minLength value="0"/>
+                        <xs:maxLength value="30"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="rptOwnerState" minOccurs="0">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                    <xs:enumeration value=""/>    <!-- EMPTY -->
+                    <xs:enumeration value=" "/>   <!-- EMPTY -->
+                    <xs:enumeration value="  "/>  <!-- EMPTY -->
+                    <xs:enumeration value="AL"/>  <!-- ALABAMA -->
+                    <xs:enumeration value="AK"/>  <!-- ALASKA -->
+                    <xs:enumeration value="AZ"/>  <!-- ARIZONA -->
+                    <xs:enumeration value="AR"/>  <!-- ARKANSAS -->
+                    <xs:enumeration value="CA"/>  <!-- CALIFORNIA -->
+                    <xs:enumeration value="CO"/>  <!-- COLORADO -->
+                    <xs:enumeration value="CT"/>  <!-- CONNECTICUT -->
+                    <xs:enumeration value="DE"/>  <!-- DELAWARE -->
+                    <xs:enumeration value="DC"/>  <!-- DISTRICT OF COLUMBIA -->
+                    <xs:enumeration value="FL"/>  <!-- FLORIDA -->
+                    <xs:enumeration value="GA"/>  <!-- GEORGIA -->
+                    <xs:enumeration value="HI"/>  <!-- HAWAII -->
+                    <xs:enumeration value="ID"/>  <!-- IDAHO -->
+                    <xs:enumeration value="IL"/>  <!-- ILLINOIS -->
+                    <xs:enumeration value="IN"/>  <!-- INDIANA -->
+                    <xs:enumeration value="IA"/>  <!-- IOWA -->
+                    <xs:enumeration value="KS"/>  <!-- KANSAS -->
+                    <xs:enumeration value="KY"/>  <!-- KENTUCKY -->
+                    <xs:enumeration value="LA"/>  <!-- LOUISIANA -->
+                    <xs:enumeration value="ME"/>  <!-- MAINE -->
+                    <xs:enumeration value="MD"/>  <!-- MARYLAND -->
+                    <xs:enumeration value="MA"/>  <!-- MASSACHUSETTS -->
+                    <xs:enumeration value="MI"/>  <!-- MICHIGAN -->
+                    <xs:enumeration value="MN"/>  <!-- MINNESOTA -->
+                    <xs:enumeration value="MS"/>  <!-- MISSISSIPPI -->
+                    <xs:enumeration value="MO"/>  <!-- MISSOURI -->
+                    <xs:enumeration value="MT"/>  <!-- MONTANA -->
+                    <xs:enumeration value="NE"/>  <!-- NEBRASKA -->
+                    <xs:enumeration value="NV"/>  <!-- NEVADA -->
+                    <xs:enumeration value="NH"/>  <!-- NEW HAMPSHIRE -->
+                    <xs:enumeration value="NJ"/>  <!-- NEW JERSEY -->
+                    <xs:enumeration value="NM"/>  <!-- NEW MEXICO -->
+                    <xs:enumeration value="NY"/>  <!-- NEW YORK -->
+                    <xs:enumeration value="NC"/>  <!-- NORTH CAROLINA -->
+                    <xs:enumeration value="ND"/>  <!-- NORTH DAKOTA -->
+                    <xs:enumeration value="OH"/>  <!-- OHIO -->
+                    <xs:enumeration value="OK"/>  <!-- OKLAHOMA -->
+                    <xs:enumeration value="OR"/>  <!-- OREGON -->
+                    <xs:enumeration value="PA"/>  <!-- PENNSYLVANIA -->
+                    <xs:enumeration value="RI"/>  <!-- RHODE ISLAND -->
+                    <xs:enumeration value="SC"/>  <!-- SOUTH CAROLINA -->
+                    <xs:enumeration value="SD"/>  <!-- SOUTH DAKOTA -->
+                    <xs:enumeration value="TN"/>  <!-- TENNESSEE -->
+                    <xs:enumeration value="TX"/>  <!-- TEXAS -->
+                    <xs:enumeration value="X1"/>  <!-- UNITED STATES -->
+                    <xs:enumeration value="UT"/>  <!-- UTAH -->
+                    <xs:enumeration value="VT"/>  <!-- VERMONT -->
+                    <xs:enumeration value="VA"/>  <!-- VIRGINIA -->
+                    <xs:enumeration value="WA"/>  <!-- WASHINGTON -->
+                    <xs:enumeration value="WV"/>  <!-- WEST VIRGINIA -->
+                    <xs:enumeration value="WI"/>  <!-- WISCONSIN -->
+                    <xs:enumeration value="WY"/>  <!-- WYOMING -->
+                    <xs:enumeration value="A0"/>  <!-- ALBERTA, CANADA -->
+                    <xs:enumeration value="A1"/>  <!-- BRITISH COLUMBIA, CANADA -->
+					<xs:enumeration value="Z4"/>  <!-- CANADA (FEDERAL LEVEL) -->
+                    <xs:enumeration value="A2"/>  <!-- MANITOBA, CANADA -->
+                    <xs:enumeration value="A3"/>  <!-- NEW BRUNSWICK, CANADA -->
+                    <xs:enumeration value="A4"/>  <!-- NEWFOUNDLAND, CANADA -->
+                    <xs:enumeration value="A5"/>  <!-- NOVA SCOTIA, CANADA -->
+                    <xs:enumeration value="A6"/>  <!-- ONTARIO, CANADA -->
+                    <xs:enumeration value="A7"/>  <!-- PRINCE EDWARD ISLAND, CANADA -->
+                    <xs:enumeration value="A8"/>  <!-- QUEBEC, CANADA -->
+                    <xs:enumeration value="A9"/>  <!-- SASKATCHEWAN, CANADA -->
+                    <xs:enumeration value="B0"/>  <!-- YUKON, CANADA -->
+                    <xs:enumeration value="B2"/>  <!-- AFGHANISTAN -->
+					<xs:enumeration value="Y6"/>  <!-- ALAND ISLANDS -->
+                    <xs:enumeration value="B3"/>  <!-- ALBANIA -->
+                    <xs:enumeration value="B4"/>  <!-- ALGERIA -->
+                    <xs:enumeration value="B5"/>  <!-- AMERICAN SAMOA -->
+                    <xs:enumeration value="B6"/>  <!-- ANDORRA -->
+                    <xs:enumeration value="B7"/>  <!-- ANGOLA -->
+                    <xs:enumeration value="1A"/>  <!-- ANGUILLA -->
+                    <xs:enumeration value="B8"/>  <!-- ANTARCTICA -->
+                    <xs:enumeration value="B9"/>  <!-- ANTIGUA AND BARBUDA -->
+                    <xs:enumeration value="C1"/>  <!-- ARGENTINA -->
+                    <xs:enumeration value="1B"/>  <!-- ARMENIA -->
+                    <xs:enumeration value="1C"/>  <!-- ARUBA -->
+                    <xs:enumeration value="C3"/>  <!-- AUSTRALIA -->
+                    <xs:enumeration value="C4"/>  <!-- AUSTRIA -->
+                    <xs:enumeration value="1D"/>  <!-- AZERBAIJAN -->
+                    <xs:enumeration value="C5"/>  <!-- BAHAMAS -->
+                    <xs:enumeration value="C6"/>  <!-- BAHRAIN -->
+                    <xs:enumeration value="C7"/>  <!-- BANGLADESH -->
+                    <xs:enumeration value="C8"/>  <!-- BARBADOS -->
+                    <xs:enumeration value="1F"/>  <!-- BELARUS -->
+                    <xs:enumeration value="C9"/>  <!-- BELGIUM -->
+                    <xs:enumeration value="D1"/>  <!-- BELIZE -->
+                    <xs:enumeration value="G6"/>  <!-- BENIN -->
+                    <xs:enumeration value="D0"/>  <!-- BERMUDA -->
+                    <xs:enumeration value="D2"/>  <!-- BHUTAN -->
+                    <xs:enumeration value="D3"/>  <!-- BOLIVIA -->
+                    <xs:enumeration value="1E"/>  <!-- BOSNIA AND HERZEGOVINA -->
+                    <xs:enumeration value="B1"/>  <!-- BOTSWANA -->
+                    <xs:enumeration value="D4"/>  <!-- BOUVET ISLAND -->
+                    <xs:enumeration value="D5"/>  <!-- BRAZIL -->
+                    <xs:enumeration value="D6"/>  <!-- BRITISH INDIAN OCEAN TERRITORY -->
+                    <xs:enumeration value="D9"/>  <!-- BRUNEI DARUSSALAM -->
+                    <xs:enumeration value="E0"/>  <!-- BULGARIA -->
+                    <xs:enumeration value="X2"/>  <!-- BURKINA FASO -->
+                    <xs:enumeration value="E2"/>  <!-- BURUNDI -->
+                    <xs:enumeration value="E3"/>  <!-- CAMBODIA -->
+                    <xs:enumeration value="E4"/>  <!-- CAMEROON -->
+                    <xs:enumeration value="E8"/>  <!-- CAPE VERDE -->
+                    <xs:enumeration value="E9"/>  <!-- CAYMAN ISLANDS -->
+                    <xs:enumeration value="F0"/>  <!-- CENTRAL AFRICAN REPUBLIC -->
+                    <xs:enumeration value="F2"/>  <!-- CHAD -->
+                    <xs:enumeration value="F3"/>  <!-- CHILE -->
+                    <xs:enumeration value="F4"/>  <!-- CHINA -->
+                    <xs:enumeration value="F6"/>  <!-- CHRISTMAS ISLAND -->
+                    <xs:enumeration value="F7"/>  <!-- COCOS (KEELING) ISLANDS -->
+                    <xs:enumeration value="F8"/>  <!-- COLOMBIA -->
+                    <xs:enumeration value="F9"/>  <!-- COMOROS -->
+                    <xs:enumeration value="G0"/>  <!-- CONGO -->
+                    <xs:enumeration value="Y3"/>  <!-- CONGO, THE DEMOCRATIC REPUBLIC OF THE -->
+                    <xs:enumeration value="G1"/>  <!-- COOK ISLANDS -->
+                    <xs:enumeration value="G2"/>  <!-- COSTA RICA -->
+                    <xs:enumeration value="L7"/>  <!-- COTE D'IVOIRE -->
+                    <xs:enumeration value="1M"/>  <!-- CROATIA -->
+                    <xs:enumeration value="G3"/>  <!-- CUBA -->
+                    <xs:enumeration value="G4"/>  <!-- CYPRUS -->
+                    <xs:enumeration value="2N"/>  <!-- CZECH REPUBLIC -->
+                    <xs:enumeration value="G7"/>  <!-- DENMARK -->
+                    <xs:enumeration value="1G"/>  <!-- DJIBOUTI -->
+                    <xs:enumeration value="G9"/>  <!-- DOMINICA -->
+                    <xs:enumeration value="G8"/>  <!-- DOMINICAN REPUBLIC -->                    
+                    <xs:enumeration value="H1"/>  <!-- ECUADOR -->
+                    <xs:enumeration value="H2"/>  <!-- EGYPT -->
+                    <xs:enumeration value="H3"/>  <!-- EL SALVADOR -->
+                    <xs:enumeration value="H4"/>  <!-- EQUATORIAL GUINEA -->
+                    <xs:enumeration value="1J"/>  <!-- ERITREA -->
+                    <xs:enumeration value="1H"/>  <!-- ESTONIA -->
+                    <xs:enumeration value="H5"/>  <!-- ETHIOPIA -->
+                    <xs:enumeration value="H7"/>  <!-- FALKLAND ISLANDS (MALVINAS) -->
+                    <xs:enumeration value="H6"/>  <!-- FAROE ISLANDS -->
+                    <xs:enumeration value="H8"/>  <!-- FIJI -->
+                    <xs:enumeration value="H9"/>  <!-- FINLAND -->
+                    <xs:enumeration value="I0"/>  <!-- FRANCE -->
+                    <xs:enumeration value="I3"/>  <!-- FRENCH GUIANA -->
+                    <xs:enumeration value="I4"/>  <!-- FRENCH POLYNESIA -->
+                    <xs:enumeration value="2C"/>  <!-- FRENCH SOUTHERN TERRITORIES -->
+                    <xs:enumeration value="I5"/>  <!-- GABON -->
+                    <xs:enumeration value="I6"/>  <!-- GAMBIA -->
+                    <xs:enumeration value="2Q"/>  <!-- GEORGIA -->
+                    <xs:enumeration value="2M"/>  <!-- GERMANY -->
+                    <xs:enumeration value="J0"/>  <!-- GHANA -->
+                    <xs:enumeration value="J1"/>  <!-- GIBRALTAR -->
+                    <xs:enumeration value="J3"/>  <!-- GREECE -->
+                    <xs:enumeration value="J4"/>  <!-- GREENLAND -->
+                    <xs:enumeration value="J5"/>  <!-- GRENADA -->
+                    <xs:enumeration value="J6"/>  <!-- GUADELOUPE -->
+                    <xs:enumeration value="GU"/>  <!-- GUAM -->
+                    <xs:enumeration value="J8"/>  <!-- GUATEMALA -->
+					<xs:enumeration value="Y7"/>  <!-- GUERNSEY -->
+                    <xs:enumeration value="J9"/>  <!-- GUINEA -->
+                    <xs:enumeration value="S0"/>  <!-- GUINEA-BISSAU -->
+                    <xs:enumeration value="K0"/>  <!-- GUYANA -->
+                    <xs:enumeration value="K1"/>  <!-- HAITI -->
+                    <xs:enumeration value="K4"/>  <!-- HEARD ISLAND AND MCDONALD ISLANDS -->
+                    <xs:enumeration value="X4"/>  <!-- HOLY SEE (VATICAN CITY STATE) -->
+                    <xs:enumeration value="K2"/>  <!-- HONDURAS -->
+                    <xs:enumeration value="K3"/>  <!-- HONG KONG -->
+                    <xs:enumeration value="K5"/>  <!-- HUNGARY -->
+                    <xs:enumeration value="K6"/>  <!-- ICELAND -->
+					<xs:enumeration value="Y8"/>  <!-- ISLE OF MAN -->
+                    <xs:enumeration value="K7"/>  <!-- INDIA -->
+                    <xs:enumeration value="K8"/>  <!-- INDONESIA -->
+                    <xs:enumeration value="K9"/>  <!-- IRAN, ISLAMIC REPUBLIC OF -->
+                    <xs:enumeration value="L0"/>  <!-- IRAQ -->
+                    <xs:enumeration value="L2"/>  <!-- IRELAND -->
+                    <xs:enumeration value="L3"/>  <!-- ISRAEL -->
+                    <xs:enumeration value="L6"/>  <!-- ITALY -->
+                    <xs:enumeration value="L8"/>  <!-- JAMAICA -->
+                    <xs:enumeration value="M0"/>  <!-- JAPAN -->
+					<xs:enumeration value="Y9"/>  <!-- JERSEY -->
+                    <xs:enumeration value="M2"/>  <!-- JORDAN -->
+                    <xs:enumeration value="1P"/>  <!-- KAZAKSTAN -->
+                    <xs:enumeration value="M3"/>  <!-- KENYA -->
+                    <xs:enumeration value="J2"/>  <!-- KIRIBATI -->
+                    <xs:enumeration value="M4"/>  <!-- KOREA, DEMOCRATIC PEOPLE'S REPUBLIC OF -->
+                    <xs:enumeration value="M5"/>  <!-- KOREA, REPUBLIC OF -->
+                    <xs:enumeration value="M6"/>  <!-- KUWAIT -->
+                    <xs:enumeration value="1N"/>  <!-- KYRGYZSTAN -->
+                    <xs:enumeration value="M7"/>  <!-- LAO PEOPLE'S DEMOCRATIC REPUBLIC -->
+                    <xs:enumeration value="1R"/>  <!-- LATVIA -->
+                    <xs:enumeration value="M8"/>  <!-- LEBANON -->
+                    <xs:enumeration value="M9"/>  <!-- LESOTHO -->
+                    <xs:enumeration value="N0"/>  <!-- LIBERIA -->
+                    <xs:enumeration value="N1"/>  <!-- LIBYAN ARAB JAMAHIRIYA -->
+                    <xs:enumeration value="N2"/>  <!-- LIECHTENSTEIN -->
+                    <xs:enumeration value="1Q"/>  <!-- LITHUANIA -->
+                    <xs:enumeration value="N4"/>  <!-- LUXEMBOURG -->
+                    <xs:enumeration value="N5"/>  <!-- MACAU -->
+                    <xs:enumeration value="1U"/>  <!-- MACEDONIA, THE FORMER YUGOSLAV REPUBLIC OF -->
+                    <xs:enumeration value="N6"/>  <!-- MADAGASCAR -->
+                    <xs:enumeration value="N7"/>  <!-- MALAWI -->
+                    <xs:enumeration value="N8"/>  <!-- MALAYSIA -->
+                    <xs:enumeration value="N9"/>  <!-- MALDIVES -->
+                    <xs:enumeration value="O0"/>  <!-- MALI -->
+                    <xs:enumeration value="O1"/>  <!-- MALTA -->
+                    <xs:enumeration value="1T"/>  <!-- MARSHALL ISLANDS -->
+                    <xs:enumeration value="O2"/>  <!-- MARTINIQUE -->
+                    <xs:enumeration value="O3"/>  <!-- MAURITANIA -->
+                    <xs:enumeration value="O4"/>  <!-- MAURITIUS -->
+                    <xs:enumeration value="2P"/>  <!-- MAYOTTE -->
+                    <xs:enumeration value="O5"/>  <!-- MEXICO -->
+                    <xs:enumeration value="1K"/>  <!-- MICRONESIA, FEDERATED STATES OF -->
+                    <xs:enumeration value="1S"/>  <!-- MOLDOVA, REPUBLIC OF -->
+                    <xs:enumeration value="O9"/>  <!-- MONACO -->
+                    <xs:enumeration value="P0"/>  <!-- MONGOLIA -->
+					<xs:enumeration value="Z5"/>  <!-- MONTENEGRO -->
+                    <xs:enumeration value="P1"/>  <!-- MONTSERRAT -->
+                    <xs:enumeration value="P2"/>  <!-- MOROCCO -->
+                    <xs:enumeration value="P3"/>  <!-- MOZAMBIQUE -->
+                    <xs:enumeration value="E1"/>  <!-- MYANMAR -->
+                    <xs:enumeration value="T6"/>  <!-- NAMIBIA -->
+                    <xs:enumeration value="P5"/>  <!-- NAURU -->
+                    <xs:enumeration value="P6"/>  <!-- NEPAL -->
+                    <xs:enumeration value="P7"/>  <!-- NETHERLANDS -->
+                    <xs:enumeration value="P8"/>  <!-- NETHERLANDS ANTILLES -->
+                    <xs:enumeration value="1W"/>  <!-- NEW CALEDONIA -->
+                    <xs:enumeration value="Q2"/>  <!-- NEW ZEALAND -->
+                    <xs:enumeration value="Q3"/>  <!-- NICARAGUA -->
+                    <xs:enumeration value="Q4"/>  <!-- NIGER -->
+                    <xs:enumeration value="Q5"/>  <!-- NIGERIA -->
+                    <xs:enumeration value="Q6"/>  <!-- NIUE -->
+                    <xs:enumeration value="Q7"/>  <!-- NORFOLK ISLAND -->
+                    <xs:enumeration value="1V"/>  <!-- NORTHERN MARIANA ISLANDS -->
+                    <xs:enumeration value="Q8"/>  <!-- NORWAY -->
+                    <xs:enumeration value="P4"/>  <!-- OMAN -->
+                    <xs:enumeration value="R0"/>  <!-- PAKISTAN -->
+                    <xs:enumeration value="1Y"/>  <!-- PALAU -->
+                    <xs:enumeration value="1X"/>  <!-- PALESTINIAN TERRITORY, OCCUPIED -->
+                    <xs:enumeration value="R1"/>  <!-- PANAMA -->
+                    <xs:enumeration value="R2"/>  <!-- PAPUA NEW GUINEA -->
+                    <xs:enumeration value="R4"/>  <!-- PARAGUAY -->
+                    <xs:enumeration value="R5"/>  <!-- PERU -->
+                    <xs:enumeration value="R6"/>  <!-- PHILIPPINES -->
+                    <xs:enumeration value="R8"/>  <!-- PITCAIRN -->
+                    <xs:enumeration value="R9"/>  <!-- POLAND -->
+                    <xs:enumeration value="S1"/>  <!-- PORTUGAL -->
+                    <xs:enumeration value="PR"/>  <!-- PUERTO RICO -->
+                    <xs:enumeration value="S3"/>  <!-- QATAR -->
+                    <xs:enumeration value="S4"/>  <!-- REUNION -->
+                    <xs:enumeration value="S5"/>  <!-- ROMANIA -->
+                    <xs:enumeration value="1Z"/>  <!-- RUSSIAN FEDERATION -->
+                    <xs:enumeration value="S6"/>  <!-- RWANDA -->
+                    <xs:enumeration value="U8"/>  <!-- SAINT HELENA -->
+                    <xs:enumeration value="U7"/>  <!-- SAINT KITTS AND NEVIS -->
+                    <xs:enumeration value="U9"/>  <!-- SAINT LUCIA -->
+					<xs:enumeration value="Z0"/>  <!-- SAINT BARTHELEMY -->
+					<xs:enumeration value="Z1"/>  <!-- SAINT MARTIN -->
+                    <xs:enumeration value="V0"/>  <!-- SAINT PIERRE AND MIQUELON -->
+                    <xs:enumeration value="V1"/>  <!-- SAINT VINCENT AND THE GRENADINES -->
+                    <xs:enumeration value="Y0"/>  <!-- SAMOA -->
+                    <xs:enumeration value="S8"/>  <!-- SAN MARINO -->
+                    <xs:enumeration value="S9"/>  <!-- SAO TOME AND PRINCIPE -->
+                    <xs:enumeration value="T0"/>  <!-- SAUDI ARABIA -->
+                    <xs:enumeration value="T1"/>  <!-- SENEGAL -->
+					<xs:enumeration value="Z2"/>  <!-- SERBIA -->
+                    <xs:enumeration value="T2"/>  <!-- SEYCHELLES -->
+                    <xs:enumeration value="T8"/>  <!-- SIERRA LEONE -->
+                    <xs:enumeration value="U0"/>  <!-- SINGAPORE -->
+                    <xs:enumeration value="2B"/>  <!-- SLOVAKIA -->
+                    <xs:enumeration value="2A"/>  <!-- SLOVENIA -->
+                    <xs:enumeration value="D7"/>  <!-- SOLOMON ISLANDS -->
+                    <xs:enumeration value="U1"/>  <!-- SOMALIA -->
+                    <xs:enumeration value="T3"/>  <!-- SOUTH AFRICA -->
+                    <xs:enumeration value="1L"/>  <!-- SOUTH GEORGIA AND THE SOUTH SANDWICH ISLANDS -->
+                    <xs:enumeration value="U3"/>  <!-- SPAIN -->
+                    <xs:enumeration value="F1"/>  <!-- SRI LANKA -->
+                    <xs:enumeration value="V2"/>  <!-- SUDAN -->
+                    <xs:enumeration value="V3"/>  <!-- SURINAME -->
+                    <xs:enumeration value="L9"/>  <!-- SVALBARD AND JAN MAYEN -->
+                    <xs:enumeration value="V6"/>  <!-- SWAZILAND -->
+                    <xs:enumeration value="V7"/>  <!-- SWEDEN -->
+                    <xs:enumeration value="V8"/>  <!-- SWITZERLAND -->
+                    <xs:enumeration value="V9"/>  <!-- SYRIAN ARAB REPUBLIC -->
+                    <xs:enumeration value="F5"/>  <!-- TAIWAN, PROVINCE OF CHINA -->
+                    <xs:enumeration value="2D"/>  <!-- TAJIKISTAN -->
+                    <xs:enumeration value="W0"/>  <!-- TANZANIA, UNITED REPUBLIC OF -->
+                    <xs:enumeration value="W1"/>  <!-- THAILAND -->
+					<xs:enumeration value="Z3"/>  <!-- TIMOR-LESTE -->
+                    <xs:enumeration value="W2"/>  <!-- TOGO -->
+                    <xs:enumeration value="W3"/>  <!-- TOKELAU -->
+                    <xs:enumeration value="W4"/>  <!-- TONGA -->
+                    <xs:enumeration value="W5"/>  <!-- TRINIDAD AND TOBAGO -->
+                    <xs:enumeration value="W6"/>  <!-- TUNISIA -->
+                    <xs:enumeration value="W8"/>  <!-- TURKEY -->
+                    <xs:enumeration value="2E"/>  <!-- TURKMENISTAN -->
+                    <xs:enumeration value="W7"/>  <!-- TURKS AND CAICOS ISLANDS -->
+                    <xs:enumeration value="2G"/>  <!-- TUVALU -->
+                    <xs:enumeration value="W9"/>  <!-- UGANDA -->
+                    <xs:enumeration value="2H"/>  <!-- UKRAINE -->
+                    <xs:enumeration value="C0"/>  <!-- UNITED ARAB EMIRATES -->
+                    <xs:enumeration value="X0"/>  <!-- UNITED KINGDOM -->
+                    <xs:enumeration value="2J"/>  <!-- UNITED STATES MINOR OUTLYING ISLANDS -->
+                    <xs:enumeration value="X3"/>  <!-- URUGUAY -->
+                    <xs:enumeration value="2K"/>  <!-- UZBEKISTAN -->
+                    <xs:enumeration value="2L"/>  <!-- VANUATU -->
+                    <xs:enumeration value="X5"/>  <!-- VENEZUELA -->
+                    <xs:enumeration value="Q1"/>  <!-- VIET NAM -->
+                    <xs:enumeration value="D8"/>  <!-- VIRGIN ISLANDS, BRITISH -->
+                    <xs:enumeration value="VI"/>  <!-- VIRGIN ISLANDS, U.S. -->
+                    <xs:enumeration value="X8"/>  <!-- WALLIS AND FUTUNA -->
+                    <xs:enumeration value="U5"/>  <!-- WESTERN SAHARA -->
+                    <xs:enumeration value="T7"/>  <!-- YEMEN -->                    
+                    <xs:enumeration value="Y4"/>  <!-- ZAMBIA -->
+                    <xs:enumeration value="Y5"/>  <!-- ZIMBABWE -->
+                    <xs:enumeration value="XX"/>  <!-- UNKNOWN -->
+                    <!--
+                         The rest of these are obsolete codes but can pass thru
+                         if coming from OnlineWeb in one special case. EDGAR will
+                         SUSPEND if one of these values is used in a Reduced Content
+                         submission.
+                    -->
+                    <xs:enumeration value="C2"/>  <!-- ASHMORE & CARTIER IS -->
+                    <xs:enumeration value="E5"/>  <!-- CANAL ZONE -->
+                    <xs:enumeration value="E7"/>  <!-- CANTON/ENDERBURY IS -->
+                    <xs:enumeration value="G5"/>  <!-- CZECHOSLOVAKIA -->
+                    <xs:enumeration value="I7"/>  <!-- GAZA STRIP -->
+                    <xs:enumeration value="X9"/>  <!-- GERMANY (BERLIN) -->
+                    <xs:enumeration value="I8"/>  <!-- GERMANY (WEST) -->
+                    <xs:enumeration value="I9"/>  <!-- GERMANY, FED. REP. -->
+					<xs:enumeration value="2F"/>  <!-- EAST TIMOR -->
+                    <xs:enumeration value="L1"/>  <!-- IRAQ-SAUDI -->
+                    <xs:enumeration value="L4"/>  <!-- ISRAEL-JORDAN -->
+                    <xs:enumeration value="L5"/>  <!-- ISRAEL-SYRIA -->
+                    <xs:enumeration value="M1"/>  <!-- JOHNSTON ATOLL -->
+                    <xs:enumeration value="O6"/>  <!-- MIDWAY ISLAND -->
+                    <xs:enumeration value="Q9"/>  <!-- PACIFIC ISLANDS TRU -->
+                    <xs:enumeration value="R3"/>  <!-- PARACEL ISLANDS -->
+                    <xs:enumeration value="T4"/>  <!-- SOUTHERN RHODESIA -->
+                    <xs:enumeration value="U2"/>  <!-- SOVIET UNION -->
+                    <xs:enumeration value="U4"/>  <!-- SPANISH NORTH AFRICA -->
+                    <xs:enumeration value="U6"/>  <!-- SPRATLY ISLAND -->
+                    <xs:enumeration value="X7"/>  <!-- WAKE ISLAND -->
+					<xs:enumeration value="Y2"/>  <!-- YUGOSLAVIA -->
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="rptOwnerZipCode" minOccurs="0">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:minLength value="0"/>
+                        <xs:maxLength value="10"/>
+                        <xs:pattern value="[0-9A-Za-z #-]*"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="rptOwnerStateDescription" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        This is not for the use of the filers. This field
+                        is passed to the stylesheets and the EDGAR PDF generator
+                        to improve the display of non-U.S. addresses.
+                    </xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:minLength value="0"/>
+                        <xs:maxLength value="50"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:element>
+            <xs:element name="rptOwnerGoodAddress" type="xs:boolean" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        This is not for the use of the filers. This field
+                        is just for internal EDGAR processing.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="REPORTING_RELATIONSHIP">
+        <xs:annotation>
+            <xs:documentation>
+                Each Reporting Owner must have at least one of the four relationship
+                booleans set to true. This is not enforced by this schema but will
+                be enforced during EDGAR processing.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="isDirector"        type="xs:boolean" minOccurs="0"/>
+            <xs:element name="isOfficer"         type="xs:boolean" minOccurs="0"/>
+            <xs:element name="isTenPercentOwner" type="xs:boolean" minOccurs="0"/>
+            <xs:element name="isOther"           type="xs:boolean" minOccurs="0"/>
+            <xs:element name="officerTitle"      type="STRING_30"  minOccurs="0"/>
+            <xs:element name="otherText"         type="STRING_30"  minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="REPORTING_OWNER">
+        <xs:sequence>
+            <xs:element name="reportingOwnerId"           type="REPORTING_ID"/>
+            <xs:element name="reportingOwnerAddress"      type="REPORTING_ADDRESS" minOccurs="0"/>
+            <xs:element name="reportingOwnerRelationship" type="REPORTING_RELATIONSHIP"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>
