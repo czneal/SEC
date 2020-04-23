@@ -44,18 +44,22 @@ class ReportToDB(MySQLWriter):
 
         logger = logs.get_logger(name=__name__)
         try:
+            logger.set_state(state={'state': obj[1]['adsh']})
+
             do.retry_mysql_write(self.write_company)(obj[0])
             do.retry_mysql_write(self.write_report)(obj[1])
             do.retry_mysql_write(self.write_nums)(obj[2])
             do.retry_mysql_write(self.write_shares)(obj[3])
             self.flush()
             logger.info('report data has been writen')
+            logger.revoke_state()
             return True
         except do.InternalError:
             logger.error(msg='mysql super dead lock', exc_info=True)
         except Exception:
             logger.error(msg='unexpected error', exc_info=True)
 
+        logger.revoke_state()
         return False
 
     def write_report(self, report: Dict[str, Any]):

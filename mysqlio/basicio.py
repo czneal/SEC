@@ -46,7 +46,7 @@ WHITE_LIST_TABLES = frozenset(
      'indicators', 'ind_proc_info', 'ind_rest_info', 'ind_classified_pairs'])
 
 WHITE_LIST_TABLES_TEST = frozenset([
-    'simple_table', 'test_create_table'
+    'simple_table', 'test_create_table', 'multikey_table'
 ])
 
 
@@ -263,10 +263,9 @@ class MySQLTable(object):
             self,
             df: pd.DataFrame,
             cur: RptCursor) -> None:
-        if not self.fields.issubset(df.columns):
-            raise MySQLTypeError(f'DataFrame should contain all table fields')
+        columns = list(set(df.columns).intersection(self.fields))
 
-        row_list = df[list(self.fields)].to_dict('record')
+        row_list = df[columns].to_dict('record')
         self.write_row_list(row_list, cur)
 
     def write_row(
@@ -306,13 +305,14 @@ class MySQLTable(object):
                      check: bool = True) -> Dict[str, Any]:
         if check and not self.fields_not_null.issubset(row.keys()):
             diff = self.fields_not_null.difference(row.keys())
-            raise MySQLTypeError(f'fields {diff} have not null flag')
+            raise ValueError(f'fields {diff} have not null flag')
 
         data: Dict[str, Any] = {}
-        for k, v in row.items():
-            if k not in self.fields:
-                continue
-            if v is None or pd.isna(v):
+        for k in self.fields:
+            v = row.get(k, None)
+            if pd.isna(v) or v is None:
+                if k in self.fields_not_null:
+                    raise ValueError(f'field {k} have not null flag')
                 data[k] = None
                 continue
 

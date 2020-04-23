@@ -24,14 +24,21 @@ class Parser(Worker):
         self.logger.set_state(state={'state': record.adsh},
                               extra={'file_link': remove_root_dir(filename)})
 
-        if not self.miner.feed(record.__dict__, filename):
+        if not self.miner.feed(record, filename):
             self.logger.revoke_state()
             return None
 
-        company = dm.prepare_company(self.miner, record)
-        report = dm.prepare_report(self.miner, record)
-        nums = dm.prepare_nums(self.miner)
-        shares = dm.prepare_shares(self.miner)
+        try:
+            company = dm.prepare_company(self.miner, record)
+            report = dm.prepare_report(self.miner, record)
+            nums = dm.prepare_nums(self.miner)
+            shares = dm.prepare_shares(self.miner)
+        except Exception:
+            self.logger.error(
+                'error while prepare report to write',
+                exc_info=True)
+            self.logger.revoke_state()
+            return None
 
         self.logger.revoke_state()
 

@@ -70,11 +70,12 @@ def calc_fact(node: Node,
               repair: bool = False) -> Optional[float]:
 
     value = facts.get(node.name, None)
-    s = []
+    s: List[float] = []
     for child in node.children.values():
         v = calc_fact(child, facts, err, repair)
         if v is not None:
             s.append(v * child.getweight())
+    value_sum: Optional[float] = None
     if s:
         value_sum = sum(s)
     elif not node.children:

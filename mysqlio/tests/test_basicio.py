@@ -1,6 +1,8 @@
 import unittest
 import unittest.mock
 import datetime
+import pandas as pd
+import numpy as np
 
 from typing import Dict, Any
 
@@ -33,8 +35,9 @@ class TestConnection(DBTestBase):
 class TestMySQLTable(DBTestBase):
     @classmethod
     def setUpClass(TestMySQLTable):
-        drop = """drop table if exists `simple_table`;"""
-        query = """
+        drop1 = """drop table if exists `simple_table`;"""
+        drop2 = """drop table if exists `multikey_table`;"""
+        query1 = """
             CREATE TABLE `simple_table` (
             `id` int(11) NOT NULL AUTO_INCREMENT,
             `column1` varchar(45) DEFAULT NULL,
@@ -42,38 +45,150 @@ class TestMySQLTable(DBTestBase):
             PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
         """
+        query2 = """
+            CREATE TABLE `multikey_table` (
+            `column1` int(11) NOT NULL,
+            `column2` varchar(30) NOT NULL,
+            `date_col` date DEFAULT NULL,
+            `column3` varchar(45) DEFAULT NULL,
+            PRIMARY KEY (`column1`,`column2`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+        """
         with do.OpenConnection() as con:
             cur = con.cursor()
-            cur.execute(drop)
-            cur.execute(query)
+            cur.execute(drop1)
+            cur.execute(drop2)
+            cur.execute(query1)
+            cur.execute(query2)
             con.commit()
 
     @classmethod
     def tearDownClass(DBTestBase):
-        drop = """drop table if exists `simple_table`;"""
+        drop1 = """drop table if exists `simple_table`;"""
+        drop2 = """drop table if exists `multikey_table`;"""
         with do.OpenConnection() as con:
             cur = con.cursor()
-            cur.execute(drop)
+            cur.execute(drop1)
+            cur.execute(drop2)
             con.commit()
 
     def test_simple_insert(self):
+        with self.subTest('simple'):
+            with do.OpenConnection() as con:
+                cur = con.cursor(dictionary=True)
+
+                table = do.MySQLTable(
+                    'simple_table', con, use_simple_insert=True)
+                table.truncate(cur)
+                con.commit()
+
+                row = {'column1': None, 'column2': 100}
+                for i in range(100):
+                    table.write_row(row, cur)
+                con.commit()
+
+                cur.execute('select * from simple_table')
+                self.assertEqual(len(cur.fetchall()), 100)
+
+                table.truncate(cur)
+                con.commit()
+
+    def test_prepare_row(self):
         with do.OpenConnection() as con:
-            cur = con.cursor(dictionary=True)
+            table = do.MySQLTable(
+                'multikey_table', con, use_simple_insert=False)
 
-            table = do.MySQLTable('simple_table', con, use_simple_insert=True)
-            table.truncate(cur)
-            con.commit()
+        with self.subTest("null column doesn't appear"):
+            row = {'column1': 1, 'column2': 'some text'}
+            drow = table._prepare_row(row, check=True)
 
-            row = {'column1': None, 'column2': 100}
-            for i in range(100):
-                table.write_row(row, cur)
-            con.commit()
+            self.assertEqual(drow,
+                             {'column1': 1,
+                              'column2': 'some text',
+                              'column3': None,
+                              'date_col': None})
 
-            cur.execute('select * from simple_table')
-            self.assertEqual(len(cur.fetchall()), 100)
+        with self.subTest("replace nan to None"):
+            row = {'column1': 1, 'column2': 'some text', 'column3': np.nan}
+            drow = table._prepare_row(row, check=True)
+            self.assertEqual(drow,
+                             {'column1': 1,
+                              'column2': 'some text',
+                              'column3': None,
+                              'date_col': None})
 
-            table.truncate(cur)
-            con.commit()
+        with self.subTest("raise if not null field is None"):
+            row = {'column1': 1, 'column2': None, 'column3': np.nan}
+            self.assertRaises(ValueError, table._prepare_row, row)
+
+        with self.subTest("raise if not null field is nan"):
+            row = {'column1': 1, 'column2': np.nan, 'column3': np.nan}
+            self.assertRaises(ValueError, table._prepare_row, row)
+
+        with self.subTest("cut text field"):
+            row = {'column1': 1,
+                   'column2': '--'.join(['' for i in range(40)]),
+                   'column3': np.nan}
+            drow = table._prepare_row(row)
+            self.assertTrue(len(row['column2']) > 30)
+            self.assertEqual(len(drow['column2']), 30)
+
+    def test_multikey_insert(self):
+        with self.subTest("null column doesn't appear"):
+            with do.OpenConnection() as con:
+                cur = con.cursor(dictionary=True)
+
+                table = do.MySQLTable(
+                    'multikey_table', con, use_simple_insert=False)
+                table.truncate(cur)
+                con.commit()
+
+                for i in range(100):
+                    row = {'column1': i, 'column2': 'some text'}
+                    table.write_row(row, cur)
+                con.commit()
+
+                cur.execute('select * from multikey_table')
+                self.assertEqual(len(cur.fetchall()), 100)
+
+                table.truncate(cur)
+                con.commit()
+
+        with self.subTest("insert DataFrame success"):
+            with do.OpenConnection() as con:
+                cur = con.cursor(dictionary=True)
+
+                table = do.MySQLTable(
+                    'multikey_table', con, use_simple_insert=False)
+                table.truncate(cur)
+                con.commit()
+
+                df = pd.DataFrame([[1, 'aaaaa', 4], [2, 'bbbbb', 4]],
+                                  columns=['column1', 'column2', 'buuuu'])
+                table.write_df(df, cur)
+                con.commit()
+
+                cur.execute('select * from multikey_table')
+                self.assertEqual(len(cur.fetchall()), 2)
+
+                table.truncate(cur)
+                con.commit()
+        
+        with self.subTest("insert DataFrame raise"):
+            with do.OpenConnection() as con:
+                cur = con.cursor(dictionary=True)
+
+                table = do.MySQLTable(
+                    'multikey_table', con, use_simple_insert=False)
+                table.truncate(cur)
+                con.commit()
+
+                df = pd.DataFrame([[1, 'aaaa', 4], [2, np.nan, 4]],
+                                  columns=['column1', 'column2', 'buuuu'])
+                self.assertRaises(ValueError, table.write_df, df, cur)
+                
+                table.truncate(cur)
+                con.commit()
 
     def check_result(
             self, cur: do.RptCursor, query: str, keys: Dict[str, Any],
