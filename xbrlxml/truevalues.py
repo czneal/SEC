@@ -15,14 +15,14 @@ class TrueValues(object):
 
         with open(source_filenames['periods']) as f:
             for line in f.readlines():
-                columns = line.replace('\n', '').replace('\r', '').split('\t')
-                self.periods[columns[0]] = cast(
-                    dt.date, utils.str2date(columns[1]))
+                columns = line.replace('\n', '').replace('\r', '')
+                self.periods[columns[:20]] = cast(
+                    dt.date, utils.str2date(columns[21:]))
 
         with open(source_filenames['chapters']) as f:
             for line in f.readlines():
-                columns = line.replace('\n', '').replace('\r', '').split('\t')
-                self.chapters[columns[0]] = json.loads(columns[1])
+                columns = line.replace('\n', '').replace('\r', '')
+                self.chapters[columns[:20]] = json.loads(columns[21:])
 
     def get_true_period(self, adsh: str) -> Union[dt.date, None]:
         return self.periods.get(adsh, None)

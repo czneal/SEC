@@ -1,6 +1,7 @@
 import zipfile
 import os
-from typing import List, cast
+import datetime
+from typing import List, cast, Set, Tuple
 from bs4 import BeautifulSoup
 
 import mpc
@@ -13,11 +14,12 @@ import mysqlio.readers as r
 
 
 class Downloader(Worker):
-    def __init__(self):
+    def __init__(self, days_ago):
         self.r = FormReader()
+        self.days_ago = days_ago
 
     def feed(self, cik: int) -> int:
-        links = self.r.fetch_form_links(cik)
+        links = self.r.fetch_form_links(cik, days_ago=self.days_ago)
         if not links:
             return 0
 
@@ -28,8 +30,11 @@ class Downloader(Worker):
         pass
 
 
+__DAYS_AGO = 365
+
+
 def configure_worker() -> Downloader:
-    return Downloader()
+    return Downloader(days_ago=__DAYS_AGO)
 
 
 def configure_writer() -> WriterProxy:
@@ -37,14 +42,24 @@ def configure_writer() -> WriterProxy:
 
 
 class FormReader(r.MySQLReader):
-    def fetch_form_links(self, cik: int) -> List[str]:
+    def fetch_form_links(
+            self,
+            cik: int,
+            days_ago: int) -> Tuple[List[str], Set[str]]:
+
+        from_date = datetime.date.today() - datetime.timedelta(days_ago)
+
         query = """
-        select doc_link from sec_forms
+        select doc_link, adsh from sec_forms
         where cik = %(cik)s
-            and form in ('4', '4/A')
+            and form in ('4', '4/A', '5', '5/A')
+            and filed >= %(from_date)s
         """
-        data = self.fetch(query, {'cik': cik})
-        return [cast(str, r['doc_link']) for r in data]
+
+        data = self.fetch(query, {'cik': cik, 'from_date': from_date})
+        links = [cast(str, r['doc_link']) for r in data]
+        adshs = set([cast(str, r['adsh']) for r in data])
+        return links, adshs
 
     def fetch_nasdaq_ciks(self) -> List[int]:
         query = """
@@ -111,7 +126,7 @@ def add_forms_to_zipfile(zipfile_name: str, form_links: List[str]):
     for link in form_links:
         filename = link.split('/')[-1][:20] + '.xml'
         if filename in filelist:
-            logger.info(f'{filename} already in zip archive')
+            logger.debug(f'{filename} already in zip archive {zipfile_name}')
             pb.measure()
             continue
 
@@ -169,12 +184,12 @@ def compress():
         print()
 
 
-def download(ciks: List[int]) -> int:
+def download(ciks: List[int], days_ago: int) -> int:
     reader = FormReader()
     logs.configure('file', level=logs.logging.INFO)
 
     for cik in ciks:
-        links = reader.fetch_form_links(cik)
+        links, _ = reader.fetch_form_links(cik, days_ago=days_ago)
         if not links:
             continue
 
@@ -183,8 +198,10 @@ def download(ciks: List[int]) -> int:
     return len(links)
 
 
-def download_mpc(ciks: List[int]):
+def download_mpc(ciks: List[int], days_ago: int):
     manager = mpc.MpcManager('file', level=mpc.logs.logging.INFO)
+
+    globals()['__DAYS_AGO'] = days_ago
     manager.start(to_do=ciks,
                   configure_worker=configure_worker,
                   configure_writer=configure_writer,

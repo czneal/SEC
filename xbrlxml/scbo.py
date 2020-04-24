@@ -69,7 +69,8 @@ class TransactionAmounts(Unit):
         self.transactionShares: float = 0.0
         self.transactionPricePerShare: Optional[float] = None
         self.transactionAcquiredDisposedCode = 'A'  # [A|D]
-        self.footnotes: List[str] = []
+        self.shares_notes: List[str] = []
+        self.price_notes: List[str] = []
 
 
 class PostTransactionAmounts(Unit):
@@ -154,7 +155,7 @@ class Document(Unit):
         self.nonDerivativeHolding: List[NonDerivativeHolding] = []
         self.derivativeTable: List[DerivativeTransaction] = []
         self.derivativeHolding: List[DerivativeHolding] = []
-        self.footnotes = []
+        self.footnotes: Dict[str, str] = {}
         self.remarks = []
 
 
@@ -190,6 +191,17 @@ class Parser(object):
             return cast(str, e)
         except Exception:
             return None
+
+    def parse_footnote_ids(elem: lxml.etree._Element, tag: str) -> List[str]:
+        ids: List[str] = []
+        e = elem.find(tag)
+        if e is None:
+            return ids
+
+        for n in e.iter('footnoteId'):
+            ids.append(n.attrib['id'])
+
+        return ids
 
     def parse_int_strict(elem: lxml.etree._Element, tag: str) -> int:
         v = Parser.parse_int(elem, tag)
@@ -268,6 +280,18 @@ class Parser(object):
         except Exception:
             return None
 
+    def parse_footnotes(root: lxml.etree._Element) -> Dict[str, str]:
+        elem = root.find('footnotes')
+        notes: Dict[str, str] = {}
+
+        if elem is None:
+            return notes
+
+        for n in elem.findall('footnote'):
+            notes[n.attrib['id']] = n.text.strip()
+
+        return notes
+
     def parse_issuer(issuer: lxml.etree._Element) -> Issuer:
         iss = Issuer()
 
@@ -331,6 +355,7 @@ class Parser(object):
         d.issuer = Parser.parse_issuer(
             Parser.find(root, ['issuer'])
         )
+        d.footnotes = Parser.parse_footnotes(root)
 
         owners = root.findall('reportingOwner')
         if not owners:
@@ -395,10 +420,22 @@ class Parser(object):
             raise KeyError(f'transactionAmounts not found')
 
         a = TransactionAmounts()
-        a.transactionShares = Parser.parse_float_strict(
-            elem, 'transactionShares')
+        try:
+            a.transactionShares = Parser.parse_float_strict(
+                elem, 'transactionShares')
+            a.shares_notes = Parser.parse_footnote_ids(
+                elem, 'transactionShares')
+        except KeyError:
+            a.transactionShares = Parser.parse_float_strict(
+                elem, 'transactionTotalValue')
+            a.shares_notes = Parser.parse_footnote_ids(
+                elem, 'transactionTotalValue')
+
         a.transactionPricePerShare = Parser.parse_float(
             elem, 'transactionPricePerShare')
+        a.price_notes = Parser.parse_footnote_ids(
+            elem, 'transactionPricePerShare')
+
         a.transactionAcquiredDisposedCode = Parser.parse_str_strict(
             elem, 'transactionAcquiredDisposedCode')
 
@@ -499,4 +536,8 @@ def open_document(filename_or_fileobject: Union[str, IO]) -> Document:
 
 
 if __name__ == '__main__':
-    pass
+    from utils import add_app_dir
+
+    d = open_document(add_app_dir("res/Forms 3-4-5 Schemes/doc4.xml"))
+
+    print(d.derivativeTable[0])

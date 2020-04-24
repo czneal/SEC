@@ -55,6 +55,19 @@ class MySQLWriter(Writer):
             table.write)(
             data, self.cur)
 
+    def execute_in(self, query: str,
+                   in_seq: typing.Iterable[typing.Any]) -> None:
+        """
+        query must be some thing like 'delete from table where field in (__in__)'
+        """
+        params = tuple([e for e in in_seq])
+        if not params:
+            return
+
+        query = query.replace('__in__', ', '.join(
+            ['%s' for i in range(len(params))]))
+        self.cur.execute(query, params)
+
 
 class StocksWriter(MySQLWriter):
     def __init__(self, *args, **kwargs):
