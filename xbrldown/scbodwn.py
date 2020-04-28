@@ -19,7 +19,7 @@ class Downloader(Worker):
         self.days_ago = days_ago
 
     def feed(self, cik: int) -> int:
-        links = self.r.fetch_form_links(cik, days_ago=self.days_ago)
+        links, _ = self.r.fetch_form_links(cik, days_ago=self.days_ago)
         if not links:
             return 0
 
@@ -28,17 +28,6 @@ class Downloader(Worker):
 
     def flush(self):
         pass
-
-
-__DAYS_AGO = 365
-
-
-def configure_worker() -> Downloader:
-    return Downloader(days_ago=__DAYS_AGO)
-
-
-def configure_writer() -> WriterProxy:
-    return WriterProxy()
 
 
 class FormReader(r.MySQLReader):
@@ -63,7 +52,10 @@ class FormReader(r.MySQLReader):
 
     def fetch_nasdaq_ciks(self) -> List[int]:
         query = """
-        select cik from nasdaq group by cik
+        select cik from nasdaq
+        where cik is not null
+        group by cik
+        order by cik
         """
         data = self.fetch(query, params={})
         return [cast(int, row['cik']) for row in data]
@@ -130,6 +122,8 @@ def add_forms_to_zipfile(zipfile_name: str, form_links: List[str]):
             pb.measure()
             continue
 
+        logger.debug(f'download {filename} to {zipfile_name}')
+
         try:
             xml_link = find_form_link(link)
         except ValueError as e:
@@ -152,7 +146,7 @@ def add_forms_to_zipfile(zipfile_name: str, form_links: List[str]):
         pb.measure()
         # print('\r' + pb.message(), end='')
 
-    print(f'downloaded {len(form_links)}')
+    print(f'\ndownloaded {len(form_links)}')
 
 
 def compress():
@@ -198,10 +192,17 @@ def download(ciks: List[int], days_ago: int) -> int:
     return len(links)
 
 
-def download_mpc(ciks: List[int], days_ago: int):
+def configure_worker() -> Downloader:
+    return Downloader(days_ago=365 * 7)
+
+
+def configure_writer() -> WriterProxy:
+    return WriterProxy()
+
+
+def download_mpc(ciks: List[int]):
     manager = mpc.MpcManager('file', level=mpc.logs.logging.INFO)
 
-    globals()['__DAYS_AGO'] = days_ago
     manager.start(to_do=ciks,
                   configure_worker=configure_worker,
                   configure_writer=configure_writer,
@@ -209,11 +210,11 @@ def download_mpc(ciks: List[int], days_ago: int):
 
 
 if __name__ == '__main__':
-    # reader = FormReader()
-    # ciks = reader.fetch_nasdaq_ciks()
-    # ciks = [8670]
+    reader = FormReader()
+    ciks = reader.fetch_nasdaq_ciks()
+    # ciks = [3116]
 
-    # download_mpc(ciks)
-    # download(ciks)
+    download_mpc(ciks)
+    # download(ciks[:20], days_ago=365 * 7)
 
-    compress()
+    # compress()

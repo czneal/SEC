@@ -201,20 +201,14 @@ def configure_writer() -> SCBOWriter:
     return SCBOWriter()
 
 
-__DAYS_AGO = 365
-
-
 def configure_worker() -> SCBOMiner:
-    return SCBOMiner(days_ago=__DAYS_AGO)
+    return SCBOMiner(days_ago=365 * 7)
 
 
 def parse_insiders_mpc(ciks: List[int],
                        handler_name: str,
                        level: int,
-                       n_procs: int,
-                       days_ago: int):
-
-    globals()['__DAYS_AGO'] = days_ago
+                       n_procs: int):
 
     manager = mpc.MpcManager(handler_name, level)
 
@@ -241,9 +235,9 @@ def parse_insiders(ciks: List[int], days_ago: int) -> None:
 
 
 if __name__ == '__main__':
-    ciks = [72971, 70858, 1067983, 19617, 40545]
+    # ciks = [72971, 70858, 1067983, 19617, 40545]
     # parse_insiders(ciks, days_ago=60)
-    # reader = xbrldown.scbodwn.FormReader()
-    # ciks = reader.fetch_nasdaq_ciks()
+    reader = xbrldown.scbodwn.FormReader()
+    ciks = reader.fetch_nasdaq_ciks()
 
-    parse_insiders_mpc(ciks, 'file', logs.logging.INFO, 3, 365 * 7)
+    parse_insiders_mpc(ciks, 'file', logs.logging.INFO, 8)
