@@ -31,6 +31,7 @@ class TestStocksIO(DBTestBase):
     def test_write_stocks_shares(self):
         with do.OpenConnection() as con:
             table = do.MySQLTable(table_name='stocks_shares', con=con)
+
             cur = con.cursor(dictionary=True)
             cur.execute("""delete from stocks_shares where ticker='aapl'
                            and trade_date between '2019-10-31' and '2019-11-11'""")

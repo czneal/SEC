@@ -78,6 +78,7 @@ class TestSyntax(unittest.TestCase):
         with self.subTest(i=1):
             nums = {
                 2019: {
+                    'us-gaap:Liabilities': 20.0,
                     'us-gaap:PaymentsToAcquireRealEstate': 1.0,
                     'us-gaap:PaymentsToAcquireRealEstateHeldForInvestment': -2.0}}
             self.assertEqual(proc.run_it(nums, 2019), -1.0)

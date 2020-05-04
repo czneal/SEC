@@ -112,21 +112,23 @@ def download_report_files(method: str, after: dt.date) -> None:
 
     logger.revoke_state()
 
+
 def attach_sec_shares_ticker() -> None:
     logger = logs.get_logger(name=__name__)
     logger.set_state({'state': attach_sec_shares_ticker.__name__})
     logger.info(f'try to find tickers for share members')
     try:
-        true_shares: List[Dict[str, str]] = []        
+        true_shares: List[Dict[str, str]] = []
 
         shares_reader = shares.MySQLShares()
         reports_reader = shares.MySQLReports()
 
-        ciks = shares_reader.fetch_nasdaq_ciks()
+        # ciks = shares_reader.fetch_nasdaq_ciks()
+        ciks = [63754]
         logger.info(f'begin with {len(ciks)} filers')
 
-        not_logging: Dict[str, Set] = {'cik': {68622},
-                        'adsh': {'0001558370-15-000135', '0001047469-15-001510', '0001193125-14-116022'}}
+        not_logging: Dict[str, Set] = {'cik': {68622}, 'adsh': {
+            '0001558370-15-000135', '0001047469-15-001510', '0001193125-14-116022'}}
         for cik in ciks:
             tickers = shares.process_tickers(shares_reader.fetch_tickers(cik))
             for adsh in reports_reader.fetch_adshs(cik):
@@ -134,32 +136,36 @@ def attach_sec_shares_ticker() -> None:
                     shares_reader.fetch_sec_shares(adsh))
 
                 if not shares.join_sec_stocks_tickers(
-                                sec_shares, tickers,
-                                cik, shares_reader):
-                    if (cik not in not_logging['cik'] and 
-                        adsh not in not_logging['adsh']):
-                            logger.set_state(state={'state': str(adsh)})
-                            logger.warning(str(tickers))
-                            logger.warning(str(sec_shares))
-                            logger.revoke_state()
+                        sec_shares, tickers,
+                        cik, shares_reader):
+                    if (cik not in not_logging['cik'] and
+                            adsh not in not_logging['adsh']):
+                        logger.set_state(state={'state': str(adsh)})
+                        logger.warning(str(tickers))
+                        logger.warning(str(sec_shares))
+                        logger.revoke_state()
                 else:
                     for shares_list in sec_shares.values():
                         for share in shares_list:
                             if share.ticker != '':
-                                true_shares.append({'adsh': adsh, 
-                                                    'member': share.member, 
-                                                    'ticker': share.ticker})
+                                true_shares.append(
+                                    {
+                                        'adsh': adsh,
+                                        'member': share.member,
+                                        'ticker': share.ticker,
+                                        'name': 'dei:EntityCommonStockSharesOutstanding'})
 
-            
         logger.info(f'end with {len(ciks)} filers')
 
         shares_reader.close()
         reports_reader.close()
 
+        logger.info(f'write tickers into sec_shares, begin')
         shares_writer = shares.ShareTickerRelation()
         shares_writer.write(true_shares)
         shares_writer.flush()
         shares_writer.close()
+        logger.info(f'write tickers into sec_shares, end')
     except Exception:
         logger.error('unexpected error', exc_info=True)
 
@@ -167,7 +173,7 @@ def attach_sec_shares_ticker() -> None:
 if __name__ == '__main__':
     logs.configure('file', level=logs.logging.INFO)
 
-    # update_xbrl_sec_forms(years=[y for y in range (2013, 2020)], months=[m for m in range(1, 13)])
-    # update_sec_forms(years=[2019], months=[m for m in range(1, 13)])
-    # download_report_files('bad', dt.date(2013, 1, 1))
+    update_xbrl_sec_forms(years=[2020], months=[m for m in range(1, 13)])
+    update_sec_forms(years=[2020], months=[m for m in range(1, 13)])
+    download_report_files('all', dt.date(2013, 1, 1))
     attach_sec_shares_ticker()

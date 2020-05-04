@@ -14,6 +14,7 @@ import multiprocessing.synchronize
 import sys
 import copy
 import traceback
+import re
 
 from queue import Empty
 from typing import Dict, Any, cast, Callable, Union, Optional, Tuple, List
@@ -77,7 +78,9 @@ class StateLogger(logging.Logger):
     _states: List[Dict[str, str]] = []
     _extras: List[Dict[str, str]] = []
 
-    def set_state(self, state: Dict[str, str], extra: Dict[str, str]={}) -> None:
+    def set_state(
+            self, state: Dict[str, str],
+            extra: Dict[str, str] = {}) -> None:
         StateLogger._states.append(StateLogger.state.copy())
         StateLogger._extras.append(StateLogger.extra.copy())
 
@@ -118,14 +121,21 @@ class MySQLHandler(logging.Handler):
     def __init__(self, level: int = logging.NOTSET):
         super().__init__(level)
         self.con = do.open_connection()
+        self.cur = self.con.cursor(dictionary=True)
+        self.adsh_re = re.compile(r'\d{10}\-\d{2}\-\d{6}')
         self.table = do.MySQLTable(
             'logs_parse', self.con, use_simple_insert=True)
+        self.xbrl_logs = do.MySQLTable(table_name='xbrl_logs',
+                                       con=self.con)
 
     def emit(self, record):
         try:
             data = format_record(record, self)
-            cur = self.con.cursor(dictionary=True)
-            self.table.write_row(data, cur)
+
+            if self.adsh_re.match(data['state']):
+                self.xbrl_logs.write_row(data, self.cur)
+            else:
+                self.table.write_row(data, self.cur)
             self.con.commit()
 
         except Exception as e:
@@ -203,7 +213,9 @@ def configure_handler(handler_name: str,
 
     return handler
 
+
 CONFIGURED = False
+
 
 def configure(
         handler_name: str,

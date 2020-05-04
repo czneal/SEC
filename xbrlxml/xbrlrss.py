@@ -217,7 +217,7 @@ class MySQLEnumerator(RecordsEnumerator):
                                 on r.adsh = f.adsh
                             left outer join
                             (
-                                select state as adsh from logs_parse
+                                select state as adsh from xbrl_logs
                                 where levelname='error'
                                 group by state
                             ) l
@@ -227,17 +227,14 @@ class MySQLEnumerator(RecordsEnumerator):
                                 and l.adsh is null;"""
         elif method == 'bad':
             self.query = """select f.* from sec_xbrl_forms f
-                            left outer join reports r
-                                on r.adsh = f.adsh
                             left outer join
                             (
-                                select state as adsh from logs_parse
+                                select state as adsh from xbrl_logs
                                 where levelname='error'
                                 group by state
                             ) l
                                 on l.adsh = f.adsh
                             where f.filed>=%(after)s
-                                and r.adsh is null
                                 and l.adsh is not null;"""
         elif method == 'explicit':
             self.query = """select * from sec_xbrl_forms

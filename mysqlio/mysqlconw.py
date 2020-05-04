@@ -23,7 +23,7 @@ class RptConnection(object):
         if self.con is None:
             raise mysql.connector.ProgrammingError()
 
-        return cast(RptCursor, self.con.cursor(dictionary=True))
+        return cast(RptCursor, self.con.cursor(dictionary=dictionary))
 
     def close(self):
         if self.con is not None:

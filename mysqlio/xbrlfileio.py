@@ -85,10 +85,13 @@ class ShareTickerRelation(MySQLWriter):
     def __init__(self):
         MySQLWriter.__init__(self)
 
-        self.sec_shares_ticker = do.MySQLTable('sec_shares_ticker', self.con)
+        self.sec_shares = do.MySQLTable('sec_shares', self.con)
 
     def write(self, row_list: List[Dict[str, str]]) -> None:
-        self.sec_shares_ticker.write(row_list, self.cur)
+        do.retry_mysql_write(self.sec_shares.update_row_list)(
+            row_list,
+            update_fields=['ticker'],
+            cur=self.cur)
 
 
 def records_to_mysql(records: List[Tuple[FileRecord, str]]) -> None:

@@ -139,7 +139,7 @@ class mg_acquired_realestate(IndicatorStatic):
 
     def run_it(self, nums: Nums, fy: int) -> Result:
         params = nums.get(fy, {})
-        result, count = nansum(params.values())
+        result, count = nansum([params.get(k, eph) for k in self.dp])
         if count == 0:
             return None
 
@@ -265,7 +265,7 @@ class mg_invest_fix_assets(IndicatorStatic):
 
     def run_it(self, params: Nums, fy: int) -> Result:
         facts = params.get(fy, {})
-        result, count = nansum(facts.values())
+        result, count = nansum([facts.get(k, eph) for k in self.dp])
         mx = nanmax(
             [facts.get(
                 "us-gaap:PaymentsToAcquireBusinessesNetOfCashAcquired", eph),
@@ -288,7 +288,7 @@ class mg_payments_capital(IndicatorStatic):
 
     def run_it(self, params: Nums, fy: int) -> Result:
         facts = self.fill_none(params, fy)
-        result, count = nansum(facts.values())
+        result, count = nansum([facts.get(k, eph) for k in self.dp])
 
         return self.result(result)
 
@@ -319,7 +319,7 @@ class mg_restructuring_nonrecurring(IndicatorStatic):
     def run_it(self, params: Nums, fy: int) -> Result:
         facts = self.fill_none(params, fy)
 
-        return self.result(nanmax(facts.values()))
+        return self.result(nanmax([facts.get(k, eph) for k in self.dp]))
 
 
 class mg_roe(IndicatorStatic):

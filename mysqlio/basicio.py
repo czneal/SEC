@@ -40,9 +40,9 @@ WHITE_LIST_TABLES = frozenset(
      'stocks_daily', 'stocks_shares', 'stocks_dividents',
      'stocks_index',
      'owners', 'insider_trans',
-     'mgnums', 'logs_parse',
+     'mgnums', 'logs_parse', 'xbrl_logs',
      'siccodes', 'sec_forms', 'reports',
-     'sec_xbrl_forms', 'sec_shares', 'sec_shares_ticker',
+     'sec_xbrl_forms', 'sec_shares',
      'indicators', 'ind_proc_info', 'ind_rest_info', 'ind_classified_pairs'])
 
 WHITE_LIST_TABLES_TEST = frozenset([
@@ -183,7 +183,7 @@ class MySQLTable(object):
         if (table_name not in WHITE_LIST_TABLES and
                 table_name not in WHITE_LIST_TABLES_TEST):
             raise Exception(
-                'table name {0} is not white listed'.format(table_name))
+                f'table name {table_name} is not white listed')
 
         self.chunk_size = 4098
         self.name = table_name
@@ -192,6 +192,8 @@ class MySQLTable(object):
         self.primary_keys: Set[str] = set()
         self.field_sizes: Mapping[str, List[Union[str, int]]] = {}
         self.fields_to_cut: Mapping[str, int] = {}
+        self.use_simple_insert: bool = use_simple_insert
+        self.if_field: str = ''
 
         types = re.compile(r'(\w+)\((\d+)\)', re.IGNORECASE)
         cur = con.cursor(dictionary=True)
@@ -239,14 +241,6 @@ class MySQLTable(object):
                 fields_not_null=self.fields_not_null,
                 primary_keys=self.primary_keys)
 
-    def set_insert_if(self, if_field: str) -> None:
-        self.insert_command = update_command(
-            table_name=self.name,
-            fields=self.fields,
-            fields_not_null=self.fields_not_null,
-            primary_keys=self.primary_keys,
-            if_field=if_field)
-
     def write(self, obj: Any, cur: RptCursor) -> None:
         if isinstance(obj, pd.DataFrame):
             self.write_df(obj, cur)
@@ -259,12 +253,35 @@ class MySQLTable(object):
                 'unsupported type to write into MySQL table {}'.format(
                     type(obj)))
 
+    def set_insert_if(self, if_field: str) -> None:
+        self.if_field = if_field
+
+    def setup_insert_command(self, fields: Set[str]) -> None:
+        if self.if_field != '':
+            self.insert_command = update_command(
+                table_name=self.name,
+                fields=fields,
+                fields_not_null=self.fields_not_null,
+                primary_keys=self.primary_keys,
+                if_field=self.if_field)
+        elif self.use_simple_insert:
+            self.insert_command = simple_insert_command(
+                table_name=self.name, fields=fields,
+                fields_not_null=self.fields_not_null,
+                primary_keys=self.primary_keys)
+        else:
+            self.insert_command = insert_command(
+                self.name,
+                fields=fields,
+                fields_not_null=self.fields_not_null,
+                primary_keys=self.primary_keys)
+
     def write_df(
             self,
             df: pd.DataFrame,
             cur: RptCursor) -> None:
-        columns = list(set(df.columns).intersection(self.fields))
 
+        columns = list(set(df.columns).intersection(self.fields))
         row_list = df[columns].to_dict('record')
         self.write_row_list(row_list, cur)
 
@@ -273,11 +290,18 @@ class MySQLTable(object):
             cur: RptCursor) -> None:
 
         data = self._prepare_row(row)
+        self.setup_insert_command(fields=set(data.keys()))
         cur.execute(self.insert_command, data)
 
     def write_row_list(
             self, row_list: List[Dict[str, Any]],
             cur: RptCursor) -> None:
+        """
+        row_list should be homogenius
+        each row contains same fields
+        """
+        if row_list:
+            self.setup_insert_command(fields=set(row_list[0].keys()))
 
         for i in range(int(len(row_list) / self.chunk_size) + 1):
             new_row_list = [self._prepare_row(row)
@@ -291,15 +315,27 @@ class MySQLTable(object):
     def update_row(
             self,
             row: Dict[str, Any],
-            key_fields: Iterable[str],
             update_fields: Iterable[str],
             cur: RptCursor) -> None:
         data = self._prepare_row(row, check=False)
         cur.execute(simple_update_command(
             self.name,
-            key_fields=key_fields,
+            key_fields=self.primary_keys,
             update_fields=update_fields),
             data)
+
+    def update_row_list(self,
+                        row_list: List[Dict[str, Any]],
+                        update_fields: Iterable[str],
+                        cur: RptCursor) -> None:
+
+        for i in range(int(len(row_list) / self.chunk_size) + 1):
+            new_row_list = row_list[i * self.chunk_size:
+                                    (i + 1) * self.chunk_size]
+            cur.executemany(simple_update_command(
+                table_name=self.name,
+                key_fields=self.primary_keys,
+                update_fields=update_fields), new_row_list)
 
     def _prepare_row(self, row: Dict[str, Any],
                      check: bool = True) -> Dict[str, Any]:
@@ -308,18 +344,22 @@ class MySQLTable(object):
             raise ValueError(f'fields {diff} have not null flag')
 
         data: Dict[str, Any] = {}
-        for k in self.fields:
-            v = row.get(k, None)
+        for k, v in row.items():
+            if k not in self.fields:
+                continue
+
             if pd.isna(v) or v is None:
+                v = None
                 if k in self.fields_not_null:
                     raise ValueError(f'field {k} have not null flag')
-                data[k] = None
+                data[k] = v
                 continue
 
             if k in self.fields_to_cut:
                 data[k] = v[0: self.fields_to_cut[k]]
             else:
                 data[k] = v
+
         return data
 
 
@@ -422,6 +462,10 @@ def insert_command(table_name: str,
     on_dupl = ',\n'.join(
         [f'{field}=values({field})'
          for field in fields.difference(primary_keys)])
+    if on_dupl == '':
+        on_dupl = ',\n'.join(
+            [f'{field}=values({field})'
+             for field in fields_not_null])
 
     insert = insert.format(table_name, columns, values, on_dupl)
 

@@ -12,17 +12,31 @@ from utils import ProgressBar, remove_root_dir
 from xbrlxml.xbrlrss import FileRecord, MySQLEnumerator
 
 
+class XBRLLogsCleaner(xio.MySQLWriter):
+    def __init__(self):
+        super().__init__()
+
+    def clean(self, adsh: str):
+        self.cur.execute('delete from xbrl_logs where state=%s', (adsh,))
+        self.flush()
+
+    def write(self, obj):
+        pass
+
+
 class Parser(Worker):
     def __init__(self,
                  miner_cls: Type[dm.DataMiner]):
         self.miner = miner_cls()
         self.logger = logs.get_logger(name=__name__)
+        self.xbrl_logs_cleaner = XBRLLogsCleaner()
 
     def feed(self, job: Tuple[FileRecord, str]) -> Optional[xio.ReportTuple]:
         (record, filename) = job
 
         self.logger.set_state(state={'state': record.adsh},
                               extra={'file_link': remove_root_dir(filename)})
+        self.xbrl_logs_cleaner.clean(adsh=record.adsh)
 
         if not self.miner.feed(record, filename):
             self.logger.revoke_state()
@@ -111,6 +125,6 @@ def parse(method: str, after: dt.date, adsh: str = '') -> None:
 
 
 if __name__ == '__main__':
-    logs.configure('file', level=logs.logging.INFO)
-    parse('explicit', dt.date(2013, 1, 1), adsh='0000882184-17-000103')
-    #parse_mpc('new', dt.date(2013, 1, 1))
+    # logs.configure('mysql', level=logs.logging.INFO)
+    # parse('explicit', dt.date(2013, 1, 1), adsh='0000063754-15-000013')
+    parse_mpc('new', dt.date(2013, 1, 1))

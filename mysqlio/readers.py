@@ -153,27 +153,20 @@ select cik from nasdaq where cik is not null group by cik;
 """
 
 q_get_unconnected_ciks = """
-select cik from
-(
-	select r.cik, r.adsh, s.member
-	from sec_shares s, reports r, nasdaq n
-    where s.adsh = r.adsh
-		and n.cik = r.cik
-	group by r.cik, r.adsh, s.member
-) r
-left outer join sec_shares_ticker st
-on st.adsh = r.adsh
-	and st.member = r.member
-where st.adsh is null
-group by cik;
+select cik
+from sec_shares ss, reports r
+where ticker is null
+    and r.adsh = ss.adsh
+group by cik
 """
 
 q_get_possible_ticker = """
 select member, ticker
-from sec_shares_ticker st, reports r
+from sec_shares ss, reports r
 where r.cik = %(cik)s
-	and r.adsh = st.adsh
+	and r.adsh = ss.adsh
     and member = %(member)s
+    and ticker is not null
 group by member, ticker;
 """
 

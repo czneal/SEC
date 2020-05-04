@@ -105,8 +105,7 @@ class TestMySQLTable(DBTestBase):
             self.assertEqual(drow,
                              {'column1': 1,
                               'column2': 'some text',
-                              'column3': None,
-                              'date_col': None})
+                              })
 
         with self.subTest("replace nan to None"):
             row = {'column1': 1, 'column2': 'some text', 'column3': np.nan}
@@ -115,7 +114,7 @@ class TestMySQLTable(DBTestBase):
                              {'column1': 1,
                               'column2': 'some text',
                               'column3': None,
-                              'date_col': None})
+                              })
 
         with self.subTest("raise if not null field is None"):
             row = {'column1': 1, 'column2': None, 'column3': np.nan}
@@ -132,6 +131,7 @@ class TestMySQLTable(DBTestBase):
             drow = table._prepare_row(row)
             self.assertTrue(len(row['column2']) > 30)
             self.assertEqual(len(drow['column2']), 30)
+            self.assertEqual(drow['column3'], None)
 
     def test_multikey_insert(self):
         with self.subTest("null column doesn't appear"):
@@ -173,7 +173,7 @@ class TestMySQLTable(DBTestBase):
 
                 table.truncate(cur)
                 con.commit()
-        
+
         with self.subTest("insert DataFrame raise"):
             with do.OpenConnection() as con:
                 cur = con.cursor(dictionary=True)
@@ -186,7 +186,7 @@ class TestMySQLTable(DBTestBase):
                 df = pd.DataFrame([[1, 'aaaa', 4], [2, np.nan, 4]],
                                   columns=['column1', 'column2', 'buuuu'])
                 self.assertRaises(ValueError, table.write_df, df, cur)
-                
+
                 table.truncate(cur)
                 con.commit()
 

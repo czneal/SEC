@@ -100,7 +100,6 @@ class StocksWriter(MySQLWriter):
             retry_mysql_write(
                 self.nasdaq.update_row)(
                     row=row,
-                    key_fields=['ticker'],
                     update_fields=['ttype'],
                     cur=self.cur)
 

@@ -11,6 +11,20 @@ from utils import make_absolute
 
 
 class TestStockData(unittest.TestCase):
+    def test_access_denied(self):
+        with unittest.mock.patch('firms.tickers.fetch_with_delay') as fetch,\
+                unittest.mock.patch('logs.get_logger') as get_logger:
+
+            fetch.return_value = b'<html><title>Access Denied</title></html>'
+            logger = unittest.mock.MagicMock()
+            get_logger.return_value = logger
+
+            data = t.stock_data('AAPL')
+
+            self.assertEqual(data["trade_date"], None)
+            logger.warning.assert_has_calls([unittest.mock.call(
+                msg='nasdaq site denied request for tikcer AAPL')])
+
     def test_stock_data_info_summary(self):
         test_data = {'pre hours': ["""{"data":{"symbol":"AAPL","companyName":"Apple Inc. Common Stock","stockType":"Common Stock","exchange":"NASDAQ-GS","isNasdaqListed":true,"isNasdaq100":true,"isHeld":false,"primaryData":{"lastSalePrice":"$267.85","netChange":"0.75","percentageChange":"0.28%","deltaIndicator":"up","lastTradeTimestamp":"DATA AS OF Nov 19, 2019 9:27 AM ET - PRE-MARKET","isRealTime":true},"secondaryData":{"lastSalePrice":"$267.10","netChange":"1.34","percentageChange":"0.5%","deltaIndicator":"up","lastTradeTimestamp":"CLOSED AT 4:00 PM ET ON Nov 18, 2019","isRealTime":false},"keyStats":{"Volume":{"label":"Volume","value":"111,677"},"PreviousClose":{"label":"Previous Close","value":"$267.10"},"OpenPrice":{"label":"Open","value":"$265.74"},"MarketCap":{"label":"Market Cap","value":"1,186,796,081,500"}},"marketStatus":"Pre Market","assetClass":"STOCKS"},"message":null,"status":{"rCode":200,"bCodeMessage":null,"developerMessage":null}}""",
                                    """{"data":{"symbol":"AAPL","summaryData":{"Exchange":{"label":"Exchange","value":"NASDAQ-GS"},"Sector":{"label":"Sector","value":"Technology"},"Industry":{"label":"Industry","value":"Computer Manufacturing"},"OneYrTarget":{"label":"1 Year Target","value":"$272.50"},"TodayHighLow":{"label":"Today's High/Low","value":"$267.43/$264.23"},"ShareVolume":{"label":"Share Volume","value":"21,674,751"},"AverageVolume":{"label":"50 Day Average Vol.","value":"26,839,599"},"PreviousClose":{"label":"Previous Close","value":"$265.76"},"FiftTwoWeekHighLow":{"label":"52 Week High/Low","value":"$267.43/$142.00"},"MarketCap":{"label":"Market Cap","value":"1,186,796,081,500"},"PERatio":{"label":"P/E Ratio","value":22.54},"ForwardPE1Yr":{"label":"Forward P/E 1 Yr.","value":20.280941533788916},"EarningsPerShare":{"label":"Earnings Per Share(EPS)","value":"$11.85"},"AnnualizedDividend":{"label":"Annualized Dividend","value":"$3.08"},"ExDividendDate":{"label":"Ex Dividend Date","value":"Nov 7, 2019"},"DividendPaymentDate":{"label":"Dividend Pay Date","value":"Nov 14, 2019"},"Yield":{"label":"Current Yield","value":"1.1589%"},"Beta":{"label":"Beta","value":1.02}},"assetClass":"STOCKS"},"message":null,"status":{"rCode":200,"bCodeMessage":null,"developerMessage":null}}"""],

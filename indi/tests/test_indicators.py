@@ -57,6 +57,23 @@ class TestIndicator(unittest.TestCase):
 
             self.assertEqual(value, 14091000000.0)
 
+    def test_mg_acquired_realestate(self):
+        r = do.MySQLIndicatorFeeder()
+        indicator1 = indi.indprocs.create('mg_acquired_realestate')
+        indicator2 = indi.indprocs.create('mg_invest_fix_assets')
+
+        cik, fy = 70858, 2019
+        with self.subTest(cik=cik, fy=fy):
+            fy_structure, fy_adsh = r.fetch_indicator_data(
+                cik=cik, fy=fy, deep=5)
+            nums = r.fetch_nums(fy_adsh)
+
+            value = indicator1.calc(nums, fy, fy_structure[2019])
+            self.assertEqual(value, None)
+
+            value = indicator2.calc(nums, fy, fy_structure[2019])
+            self.assertEqual(value, None)
+
 
 if __name__ == '__main__':
     unittest.main()

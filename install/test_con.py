@@ -1,15 +1,15 @@
 
 def test_mysql_connector():
-    print('test mysqlconnector...', end='')
+    print('test mysqlconnector...')
 
     try:
 
         from mysql.connector import connect
-        users = ['app', 'root']
+        users = ['app', 'root', 'admin']
 
         for user in users:
             config = {"host": "localhost",
-                      'port': 3306,
+                      'port': 3000,
                       'user': user,
                       'password': 'Burkina!7faso',
                       'database': 'reports',
@@ -33,7 +33,7 @@ def test_mysql_connector():
 
 
 def test_mysql_client():
-    print('test mysqlclient...', end='')
+    print('test mysqlclient...')
 
     try:
         import MySQLdb._mysql as do  # type: ignore

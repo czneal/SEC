@@ -5,14 +5,16 @@ Created on Fri Aug 30 17:50:53 2019
 @author: Asus
 """
 
-import pandas as pd # typing: ignore
+import pandas as pd  # typing: ignore
 import numpy as np
 import re
 import datetime as dt
 import json
 
-from bs4 import BeautifulSoup #typing: ignore
+from bs4 import BeautifulSoup  # typing: ignore
 from typing import Tuple, Dict, Optional, Union, cast
+
+import logs
 
 from utils import ProgressBar
 from urltools import fetch_urlfile, fetch_with_delay
@@ -106,7 +108,7 @@ StockData = Dict[str, Union[str, float, dt.date, None]]
 
 
 def stock_data(ticker: str) -> StockData:
-    """    
+    """
     return dictionary for requested ticker
     {'last': None or last price, when market closed equal close
     'high': None or high price, when premarket is None
@@ -116,7 +118,7 @@ def stock_data(ticker: str) -> StockData:
     'volume': volume, None if no day tradings
     'market_cap': None or market capitalization, when premarket is None
     'shares': None or shares count, when premarket is None
-    'class': None or share class 
+    'class': None or share class
     'type': None or share type,
     'ticker': equal requested ticker,
     'trade_date': None or trade date,
@@ -134,6 +136,12 @@ def stock_data(ticker: str) -> StockData:
             b2 = fetch_with_delay(url.format(ticker, 'summary', type_))
             if b1 is None or b2 is None:
                 continue
+
+            if (b'access denied' in b1.lower() or
+                    b'access denied' in b2.lower()):
+                logs.get_logger(__name__).warning(
+                    msg=f'nasdaq site denied request for tikcer {ticker}')
+                return retval
 
             info = json.loads(b1)
             summary = json.loads(b2)
@@ -270,10 +278,9 @@ def attach() -> pd.DataFrame:
     nasdaq_cik = get_nasdaq_cik()
 
     # attach cik to new nasdaq symbols from ones in database
-    nasdaq = pd.merge(nasdaq, nasdaq_cik[['company_name', 'cik', 'checked', 'ttype']],
-                      how='left',
-                      left_index=True, right_index=True,
-                      suffixes=('', '_y'))
+    nasdaq = pd.merge(
+        nasdaq, nasdaq_cik[['company_name', 'cik', 'checked', 'ttype']],
+        how='left', left_index=True, right_index=True, suffixes=('', '_y'))
 
     # if old company_name doesnt match new one we should perfom new search
     w = ((nasdaq['company_name'] != nasdaq['company_name_y']) &

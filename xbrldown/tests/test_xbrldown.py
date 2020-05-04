@@ -80,7 +80,12 @@ class TestProcs(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         if os.path.exists(cls.test_dir):
-            shutil.rmtree(make_absolute('res/tmp'))
+            for i in range(10):
+                try:
+                    shutil.rmtree(make_absolute('res/tmp'))
+                    break
+                except Exception:
+                    continue
 
 
 if __name__ == '__main__':
