@@ -123,8 +123,8 @@ def attach_sec_shares_ticker() -> None:
         shares_reader = shares.MySQLShares()
         reports_reader = shares.MySQLReports()
 
-        # ciks = shares_reader.fetch_nasdaq_ciks()
-        ciks = [63754]
+        ciks = shares_reader.fetch_nasdaq_ciks()
+        # ciks = [63754]
         logger.info(f'begin with {len(ciks)} filers')
 
         not_logging: Dict[str, Set] = {'cik': {68622}, 'adsh': {

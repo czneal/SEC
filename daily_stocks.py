@@ -54,9 +54,9 @@ def configure_writer() -> Writer:
 
 
 def main():
-    # if not off_hours():
-    #     print('you should run this script in off hours of nasdaq')
-    #     exit()
+    if not off_hours():
+        print('you should run this script in off hours of nasdaq')
+        exit()
 
     with do.OpenConnection() as con:
         cur = con.cursor()
@@ -64,7 +64,7 @@ def main():
         tickers: List[str] = [cast(str, ticker)
                               for (ticker,) in cur.fetchall()]
 
-    manager = MpcManager('file', level=logs.logging.DEBUG)
+    manager = MpcManager('mysql', level=logs.logging.INFO)
     logger = logs.get_logger('daily_stocks')
     logger.set_state(state={'state': 'daily_stocks'})
     logger.info(
@@ -79,7 +79,7 @@ def main():
 
 
 if __name__ == '__main__':
-    do.activate_test_mode()
+    # do.activate_test_mode()
 
     main()
 
