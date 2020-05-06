@@ -344,5 +344,8 @@ def stocks_convert(row: pd.Series) -> pd.Series:
 
 
 if __name__ == '__main__':
-    nasdaq = attach()
+    logs.configure('mysql')
+    logs.logging.getLogger(name='urllib3').setLevel(logs.logging.DEBUG)
+
+    data = stock_data('X')
     print()

@@ -127,4 +127,4 @@ def parse(method: str, after: dt.date, adsh: str = '') -> None:
 if __name__ == '__main__':
     # logs.configure('mysql', level=logs.logging.INFO)
     # parse('explicit', dt.date(2013, 1, 1), adsh='0000063754-15-000013')
-    parse_mpc('new', dt.date(2013, 1, 1))
+    parse_mpc('all', dt.date(2013, 1, 1))

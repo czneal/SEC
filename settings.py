@@ -73,6 +73,10 @@ class Settings(object):
         return cast(int, Settings.__open()["n_proc"])
 
     @staticmethod
+    def n_proc_nasdaq() -> int:
+        return cast(int, Settings.__open()['n_proc_nasdaq'])
+
+    @staticmethod
     def server_address() -> str:
         return cast(str, Settings.__open()["server_address"])
 

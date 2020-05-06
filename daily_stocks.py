@@ -9,6 +9,7 @@ from mpc import MpcManager
 from firms.tickers import stock_data, StockData, historical_data, historical_dividents
 from mysqlio.writers import StocksWriter
 from abstractions import Worker, Writer, JobType, WriterProxy
+from settings import Settings
 
 
 class StocksWorker(Worker):
@@ -43,8 +44,7 @@ def off_hours(tm: datetime.datetime = datetime.datetime.now()) -> bool:
 
 
 def configure_worker() -> Worker:
-    import logging
-    logging.getLogger(name='urllib3').setLevel(logging.WARNING)
+    logs.logging.getLogger(name='urllib3').setLevel(logs.logging.WARNING)
 
     return StocksWorker()
 
@@ -54,9 +54,9 @@ def configure_writer() -> Writer:
 
 
 def main():
-    if not off_hours():
-        print('you should run this script in off hours of nasdaq')
-        exit()
+    # if not off_hours():
+    #     print('you should run this script in off hours of nasdaq')
+    #     exit()
 
     with do.OpenConnection() as con:
         cur = con.cursor()
@@ -64,25 +64,29 @@ def main():
         tickers: List[str] = [cast(str, ticker)
                               for (ticker,) in cur.fetchall()]
 
-    manager = MpcManager('mysql', level=logs.logging.INFO)
+    manager = MpcManager('file', level=logs.logging.DEBUG)
     logger = logs.get_logger('daily_stocks')
     logger.set_state(state={'state': 'daily_stocks'})
     logger.info(
         msg='download daily tickers from nasdaq to stocks_shares and stock_daily tables')
     logger.info(msg='start to download {0} tickers'.format(len(tickers)))
-    manager.start(to_do=tickers,
+    manager.start(to_do=tickers[:10],
                   configure_writer=configure_writer,
                   configure_worker=configure_worker,
-                  n_procs=8)
+                  n_procs=Settings.n_proc_nasdaq())
     logger.info(msg='finish to download {0} tickers'.format(len(tickers)))
     logger.revoke_state()
 
 
 if __name__ == '__main__':
+    do.activate_test_mode()
+
     main()
+
+    # logs.configure('file', level=logs.logging.DEBUG)
     # worker = configure_worker()
     # writer = configure_writer()
 
-    # obj = worker.feed('AAPL')
+    # obj = worker.feed('X')
     # writer.write(obj)
     # writer.flush()
