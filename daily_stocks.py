@@ -70,7 +70,7 @@ def main():
     logger.info(
         msg='download daily tickers from nasdaq to stocks_shares and stock_daily tables')
     logger.info(msg='start to download {0} tickers'.format(len(tickers)))
-    manager.start(to_do=tickers[:10],
+    manager.start(to_do=tickers,
                   configure_writer=configure_writer,
                   configure_worker=configure_worker,
                   n_procs=Settings.n_proc_nasdaq())
