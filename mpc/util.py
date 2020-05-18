@@ -1,6 +1,5 @@
 import logging
 import multiprocessing as mp
-import multiprocessing.synchronize
 from typing import List, cast
 
 WAIT_FOR_JOB = 0.01
@@ -33,7 +32,7 @@ def terminate_procs(procs: List[mp.Process],
             logger = logging.getLogger(name=__name__)
 
         logger.debug(msg='send stop message to processes')
-        for p in procs:
+        for _ in procs:
             queue.put(StopObject())
 
         logger.debug(msg='join processes')

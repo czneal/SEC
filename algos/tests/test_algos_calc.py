@@ -2,24 +2,19 @@
 
 import unittest
 from itertools import product
-from typing import Tuple, Dict
+from typing import Dict, Tuple
 
-from algos.calc import Validator, calc_fact, calc_chapter
-from algos.calc import calc_from_dim
-
-import datetime as dt
-from utils import add_app_dir
+from algos.calc import Validator, calc_chapter, calc_fact, calc_from_dim
+from algos.tests.resource_chapters import make_chapters
 from tests.helper import read_report
 from xbrlxml.xbrlfile import XbrlFile
-
-from algos.tests.resource_chapters import make_chapters
 
 
 class TestCalc(unittest.TestCase):
     def open_xbrlfile(self) -> Tuple[XbrlFile, Dict[str, Dict[str, str]]]:
 
         adsh = "0000092122-19-000006"
-        dm, record, r = read_report(adsh)
+        dm, _, r = read_report(adsh)
         self.assertTrue(r)
 
         contexts = {

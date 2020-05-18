@@ -4,7 +4,6 @@ import re
 from typing import Dict, List, Tuple, Callable, Iterator, Union, Any, cast
 
 from xbrlxml.xbrlchapter import Chapter, Node
-from xbrlxml.xsdfile import XSDChapter
 from xbrlxml.xbrlexceptions import XBRLDictException
 
 Chapters = Dict[str, Chapter]
@@ -28,7 +27,7 @@ def _enum(structure: Structure,
                        func(node),
                        1.0,
                        offset,
-                       True if not node.children else False,
+                       bool(not node.children),
                        node,
                        node.version)
                 for item in _enum(node, offset=offset + 1, func=func):
@@ -39,7 +38,7 @@ def _enum(structure: Structure,
                    func(child),
                    child.arc['weight'] if 'weight' in child.arc else 1.0,
                    offset,
-                   True if not child.children else False,
+                   bool(not child.children),
                    child,
                    child.version)
             for item in _enum(child, offset=offset + 1, func=func):
@@ -247,7 +246,7 @@ def check_extention(chapter: Chapter, newnode: Node):
     newchildren = set([elem
                        for [elem] in enum(structure=newnode,
                                           outpattern='c',
-                                          func=lambda x:x.name)])
+                                          func=lambda x: x.name)])
     warnchildren = newchildren.intersection(set(chapter.nodes.keys()))
 
     for newchild in warnchildren:
@@ -294,7 +293,7 @@ def remove_leaf_nodes(chapter: Chapter, newnode: Node):
     """
     # find children to be add
     newchildren = set([elem for [elem] in enum(
-        newnode, outpattern='c', func=lambda x:x.name)])
+        newnode, outpattern='c', func=lambda x: x.name)])
     # find children which is already in chapter.nodes
     warnchildren = newchildren.intersection(set(chapter.nodes.keys()))
 

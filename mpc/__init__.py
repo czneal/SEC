@@ -65,7 +65,7 @@ def writer_proc(
 
         try:
             writer_obj.write(obj=value)
-        except Exception as e:
+        except Exception:
             logger.error(msg='write error', exc_info=True)
 
         pb.measure()

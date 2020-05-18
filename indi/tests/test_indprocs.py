@@ -1,5 +1,6 @@
 import unittest
 import random
+import inspect
 import indi.indprocs as prc
 
 from itertools import product, combinations
@@ -10,6 +11,9 @@ class TestSyntax(unittest.TestCase):
         for k, cls_ in prc.__dict__.items():
             if not k.startswith('mg_'):
                 continue
+            if inspect.isabstract(cls_):
+                continue
+
             with self.subTest(class_name=cls_.__name__):
                 proc = cls_()
                 dp = proc.dp.copy()

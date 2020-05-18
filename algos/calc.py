@@ -1,9 +1,9 @@
+from typing import Container, Dict, List, Optional, Set, Union, cast
+
 import pandas as pd
 
-from typing import Dict, List, Optional, Container, Union, cast, Callable, Set
-
-from xbrlxml.xbrlchapter import Node, CalcChapter, DimChapter, Chapter
 from algos.scheme import enum
+from xbrlxml.xbrlchapter import CalcChapter, Chapter, DimChapter, Node
 from xbrlxml.xbrlfileparser import TContextAsDictDim
 
 TErrors = Dict[str, List[Union[str, float, None]]]
@@ -42,15 +42,15 @@ class Validator():
             if self.none_val_err:
                 self._loggin(tag, None, None, None)
                 return False
-            else:
-                return True
+
+            return True
 
         if value_sum is None:
             if self.none_sum_err:
                 self._loggin(tag, value, value_sum, None)
                 return False
-            else:
-                return True
+
+            return True
 
         if value == value_sum:
             return True

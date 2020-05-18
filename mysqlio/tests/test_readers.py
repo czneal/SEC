@@ -1,8 +1,6 @@
 import unittest
 
 from mysqlio.readers import MySQLReader
-from mysqlio.basicio import activate_test_mode
-
 from mysqlio.tests.dbtest import DBTestBase  # type: ignore
 
 

@@ -8,12 +8,11 @@ from abstractions import Writer
 import mysqlio.basicio as do
 import mysqlio.stocksio as sio
 import firms.tickers as tic
-import utils
 import logs
 
 
 class PandasWriter(Writer):
-    def __init__(self, filename: str, *args, **kwargs):
+    def __init__(self, filename: str):
         self.data: typing.List[typing.Dict[str, typing.Any]] = []
         self.filename = filename
 
@@ -70,7 +69,7 @@ class MySQLWriter(Writer):
 
 
 class StocksWriter(MySQLWriter):
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         MySQLWriter.__init__(self)
         self.stocks_daily = do.MySQLTable('stocks_daily', self.con)
         self.stocks_shares = do.MySQLTable('stocks_shares', self.con)
@@ -116,7 +115,7 @@ class StocksWriter(MySQLWriter):
 
 
 class HistoricalStocksWriter(MySQLWriter):
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         MySQLWriter.__init__(self)
         self.stocks_daily = do.MySQLTable('stocks_daily', self.con)
         self.stocks_dividents = do.MySQLTable('stocks_dividents', self.con)
@@ -139,8 +138,12 @@ class HistoricalStocksWriter(MySQLWriter):
         self.con.commit()
 
 
-if __name__ == "__main__":
+def main():
     data = tic.stock_data('AAPL')
     w = StocksWriter()
     w.write((data, None, None))
     w.flush()
+
+
+if __name__ == "__main__":
+    main()

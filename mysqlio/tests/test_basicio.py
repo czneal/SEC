@@ -16,10 +16,10 @@ class TestConnection(DBTestBase):
             con = do.open_connection()
             cur = con.cursor(dictionary=True)
             cur.execute('select * from companies limit 10')
-            data = cur.fetchall()
+            _ = cur.fetchall()
             con.close()
         except Exception:
-            self.assertFalse(False, msg='connection cannot be open')
+            self.assertTrue(False, msg='connection cannot be open')
 
     def test_con_manager(self):
         try:
@@ -34,7 +34,7 @@ class TestConnection(DBTestBase):
 
 class TestMySQLTable(DBTestBase):
     @classmethod
-    def setUpClass(TestMySQLTable):
+    def setUpClass(cls):
         drop1 = """drop table if exists `simple_table`;"""
         drop2 = """drop table if exists `multikey_table`;"""
         query1 = """
@@ -63,7 +63,7 @@ class TestMySQLTable(DBTestBase):
             con.commit()
 
     @classmethod
-    def tearDownClass(DBTestBase):
+    def tearDownClass(cls):
         drop1 = """drop table if exists `simple_table`;"""
         drop2 = """drop table if exists `multikey_table`;"""
         with do.OpenConnection() as con:
@@ -83,7 +83,7 @@ class TestMySQLTable(DBTestBase):
                 con.commit()
 
                 row = {'column1': None, 'column2': 100}
-                for i in range(100):
+                for _ in range(100):
                     table.write_row(row, cur)
                 con.commit()
 
@@ -250,10 +250,10 @@ class TestMySQLTable(DBTestBase):
                         query,
                         keys={
                             k: v for k,
-                            v in row1.items() if k == 'adsh' or k == 'name'},
+                            v in row1.items() if k in ('adsh', 'name')},
                         values={
                             k: v for k,
-                            v in row1.items() if k != 'adsh' and k != 'name'}))
+                            v in row1.items() if k not in ('adsh', 'name')}))
 
             with self.subTest(i=2):
                 table.write_row(row2, cur)
@@ -263,10 +263,10 @@ class TestMySQLTable(DBTestBase):
                         query,
                         keys={
                             k: v for k,
-                            v in row2.items() if k == 'adsh' or k == 'name'},
+                            v in row2.items() if k in ('adsh', 'name')},
                         values={
                             k: v for k,
-                            v in row2.items() if k != 'adsh' and k != 'name'}))
+                            v in row2.items() if k not in ('adsh', 'name')}))
 
             with self.subTest(i=3):
                 table.write_row(row3, cur)
@@ -276,10 +276,10 @@ class TestMySQLTable(DBTestBase):
                         query,
                         keys={
                             k: v for k,
-                            v in row3.items() if k == 'adsh' or k == 'name'},
+                            v in row3.items() if k in ('adsh', 'name')},
                         values={
                             k: v for k,
-                            v in row3.items() if k != 'adsh' and k != 'name'}))
+                            v in row3.items() if k not in ('adsh', 'name')}))
 
             with self.subTest(i=4):
                 table.write_row(row4, cur)
@@ -289,10 +289,10 @@ class TestMySQLTable(DBTestBase):
                         query,
                         keys={
                             k: v for k,
-                            v in row4.items() if k == 'adsh' or k == 'name'},
+                            v in row4.items() if k in ('adsh', 'name')},
                         values={
                             k: v for k,
-                            v in row4.items() if k != 'adsh' and k != 'name'}),
+                            v in row4.items() if k not in ('adsh', 'name')}),
                     msg='row4 check fails')
                 self.assertTrue(
                     self.check_result(
@@ -300,10 +300,10 @@ class TestMySQLTable(DBTestBase):
                         query,
                         keys={
                             k: v for k,
-                            v in row3.items() if k == 'adsh' or k == 'name'},
+                            v in row3.items() if k in ('adsh', 'name')},
                         values={
                             k: v for k,
-                            v in row3.items() if k != 'adsh' and k != 'name'}),
+                            v in row3.items() if k not in ('adsh', 'name')}),
                     msg='row3 check fails')
                 self.assertTrue(
                     self.check_result(
@@ -311,10 +311,10 @@ class TestMySQLTable(DBTestBase):
                         query,
                         keys={
                             k: v for k,
-                            v in row2.items() if k == 'adsh' or k == 'name'},
+                            v in row2.items() if k in ('adsh', 'name')},
                         values={
                             k: v for k,
-                            v in row2.items() if k != 'adsh' and k != 'name'}),
+                            v in row2.items() if k not in ('adsh', 'name')}),
                     msg='row2 check fails')
 
             con.close()

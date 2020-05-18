@@ -7,8 +7,8 @@ Created on Mon Oct 16 11:14:23 2017
 import datetime
 import re
 from contextlib import contextmanager
-from exceptions import MySQLSyntaxError, MySQLTypeError
-from typing import (Any, Dict, List, Optional,
+from exceptions import MySQLTypeError
+from typing import (Any, Dict, List,
                     Set, Mapping, Union, cast, Iterable,
                     Iterator, Type)
 
@@ -64,7 +64,7 @@ def OpenConnection(
 retry_mysql_write = retry(5, InternalError)
 
 
-class Table(object):
+class Table():
     def __init__(self, name, con, buffer_size=1000):
         self.table_name = name
         self.fields = set()
@@ -175,7 +175,7 @@ class Table(object):
         return True
 
 
-class MySQLTable(object):
+class MySQLTable():
     def __init__(self,
                  table_name: str,
                  con: RptConnection,
@@ -366,7 +366,7 @@ class MySQLTable(object):
 FieldType = Union[Type[str], Type[int], Type[float], Type[datetime.date]]
 
 
-class TableField(object):
+class TableField():
     def __init__(self,
                  name: str,
                  ftype: FieldType,
@@ -506,29 +506,4 @@ def simple_update_command(table_name: str,
 
 
 if __name__ == '__main__':
-    update = simple_update_command(
-        table_name='companies',
-        key_fields=['cik', 'sic'],
-        update_fields={'company_name', 'updated'})
-    print(update)
-
-    # insert = insert_command(table_name='companies',
-    #                 fields=set(['company_name', 'cik', 'sic', 'updated']),
-    #                 fields_not_null=set(['company_name', 'cik', 'sic', 'updated']),
-    #                 primary_keys=set(['cik']))
-    # print(update)
-    # print(insert)
-
-    # with OpenConnection() as con:
-    #     t = MySQLTable('logs_parse', con)
-    #     cur = con.cursor(dictionary=True)
-
-    #     # id, created, state, module, levelname, msg, extra
-    #     row = {'created': '2019-12-02 18:47:23.000235',
-    #            'state': 'mpc.worker.Process-100000000000000000000000000',
-    #            'module': 'mpc',
-    #            'levelname': 'DEBUG',
-    #            'msg': 'configure worker' + ''.join(['-' for _ in range(0,100)]),
-    #            'extra': ''}
-    #     t.write_row(row, cur)
-    #     con.commit()
+    pass

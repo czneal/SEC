@@ -89,8 +89,7 @@ class MySQLReports(MySQLReader):
             result = self.cur.fetchall()
             if result:
                 return cast(str, result[0]['adsh'])
-            else:
-                return ''
+            return ''
         except Exception:
             return ''
 
@@ -171,6 +170,4 @@ group by member, ticker;
 """
 
 if __name__ == '__main__':
-    r = MySQLReader()
-    data = r.fetch("select * from companies limit 10", {})
-    print(data)
+    pass

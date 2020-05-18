@@ -11,7 +11,7 @@ import logs
 from abstractions import Worker, Writer
 from settings import Settings
 from mysqlio.writers import MySQLWriter
-from mysqlio.basicio import MySQLTable, retry_mysql_write
+from mysqlio.basicio import MySQLTable
 from utils import ProgressBar
 
 OwnerTuple = Tuple[int, dt.date, int, bool, bool, bool, bool, str, str]
@@ -234,10 +234,14 @@ def parse_insiders(ciks: List[int], days_ago: int) -> None:
     print()
 
 
-if __name__ == '__main__':
+def main():
     # ciks = [72971, 70858, 1067983, 19617, 40545]
     # parse_insiders(ciks, days_ago=60)
     reader = xbrldown.scbodwn.FormReader()
     ciks = reader.fetch_nasdaq_ciks()
 
     parse_insiders_mpc(ciks, 'file', logs.logging.INFO, 8)
+
+
+if __name__ == '__main__':
+    main()

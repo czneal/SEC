@@ -22,7 +22,7 @@ TContextAsDictDim = List[Dict[str, Union[Optional[str],
 default_decimals = 19
 
 
-class Fact(object):
+class Fact():
     def __init__(self,
                  version: str = '',
                  tag: str = '',
@@ -73,10 +73,7 @@ class Fact(object):
         if not isinstance(f, Fact):
             raise NotImplementedError()
 
-        if f.name() == self.name() and f.context == self.context:
-            return True
-        else:
-            return False
+        return bool(f.name() == self.name() and f.context == self.context)
 
 
 class Context():
@@ -93,10 +90,7 @@ class Context():
 
     def isinstant(self) -> bool:
         "unittested"
-        if self.sdate is None:
-            return True
-        else:
-            return False
+        return bool(self.sdate is None)
 
     def asdictdim(self) -> TContextAsDictDim:
         "unittested"
@@ -189,7 +183,7 @@ def to_decimals(value: Optional[str]) -> int:
     return abs(int(v))
 
 
-class DEI(object):
+class DEI():
     def __init__(self):
         self.period: List[Tuple[datetime.date, str]] = []
         self.fye: List[Tuple[str, str]] = []
@@ -207,7 +201,7 @@ Contexts = Dict[str, Context]
 TextBlocks = Dict[Tuple[str, str], str]
 
 
-class XbrlParser(object):
+class XbrlParser():
     def __init__(self):
         self.nsmapi = None
 
@@ -369,8 +363,8 @@ class XbrlParser(object):
 
         arcs = {}
         for arc in fnlink.findall('{*}footnoteArc'):
-            fr = arc.attrib['{%s}from' % loc.nsmap['xlink']]
-            to = arc.attrib['{%s}to' % loc.nsmap['xlink']]
+            fr = arc.attrib['{%s}from' % root.nsmap['xlink']]
+            to = arc.attrib['{%s}to' % root.nsmap['xlink']]
             arcs[factids[fr]] = footnotes[to]
 
         return arcs
@@ -398,11 +392,11 @@ class XbrlParser(object):
         if 'dei' not in root.nsmap:
             msg = 'no dei section in xbrl file'
             logs.get_logger(__name__).error(msg=msg)
-            raise XbrlException(msg=msg)
+            raise XbrlException(msg)
         if 'us-gaap' not in root.nsmap:
             msg = "taxonomy doesn't definded"
             logs.get_logger(__name__).error(msg=msg)
-            raise XbrlException(msg=msg)
+            raise XbrlException(msg)
 
         dei.us_gaap = root.nsmap['us-gaap'].split('/')[-1]
 
@@ -486,7 +480,6 @@ class XbrlCleanUp():
         self.currencies = [None,
                            'usd', 'eur', 'cad', 'aud',
                            'shares', 'pure']
-        pass
 
     def cleanup(self, facts: Facts,
                 units: Units,

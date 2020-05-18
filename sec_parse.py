@@ -44,7 +44,7 @@ class Parser(Worker):
             return None
 
         try:
-            company = dm.prepare_company(self.miner, record)
+            company = dm.prepare_company(record)
             report = dm.prepare_report(self.miner, record)
             nums = dm.prepare_nums(self.miner)
             shares = dm.prepare_shares(self.miner)

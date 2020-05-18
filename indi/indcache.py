@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Aug  7 17:48:55 2019
-
-@author: Asus
-"""
-import json
-
 from typing import Dict, List, Tuple
 from indi.types import Pair, Triple
 

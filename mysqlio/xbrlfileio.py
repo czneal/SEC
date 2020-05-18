@@ -1,24 +1,13 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Jul 31 18:28:09 2019
-
-@author: Asus
-"""
-import sys
-import atexit
 import pandas as pd
-from abc import ABCMeta, abstractmethod
+
 from typing import Any, Dict, List, Tuple, Optional
 
 import mysqlio.basicio as do
-import queries as q
 import logs
 
 from mysqlio.writers import MySQLWriter
-from xbrlxml.xbrlexceptions import XbrlException
-from xbrlxml.dataminer import SharesDataMiner, DataMiner
 from xbrlxml.xbrlrss import FileRecord
-from utils import remove_root_dir, retry
+from utils import remove_root_dir
 
 ReportTuple = Tuple[Dict[str, Any],
                     Dict[str, Any],

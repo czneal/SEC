@@ -1,8 +1,7 @@
-import json
 import os
 import re
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, List, Tuple, TypeVar, cast
+from typing import Dict, List, Tuple, cast
 
 import numpy as np
 from tensorflow.keras.models import load_model  # type: ignore
@@ -32,7 +31,7 @@ class Classifier(metaclass=ABCMeta):
         pass
 
 
-class KerasModel(object):
+class KerasModel():
     @abstractmethod
     def predict(self, x: np.ndarray) -> np.ndarray:
         pass
@@ -84,8 +83,8 @@ class ModelClassifier(Classifier):
         indi.indcache.append(u_pairs, u_labels, self.model_id)
         it = iter(u_labels)
 
-        for i in range(0, len(labels)):
-            if labels[i] == -1:
+        for i, label in enumerate(labels):
+            if label == -1:
                 labels[i] = it.__next__()
 
         return labels
@@ -180,14 +179,14 @@ def create(
         if multi:
             return MultiParentAndChild(
                 fdict, model_id, max_len, model_name, model)
-        else:
-            return SingleParentAndChild(
-                fdict, model_id, max_len, model_name, model)
-    else:
-        if multi:
-            return MultiOnlyChild(fdict, model_id, max_len, model_name, model)
-        else:
-            return SingleOnlyChild(fdict, model_id, max_len, model_name, model)
+
+        return SingleParentAndChild(
+            fdict, model_id, max_len, model_name, model)
+
+    if multi:
+        return MultiOnlyChild(fdict, model_id, max_len, model_name, model)
+
+    return SingleOnlyChild(fdict, model_id, max_len, model_name, model)
 
 
 if __name__ == '__main__':

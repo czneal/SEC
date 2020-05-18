@@ -14,7 +14,7 @@ class RptCursor(MySQLdb.cursors.BaseCursor):
     pass
 
 
-class RptConnection(object):
+class RptConnection():
     def __init__(self, host: str = Settings.host(),
                  port: int = 3306):
         self.con: Optional[MySQLdb.connections.Connection] = open_connection_native(
@@ -94,9 +94,9 @@ def open_connection_native(
 
     config = {
         'host': hosts[host],
-        'port': port,
-        'user': 'app',
-        'passwd': 'Burkina!7faso',
+        'port': Settings.port(),
+        'user': Settings.user(),
+        'passwd': Settings.password(),
         'db': __DATABASE,
         'ssl': {
             'key': os.path.join(
@@ -113,7 +113,7 @@ def open_connection_native(
     return con
 
 
-if __name__ == "__main__":
+def main():
     try:
         con = RptConnection()
         cur = con.cursor(dictionary=True)
@@ -122,6 +122,10 @@ if __name__ == "__main__":
         print(data)
         con.close()
 
-    except Exception as e:
+    except Exception:
         if con:
             con.close()
+
+
+if __name__ == "__main__":
+    main()

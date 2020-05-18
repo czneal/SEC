@@ -6,7 +6,7 @@ from indi.types import Nums
 from algos.scheme import Chapters
 
 
-class IndicatorsPool(object):
+class IndicatorsPool():
     def __init__(self, indicators: Dict[str, Indicator]):
         self.indicators = indicators
         self.indicator_order: List[str] = []

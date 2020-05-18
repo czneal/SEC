@@ -5,18 +5,17 @@ import json
 import os
 import re
 from abc import ABCMeta, abstractmethod
-from typing import Iterator, List, Set, TextIO, Tuple, Union, cast
+from typing import Iterator, List, Set, Tuple, Union, cast, Optional
 
 import lxml  # type: ignore
 
 import utils
 from mysqlio.basicio import OpenConnection
 from algos.xbrljson import ForDBJsonEncoder, custom_decoder
-from settings import Settings
-from utils import add_root_dir, remove_root_dir
+from utils import add_root_dir
 
 
-class FileRecord(object):
+class FileRecord():
     def __init__(self):
         self.company_name: str = ""
         self.form_type: str = ""
@@ -72,7 +71,7 @@ def record_from_str(data: str) -> FileRecord:
         if hasattr(record, k):
             record.__dict__[k] = v
     if record.period is not None:
-        record.period = utils.str2date(record.period, 'ymd')
+        record.period = cast(dt.date, utils.str2date(record.period, 'ymd'))
         if record.fy == 0:
             record.fy = (record.period - dt.timedelta(days=365 / 2)).year
     if record.file_date is not None:
@@ -81,10 +80,9 @@ def record_from_str(data: str) -> FileRecord:
     return record
 
 
-class FilingRSS(object):
+class FilingRSS():
     def __init__(self):
         self.tree = None
-        return
 
     def open_file(self, filename: str) -> None:
         FilingRSS.__init__(self)
@@ -190,8 +188,8 @@ class MySQLEnumerator(RecordsEnumerator):
         self.adsh: str = ''
         self.set_filter_method('all', self.after)
 
-    def filing_records(self, all_types: bool = False, form_types: Set[str] = {
-                       '10-K', '10-K/A'}) -> List[Tuple[FileRecord, str]]:
+    def filing_records(self, all_types: bool = False, form_types: Set[str] = set(
+            ['10-K', '10-K/A'])) -> List[Tuple[FileRecord, str]]:
         records: List[Tuple[FileRecord, str]] = []
         with OpenConnection() as con:
             cur = con.cursor(dictionary=True)

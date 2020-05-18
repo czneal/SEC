@@ -1,16 +1,13 @@
+import json
+import os
 import unittest
+
 import lxml
 import lxml.etree
-import os
 
-from xbrlxml.xbrlchapter import ReferenceParser
-from xbrlxml.xbrlchapter import CalcChapter, DimChapter, Chapter
-from xbrlxml.xbrlchapter import Node
-from algos.xbrljson import ForTestJsonEncoder
-from xbrlxml.xbrlchapter import ChapterFactory
-
-import json
 import xbrlxml.tests.resource_referenceparser as resource
+from xbrlxml.xbrlchapter import (CalcChapter, Chapter, ChapterFactory,
+                                 DimChapter, Node, ReferenceParser)
 
 
 def make_absolute(path: str) -> str:
@@ -79,7 +76,7 @@ class TestChapter(unittest.TestCase):
         self.assertSequenceEqual(chapter.getnodes(), j)
 
     def test_gettags(self):
-        chapter, labels = self.make_chapter()
+        chapter, _ = self.make_chapter()
 
         self.assertEqual(chapter.gettags(), {'us-gaap:tag1', 'us-gaap:tag2'})
 

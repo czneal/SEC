@@ -1,3 +1,6 @@
+import os
+from settings import Settings
+
 
 def test_mysql_connector():
     print('test mysqlconnector...')
@@ -8,16 +11,22 @@ def test_mysql_connector():
         users = ['app', 'root', 'admin']
 
         for user in users:
-            config = {"host": "localhost",
-                      'port': 3000,
-                      'user': user,
-                      'password': 'Burkina!7faso',
-                      'database': 'reports',
-                      'ssl_key': 'e:/mysql/data/client-key.pem',
-                      'ssl_cert': 'e:/mysql/data/client-cert.pem',
-                      'ssl_ca': 'e:/mysql/data/ca.pem',
-                      'use_pure': True
-                      }
+            config = {
+                "host": Settings.host(),
+                'port': Settings.port(),
+                'user': user,
+                'password': Settings.password(),
+                'database': 'reports',
+                'ssl_key': os.path.join(
+                    Settings.ssl_dir(),
+                    'client-key.pem'),
+                'ssl_cert': os.path.join(
+                    Settings.ssl_dir(),
+                    'client-cert.pem'),
+                'ssl_ca': os.path.join(
+                    Settings.ssl_dir(),
+                    'ca.pem'),
+                'use_pure': True}
             try:
                 print(f'connect to user: {user} ...', end='')
                 con = connect(**config)
@@ -40,16 +49,22 @@ def test_mysql_client():
         users = ['app', 'root']
 
         for user in users:
-            config = {'host': '127.0.0.1',
-                      'port': 3306,
+            config = {'host': Settings.host(),
+                      'port': Settings.port(),
                       'user': user,
-                      'passwd': 'Burkina!7faso',
+                      'passwd': Settings.password(),
                       'db': 'reports',
-                      'ssl': {'key': 'e:/mysql/data/client-key.pem',
-                                'cert': 'e:/mysql/data/client-cert.pem',
-                                'ca': 'e:/mysql/data/ca.pem'
-                              }
-                      }
+                      'ssl': {'key': os.path.join(
+                          Settings.ssl_dir(),
+                          'client-key.pem'),
+                'cert': os.path.join(
+                          Settings.ssl_dir(),
+                          'client-cert.pem'),
+                'ca': os.path.join(
+                          Settings.ssl_dir(),
+                          'ca.pem')
+            }
+            }
 
             try:
                 print(f'connect to user: {user} ...', end='')

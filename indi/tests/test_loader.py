@@ -12,7 +12,7 @@ class TestIndicatorsPool(unittest.TestCase):
             model = unittest.mock.MagicMock()
             load_model.return_value = model
 
-            pool = indi.loader.load()
+            indi.loader.load()
 
     def test_load_feeders(self):
         with unittest.mock.patch('indi.modclass.load_model') as load_model:

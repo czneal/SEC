@@ -8,15 +8,15 @@ Pair = Tuple[str, str]
 Triple = Tuple[str, str, int]
 
 
-class EmptyPlace(object):
+class EmptyPlace():
     def __neg__(self) -> EmptyPlace:
         return eph
 
     def __add__(self, other):
         if other is not None:
             return other
-        else:
-            return eph
+
+        return eph
 
     def __radd__(self, other):
         return self.__add__(other)
@@ -24,8 +24,8 @@ class EmptyPlace(object):
     def __sub__(self, other):
         if other is not None:
             return -other
-        else:
-            return eph
+
+        return eph
 
     def __rsub__(self, other):
         return self.__sub__(-other)
@@ -63,10 +63,7 @@ class EmptyPlace(object):
     def __eq__(self, other):
         if other is None:
             return True
-        if isinstance(other, EmptyPlace):
-            return True
-        else:
-            return False
+        return isinstance(other, EmptyPlace)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -105,8 +102,8 @@ def nanprod(values: Iterable[Union[Optional[float], EmptyPlace]]
         count += 1
     if count:
         return kokku, count
-    else:
-        return eph, count
+
+    return eph, count
 
 
 def nanmin(values: Iterable[Union[Optional[float],

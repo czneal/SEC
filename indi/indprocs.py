@@ -2,7 +2,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import Optional, Set, cast, List
 
-from indi.types import Nums, Facts, NoneFacts, NoneFact
+from indi.types import Nums, NoneFacts, NoneFact
 from indi.types import eph, nanmin, nanmax, nansum, nanprod, assign, Result
 from algos.scheme import Chapters
 from utils import class_for_name
@@ -78,7 +78,7 @@ class IndicatorProcedural(Indicator):
         return None
 
     @abstractmethod
-    def run_it(self, nums: Nums, fy: int) -> Optional[float]:
+    def run_it(self, params: Nums, fy: int) -> Result:
         pass
 
 
@@ -110,8 +110,8 @@ class mg_income(IndicatorStatic):
             "us-gaap:ProfitLoss",
             "mg_capitalized_software"}
 
-    def run_it(self, nums: Nums, fy: int) -> Result:
-        facts = self.fill_none(nums, fy)
+    def run_it(self, params: Nums, fy: int) -> Result:
+        facts = self.fill_none(params, fy)
         result = nanmin(
             [
                 facts
@@ -137,8 +137,8 @@ class mg_acquired_realestate(IndicatorStatic):
             'us-gaap:PaymentsToAcquireRealEstateAndRealEstateJointVentures',
             'us-gaap:PaymentsToAcquireRealEstateHeldForInvestment'}
 
-    def run_it(self, nums: Nums, fy: int) -> Result:
-        params = nums.get(fy, {})
+    def run_it(self, params: Nums, fy: int) -> Result:
+        params = params.get(fy, {})
         result, count = nansum([params.get(k, eph) for k in self.dp])
         if count == 0:
             return None
@@ -167,8 +167,8 @@ class mg_capitalized_software(IndicatorDynamic):
 
         if a and b:
             return a - b
-        else:
-            return None
+
+        return None
 
 
 class mg_cash_operating_activities(IndicatorStatic):
@@ -208,8 +208,7 @@ class mg_equity(IndicatorDynamic):
         l = self.get(params, fy - 1, 'us-gaap:Liabilities')
         if a != eph and l != eph:
             return self.result(a - l)
-        else:
-            return None
+        return None
 
 
 class mg_intangibles(IndicatorStatic):
@@ -265,7 +264,7 @@ class mg_invest_fix_assets(IndicatorStatic):
 
     def run_it(self, params: Nums, fy: int) -> Result:
         facts = params.get(fy, {})
-        result, count = nansum([facts.get(k, eph) for k in self.dp])
+        result, _ = nansum([facts.get(k, eph) for k in self.dp])
         mx = nanmax(
             [facts.get(
                 "us-gaap:PaymentsToAcquireBusinessesNetOfCashAcquired", eph),
@@ -288,7 +287,7 @@ class mg_payments_capital(IndicatorStatic):
 
     def run_it(self, params: Nums, fy: int) -> Result:
         facts = self.fill_none(params, fy)
-        result, count = nansum([facts.get(k, eph) for k in self.dp])
+        result, _ = nansum([facts.get(k, eph) for k in self.dp])
 
         return self.result(result)
 
@@ -332,8 +331,7 @@ class mg_roe(IndicatorStatic):
         i = self.get(params, fy, 'mg_income')
         if e != 0.0:
             return self.result(i / e)
-        else:
-            return None
+        return None
 
 
 class mg_roe_average(IndicatorDynamic):
@@ -397,8 +395,8 @@ class mg_r_cash_buybacks_yld(IndicatorDynamic):
         self.dp = {'mg_r_cash_buybacks'}
 
     def run_it(self, params: Nums, fy: int) -> Result:
-        summ, count = nansum((facts.get('mg_r_cash_buybacks', eph)
-                              for y, facts in params.items() if y <= fy))
+        summ, _ = nansum((facts.get('mg_r_cash_buybacks', eph)
+                          for y, facts in params.items() if y <= fy))
         return self.result(-summ)
 
 
@@ -424,8 +422,8 @@ class mg_r_dividends_yld(IndicatorDynamic):
         self.dp = {'mg_r_cash_dividends_common'}
 
     def run_it(self, params: Nums, fy: int) -> Result:
-        summ, count = nansum((facts.get('mg_r_cash_dividends_common', eph)
-                              for y, facts in params.items() if y <= fy))
+        summ, _ = nansum((facts.get('mg_r_cash_dividends_common', eph)
+                          for y, facts in params.items() if y <= fy))
         return self.result(-summ)
 
 
@@ -619,8 +617,7 @@ class mg_r_roe(IndicatorStatic):
 
         if e != 0.0:
             return self.result(i / e)
-        else:
-            return None
+        return None
 
 
 class mg_r_roe_average(IndicatorDynamic):
@@ -724,9 +721,8 @@ class mg_SGAAExpense(IndicatorStatic):
             return self.result(
                 facts['us-gaap:SellingAndMarketingExpense'] +
                 facts['us-gaap:GeneralAndAdministrativeExpense'])
-        else:
-            return self.result(
-                facts['us-gaap:SellingGeneralAndAdministrativeExpense'])
+        return self.result(
+            facts['us-gaap:SellingGeneralAndAdministrativeExpense'])
 
 
 class mg_r_cash_to_shareholders_average(IndicatorStatic):

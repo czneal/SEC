@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from algos.xbrljson import (ForTestJsonEncoder,
                             ForDBJsonEncoder,
-                            custom_decoder,
-                            loads, dumps, Chapter)
+                            loads, Chapter)
 import unittest
 import algos.tests.resource_chapters as res
 import json

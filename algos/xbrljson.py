@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from abc import ABCMeta, abstractmethod
-from typing import Dict, Any
+from typing import Dict, Any, cast
 
 from xbrlxml.xbrlchapter import Chapter, Node, CalcChapter
 from algos.scheme import enum
@@ -13,16 +13,20 @@ class CustomJsonEncoder(json.JSONEncoder, metaclass=ABCMeta):
     """
 
     def default(self, obj):
+        from xbrlxml.shares import Share
+
         if isinstance(obj, dt.date):
             return (str(obj.year).zfill(4) + '-' +
                     str(obj.month).zfill(2) + '-' +
                     str(obj.day).zfill(2))
         if isinstance(obj, Chapter):
             return self.chapter_json(obj)
-        elif isinstance(obj, Node):
+        if isinstance(obj, Node):
             return self.node_json(obj)
-        else:
-            return json.JSONEncoder.default(super(), obj)
+        if isinstance(obj, Share):
+            return self.share_json(obj)
+
+        return json.JSONEncoder.default(super(), obj)
 
     @abstractmethod
     def chapter_json(self, obj):
@@ -30,6 +34,10 @@ class CustomJsonEncoder(json.JSONEncoder, metaclass=ABCMeta):
 
     @abstractmethod
     def node_json(self, obj):
+        pass
+
+    @abstractmethod
+    def share_json(self, obj):
         pass
 
 
@@ -49,6 +57,9 @@ class ForTestJsonEncoder(CustomJsonEncoder):
              'arc': obj.arc,
              'children': None if len(obj.children) == 0 else obj.children}
         return j
+
+    def share_json(self, obj):
+        return {}
 
 
 class ForDBJsonEncoder(CustomJsonEncoder):
@@ -72,6 +83,9 @@ class ForDBJsonEncoder(CustomJsonEncoder):
             j['children'] = {v.name: v for k, v in obj.children.items()}
 
         return j
+
+    def share_json(self, obj) -> Dict[str, Any]:
+        return cast(Dict[str, Any], obj.__dict__)
 
 
 def custom_decoder(obj):
@@ -112,7 +126,8 @@ def dumps(chapters: Dict[str, Chapter]) -> str:
 
 
 if __name__ == '__main__':
-    string = """{"bs": {"name": "simple_name",
-                        "chapter": {"roleuri": "roleuri1"}}}"""
+    # string = """{"bs": {"name": "simple_name",
+    #                     "chapter": {"roleuri": "roleuri1"}}}"""
 
-    c = json.loads(string, object_hook=custom_decoder)
+    # c = json.loads(string, object_hook=custom_decoder)
+    pass

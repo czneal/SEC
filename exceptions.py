@@ -2,8 +2,6 @@
 
 from xbrlxml.xbrlexceptions import XbrlException
 
-class MySQLTypeError(XbrlException):
-    pass
 
-class MySQLSyntaxError(XbrlException):
+class MySQLTypeError(XbrlException):
     pass

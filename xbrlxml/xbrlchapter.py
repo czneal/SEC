@@ -33,8 +33,8 @@ class Node():
         "unittested"
         if self.version != '':
             return f'{self.version}:{self.tag}'
-        else:
-            return self.tag
+
+        return self.tag
 
     def getweight(self) -> int:
         return int(self.arc.get('weight', 1))
@@ -52,12 +52,9 @@ class Node():
     def __simple_eq(self, node):
         # type: (Node) -> bool
 
-        if (self.version == node.version and
-            self.tag == node.tag and
-                self.arc == node.arc):
-            return True
-        else:
-            return False
+        return bool(self.version == node.version and
+                    self.tag == node.tag and
+                    self.arc == node.arc)
 
     def __parent_eq(self, node):
         # type: (Node) -> bool
@@ -72,18 +69,18 @@ class Node():
         if not isinstance(node, Node):
             raise NotImplementedError()
 
-        if (not self.__simple_eq(node)):
+        if not self.__simple_eq(node):
             return False
-        if (not self.__parent_eq(node)):
+        if not self.__parent_eq(node):
             return False
 
-        if (self.children == node.children):
+        if self.children == node.children:
             return True
 
         return False
 
 
-class Chapter(object):
+class Chapter():
     """
     implements single scheme
     represents <calculationLink>, <presentationLink>, <definitionLink> block
@@ -177,7 +174,7 @@ class ChapterFactory():
         raise ValueError(f'unsupported reference type')
 
 
-class ReferenceParser(object):
+class ReferenceParser():
     def __init__(self, ref_type: str):
         """
         ref_type = {'calculation', 'presentation', 'definition'}
@@ -254,8 +251,7 @@ class ReferenceParser(object):
                 arcdict['to'] = value
                 continue
 
-            if (attr == 'arcrole' or
-                    attr == 'preferredLabel'):
+            if (attr in ('arcrole', 'preferredLabel')):
                 arcdict['attrib'][attr] = value.split('/')[-1]
             else:
                 if self.decimal_re.match(value):

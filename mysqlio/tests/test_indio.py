@@ -1,8 +1,6 @@
 import unittest
 
 from mysqlio.indio import IndicatorsWriter, MySQLIndicatorFeeder
-from mysqlio.basicio import activate_test_mode
-
 from mysqlio.tests.dbtest import DBTestBase  # type: ignore
 
 
@@ -149,12 +147,12 @@ class TestReader(DBTestBase):
 
     def test_combination(self):
         r = MySQLIndicatorFeeder()
-        chapters, fy_adsh = r.fetch_indicator_data(
+        _, fy_adsh = r.fetch_indicator_data(
             cik=1487843, fy=2018, deep=4)
         self.assertTrue(len(fy_adsh) != 0)
 
         nums = r.fetch_nums(fy_adsh)
-        for fy, adsh in fy_adsh.items():
+        for fy, _ in fy_adsh.items():
             self.assertTrue(len(nums[fy]) != 0)
 
 

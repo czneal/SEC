@@ -6,14 +6,16 @@ Created on Mon Jun  3 14:05:20 2019
 """
 
 import re
-import lxml # type: ignore
+import lxml
+import lxml.etree  # type: ignore
 from collections import namedtuple
 
-XSDChapter = namedtuple('XSDChapter', 
-                                ['roleuri','label','sect','id'])
+XSDChapter = namedtuple('XSDChapter',
+                        ['roleuri', 'label', 'sect', 'id'])
 
-class XSDFile(object):    
-    def read(self, xsd_file):        
+
+class XSDFile():
+    def read(self, xsd_file):
         chapters = {}
         '''
         doc - document entry - matchDocument
@@ -23,19 +25,19 @@ class XSDFile(object):
         tab - notes tables - matchTable
         det - notes details - matchDetail
         '''
-        matchStatement = re.compile('.* +\- +Statement +\- .*')
-        matchDisclosure = re.compile('.* +\- +Disclosure +\- +.*')
-        matchDocument = re.compile('.* +\- +Document +\- +.*')
-        matchParenthetical = re.compile('.*\-.+-.*Paren.+')
-        matchPolicy = re.compile('.*\(.*Polic.*\).*')
-        matchTable = re.compile('.*\(Table.*\).*')
-        matchDetail = re.compile('.*\(Detail.*\).*')
+        matchStatement = re.compile(r'.* +\- +Statement +\- .*')
+        matchDisclosure = re.compile(r'.* +\- +Disclosure +\- +.*')
+        matchDocument = re.compile(r'.* +\- +Document +\- +.*')
+        matchParenthetical = re.compile(r'.*\-.+-.*Paren.+')
+        matchPolicy = re.compile(r'.*\(.*Polic.*\).*')
+        matchTable = re.compile(r'.*\(Table.*\).*')
+        matchDetail = re.compile(r'.*\(Detail.*\).*')
 
-        root = lxml.etree.parse(xsd_file)            
+        root = lxml.etree.parse(xsd_file)
 
         for role in root.iter('{*}roleType'):
             rol_def = role.find("{*}definition")
-            
+
             sect = ""
             if matchDocument.match(rol_def.text):
                 sect = "doc"
@@ -54,14 +56,18 @@ class XSDFile(object):
                 else:
                     sect = "not"
             roleuri = role.attrib["roleURI"]
-            
-            label = re.sub('\d+\s*-\s*\w*\s*-\s*', '', 
+
+            label = re.sub(r'\d+\s*-\s*\w*\s*-\s*', '',
                            rol_def.text.strip(), flags=re.I)
             chapters[roleuri] = XSDChapter(roleuri, label, sect,
-                                            role.attrib["id"])        
+                                           role.attrib["id"])
         return chapters
-        
-if __name__ == '__main__':
+
+
+def main():
     xsd = XSDFile()
-    chapters = xsd.read('../test/aal-20181231.xsd')
-    
+    xsd.read('../test/aal-20181231.xsd')
+
+
+if __name__ == '__main__':
+    main()

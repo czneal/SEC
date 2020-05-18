@@ -9,7 +9,8 @@ import logs
 import mysqlio.firmsio as fio
 import xbrlxml.shares as shares
 from firms.tickers import attach
-from mysqlio.xbrlfileio import records_to_mysql
+from mysqlio.xbrlfileio import records_to_mysql, ShareTickerRelation
+from mysqlio.readers import MySQLReports
 from xbrldown.download import download_and_save, download_rss
 from xbrlxml.xbrlrss import MySQLEnumerator, XBRLEnumerator
 
@@ -81,7 +82,7 @@ def update_companies_nasdaq() -> None:
         logger.info('write nasdaq symbols to database')
         fio.write_nasdaq(nasdaq)
 
-    except Exception as e:
+    except Exception:
         logger.error('unexpected error', exc_info=True)
 
     logger.revoke_state()
@@ -121,7 +122,7 @@ def attach_sec_shares_ticker() -> None:
         true_shares: List[Dict[str, str]] = []
 
         shares_reader = shares.MySQLShares()
-        reports_reader = shares.MySQLReports()
+        reports_reader = MySQLReports()
 
         ciks = shares_reader.fetch_nasdaq_ciks()
         # ciks = [63754]
@@ -141,8 +142,11 @@ def attach_sec_shares_ticker() -> None:
                     if (cik not in not_logging['cik'] and
                             adsh not in not_logging['adsh']):
                         logger.set_state(state={'state': str(adsh)})
-                        logger.warning(str(tickers))
-                        logger.warning(str(sec_shares))
+                        logger.warning(
+                            msg='sec share-ticker relaition not found',
+                            extra={
+                                'tickers': tickers,
+                                'sec_shares': sec_shares})
                         logger.revoke_state()
                 else:
                     for shares_list in sec_shares.values():
@@ -161,7 +165,7 @@ def attach_sec_shares_ticker() -> None:
         reports_reader.close()
 
         logger.info(f'write tickers into sec_shares, begin')
-        shares_writer = shares.ShareTickerRelation()
+        shares_writer = ShareTickerRelation()
         shares_writer.write(true_shares)
         shares_writer.flush()
         shares_writer.close()
@@ -171,9 +175,9 @@ def attach_sec_shares_ticker() -> None:
 
 
 if __name__ == '__main__':
-    logs.configure('file', level=logs.logging.INFO)
+    logs.configure('mysql', level=logs.logging.INFO)
 
-    update_xbrl_sec_forms(years=[2020], months=[m for m in range(1, 13)])
-    update_sec_forms(years=[2020], months=[m for m in range(1, 13)])
-    download_report_files('all', dt.date(2013, 1, 1))
+    # update_xbrl_sec_forms(years=[2020], months=[m for m in range(1, 13)])
+    # update_sec_forms(years=[2020], months=[m for m in range(1, 13)])
+    # download_report_files('all', dt.date(2013, 1, 1))
     attach_sec_shares_ticker()
