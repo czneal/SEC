@@ -196,6 +196,50 @@ class SCBOMiner(Worker):
 
         return data
 
+    def get_derivative_transactions(
+            self,
+            cik: int,
+            adshs: Set[str]) -> List[List[Any]]:
+        archive = Form4Archive(cik)
+        data: List[List[Any]] = []
+
+        for f, filename in archive.enum():
+            if filename[:20] not in adshs:
+                continue
+
+            try:
+                d = xbrlxml.scbo.open_document(f)
+            except Exception:
+                logs.get_logger(__name__).error(
+                    f'cik: {cik}, file: {filename} broken', exc_info=True)
+
+            if d.issuer.issuerCik != cik:
+                continue
+
+            for t in d.nonDerivativeTable:
+                row = [
+                    filename[:20],
+                    cik,
+                    d.periodOfReport,
+                    d.reportingOwner[0].reportingOwnerId.rptOwnerCik,
+                    t.securityTitle,
+                    t.transactionDate,
+                    t.transactionCoding.transactionCode if t.transactionCoding is not None else None,
+                    t.transactionCoding.equitySwapInvolved if t.transactionCoding is not None else None,
+                    t.transactionAmounts.transactionShares,
+                    t.transactionAmounts.transactionPricePerShare,
+                    t.transactionAmounts.transactionAcquiredDisposedCode,
+                    t.ownershipNature,
+                    t.postTransactionAmounts.sharesOwnedFollowingTransaction,
+                    t.postTransactionAmounts.valueOwnedFollowingTransaction,
+                    '\n'.join(
+                        [d.footnotes[fid]
+                         for fid in t.transactionAmounts.shares_notes]),
+                    '\n'.join([d.footnotes[fid] for fid in t.transactionAmounts.price_notes])]
+                data.append(row)
+
+        return data
+
 
 def configure_writer() -> SCBOWriter:
     return SCBOWriter()
