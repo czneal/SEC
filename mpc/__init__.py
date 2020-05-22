@@ -37,11 +37,12 @@ def writer_proc(
         configure_writer: Callable[[], Writer],
         level: int,
         total: int) -> None:
-    try:
-        # configure_logging(log_queue, level)
-        logger = logs.get_logger(name=__name__)
-        logger.set_state(state={'state': 'mpc.writer'}, extra={})
 
+    configure_logging(log_queue, level)
+    logger = logs.get_logger(name=__name__)
+    logger.set_state(state={'state': 'mpc.writer'}, extra={})
+
+    try:
         logger.debug(msg='configure writer')
         writer_obj = configure_writer()
 
@@ -51,6 +52,7 @@ def writer_proc(
         info_queue.put('success')
     except Exception:
         logger.error(msg='fail to start writer', exc_info=True)
+        logger.revoke_state()
         info_queue.put('fail')
         return
 
@@ -78,6 +80,7 @@ def writer_proc(
     except Exception:
         logger.error('flush writer failed', exc_info=True)
 
+    logger.revoke_state()
     info_queue.put_nowait('done')
 
 
@@ -89,19 +92,21 @@ def worker_proc(
         stop_event: mp.synchronize.Event,
         configure_worker: Callable[[], Worker],
         level: int) -> None:
-    try:
-        # configure_logging(log_queue, level)
-        logger = logs.get_logger(name=__name__)
-        logger.set_state(
-            state={
-                'state': 'mpc.worker.' + mp.current_process().name},
-            extra={})
 
+    configure_logging(log_queue, level)
+    logger = logs.get_logger(name=__name__)
+    logger.set_state(
+        state={
+            'state': 'mpc.worker.' + mp.current_process().name},
+        extra={})
+
+    try:
         logger.debug('configure worker')
         worker_obj = configure_worker()
         info_queue.put('success')
     except Exception:
         logger.error(msg='failed to start worker', exc_info=True)
+        logger.revoke_state()
         info_queue.put('fail')
         return
 
@@ -131,6 +136,7 @@ def worker_proc(
     except Exception:
         logger.error(msg='flush worker failed', exc_info=True)
 
+    logger.revoke_state()
     info_queue.put_nowait('done')
 
 
@@ -213,9 +219,11 @@ class MpcManager():
         finally:
             logger.debug('join worker processes')
             terminate_procs(processes, self.jobs_queue, self.worker_stop_event)
+
             logger.debug('join writer process')
             terminate_procs([writer], self.write_queue, self.writer_stop_event)
-            logger.set_state(state={'state': ''}, extra={})
+
+            logger.revoke_state()
 
 
 class TestWorker(Worker):

@@ -173,6 +173,8 @@ def attach_sec_shares_ticker() -> None:
     except Exception:
         logger.error('unexpected error', exc_info=True)
 
+    logger.revoke_state()
+
 
 if __name__ == '__main__':
     logs.configure('mysql', level=logs.logging.INFO)

@@ -36,12 +36,13 @@ NonDerTransColumns = [
     'equity_involved',
     'shares',
     'price',
-    'acc_disp',
     'owner_nature',
     'post_shares',
     'post_values',
     'shares_notes',
-    'price_notes'
+    'price_notes',
+    'underlying',
+    'underlying_shares'
 ]
 
 
@@ -116,8 +117,11 @@ class SCBOMiner(Worker):
         try:
             _, adshs = self.reader.fetch_form_links(
                 cik, days_ago=self.days_ago)
-            return (self.mine_owners(cik, adshs),
-                    self.get_nonderivative_transactions(cik, adshs))
+            owners = self.mine_owners(cik, adshs)
+            trans = self.get_nonderivative_transactions(cik, adshs)
+            trans.extend(self.get_derivative_transactions(cik, adshs))
+
+            return (owners, trans)
         except Exception:
             return ([], [])
 
@@ -182,16 +186,19 @@ class SCBOMiner(Worker):
                     t.transactionDate,
                     t.transactionCoding.transactionCode if t.transactionCoding is not None else None,
                     t.transactionCoding.equitySwapInvolved if t.transactionCoding is not None else None,
-                    t.transactionAmounts.transactionShares,
+                    (t.transactionAmounts.transactionShares
+                        if t.transactionAmounts.transactionAcquiredDisposedCode == 'A'
+                        else -t.transactionAmounts.transactionShares),
                     t.transactionAmounts.transactionPricePerShare,
-                    t.transactionAmounts.transactionAcquiredDisposedCode,
                     t.ownershipNature,
                     t.postTransactionAmounts.sharesOwnedFollowingTransaction,
                     t.postTransactionAmounts.valueOwnedFollowingTransaction,
                     '\n'.join(
                         [d.footnotes[fid]
                          for fid in t.transactionAmounts.shares_notes]),
-                    '\n'.join([d.footnotes[fid] for fid in t.transactionAmounts.price_notes])]
+                    '\n'.join([d.footnotes[fid] for fid in t.transactionAmounts.price_notes]),
+                    None,
+                    None]
                 data.append(row)
 
         return data
@@ -211,12 +218,15 @@ class SCBOMiner(Worker):
                 d = xbrlxml.scbo.open_document(f)
             except Exception:
                 logs.get_logger(__name__).error(
-                    f'cik: {cik}, file: {filename} broken', exc_info=True)
+                    msg='3-4-5 form file broken',
+                    extra={'cik': cik,
+                           'filename': filename},
+                    exc_info=True)
 
             if d.issuer.issuerCik != cik:
                 continue
 
-            for t in d.nonDerivativeTable:
+            for t in d.derivativeTable:
                 row = [
                     filename[:20],
                     cik,
@@ -226,16 +236,19 @@ class SCBOMiner(Worker):
                     t.transactionDate,
                     t.transactionCoding.transactionCode if t.transactionCoding is not None else None,
                     t.transactionCoding.equitySwapInvolved if t.transactionCoding is not None else None,
-                    t.transactionAmounts.transactionShares,
+                    (t.transactionAmounts.transactionShares
+                        if t.transactionAmounts.transactionAcquiredDisposedCode == 'A'
+                        else -t.transactionAmounts.transactionShares),
                     t.transactionAmounts.transactionPricePerShare,
-                    t.transactionAmounts.transactionAcquiredDisposedCode,
                     t.ownershipNature,
                     t.postTransactionAmounts.sharesOwnedFollowingTransaction,
                     t.postTransactionAmounts.valueOwnedFollowingTransaction,
                     '\n'.join(
                         [d.footnotes[fid]
                          for fid in t.transactionAmounts.shares_notes]),
-                    '\n'.join([d.footnotes[fid] for fid in t.transactionAmounts.price_notes])]
+                    '\n'.join([d.footnotes[fid] for fid in t.transactionAmounts.price_notes]),
+                    t.underlyingSecurity.securityTitle,
+                    t.underlyingSecurity.underlyingSecurityShares]
                 data.append(row)
 
         return data
@@ -279,12 +292,15 @@ def parse_insiders(ciks: List[int], days_ago: int) -> None:
 
 
 def main():
-    # ciks = [72971, 70858, 1067983, 19617, 40545]
-    # parse_insiders(ciks, days_ago=60)
     reader = xbrldown.scbodwn.FormReader()
     ciks = reader.fetch_nasdaq_ciks()
 
     parse_insiders_mpc(ciks, 'file', logs.logging.INFO, 8)
+
+
+def test():
+    ciks = [72971, 70858, 1067983, 19617, 40545]
+    parse_insiders(ciks, days_ago=60)
 
 
 if __name__ == '__main__':
