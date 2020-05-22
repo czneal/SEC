@@ -5,6 +5,18 @@ from mysqlio.tests.dbtest import DBTestBase  # type: ignore
 
 
 class TestReader(DBTestBase):
+    def setUp(self):
+        queries = [
+            """
+            delete from mgnums where adsh = '0000002178-13-000014'
+            """,
+            """
+            insert into mgnums
+            select * from reports.mgnums
+            where adsh = '0000002178-13-000014';
+            """]
+        self.run_set_up_queries(queries=queries, params=[{}, {}])
+
     def test_fetch(self):
         r = MySQLReader()
 

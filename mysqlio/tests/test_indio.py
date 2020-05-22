@@ -5,19 +5,17 @@ from mysqlio.tests.dbtest import DBTestBase  # type: ignore
 
 
 class TestWriteIndicators(DBTestBase):
+    queries = [
+        "truncate table indicators",
+        "truncate table ind_proc_info",
+        "truncate table ind_rest_info",
+        "truncate table ind_classified_pairs"]
+
+    def setUp(self):
+        self.run_set_up_queries(self.queries, params=[{}, {}, {}, {}])
+
     def tearDown(self):
-        import mysqlio.basicio as do
-        with do.OpenConnection() as con:
-            cur = con.cursor()
-            cur.execute('delete from indicators where cik in (1,2)')
-            cur.execute(
-                "delete from ind_proc_info where name in ('name1','name2')")
-            cur.execute(
-                "delete from ind_rest_info where name in ('name3','name4')")
-            con.commit()
-            cur.execute(
-                "delete from ind_classified_pairs where parent='someTag'")
-            con.commit()
+        self.run_set_up_queries(self.queries, params=[{}, {}, {}, {}])
 
     def test_write_indicators(self):
         data = [{'name': 'mg_equity',
@@ -39,6 +37,7 @@ class TestWriteIndicators(DBTestBase):
         iw = IndicatorsWriter()
         iw.write(data)
         iw.flush()
+        iw.close()
 
         ir = MySQLIndicatorFeeder()
         with self.subTest(test='all'):
@@ -53,18 +52,23 @@ class TestWriteIndicators(DBTestBase):
             data = ir.fetch_indicators(2, 2019, 2)
             self.assertDictEqual(data, {})
 
-    def test_write_info(self):
-        iw = IndicatorsWriter()
-        ir = MySQLIndicatorFeeder()
+        ir.close()
 
+    def test_write_info(self):
         with self.subTest(test='empty sets'):
+            iw = IndicatorsWriter()
             iw.write_ind_info([], [])
             iw.flush()
+            iw.close()
+
+            ir = MySQLIndicatorFeeder()
             proc, rest = ir.fetch_ind_info()
             self.assertSequenceEqual(proc, [])
             self.assertSequenceEqual(rest, [])
+            ir.close()
 
         with self.subTest(test='how it works'):
+            iw = IndicatorsWriter()
             proc = [{'name': 'name1',
                      'dp': '["us-gaap:Laibilities"]',
                      'deep': 1},
@@ -85,7 +89,11 @@ class TestWriteIndicators(DBTestBase):
                      'nodes': "['us-gaap:Liabilities', 'us-gaap:Assets']"}]
             iw.write_ind_info(proc, rest)
             iw.flush()
+            iw.close()
+
+            ir = MySQLIndicatorFeeder()
             db_proc, db_rest = ir.fetch_ind_info()
+            ir.close()
 
             self.assertSequenceEqual(proc, db_proc)
             self.assertSequenceEqual(rest, db_rest)
@@ -100,20 +108,64 @@ class TestWriteIndicators(DBTestBase):
              {'parent': 'someTag', 'child': 'anotherTag1', 'model_id': 1, 'label': 0},
              {'parent': 'someTag', 'child': 'anotherTag1', 'model_id': 0, 'label': 0}])
         iw.flush()
-        pairs = ir.fetch_classified_pairs()
+        iw.close()
 
+        pairs = ir.fetch_classified_pairs()
+        ir.close()
         self.assertEqual(len(pairs), 3)
 
+
+class TestReader(DBTestBase):
+    def set_up_fetch_snp500_ciks(self):
+        queries = [
+            "truncate table stocks_index",
+            """
+            insert into stocks_index
+            select * from reports.stocks_index
+            """]
+        self.run_set_up_queries(queries, params=[{}, {}])
+
+    def set_up_fetch_facts(self):
+        queries = [
+            "delete from mgnums where adsh = '0001213900-19-003416'",
+            """
+            insert into mgnums
+            select * from reports.mgnums where adsh = '0001213900-19-003416'
+            """]
+        self.run_set_up_queries(queries, params=[{}, {}])
+
+    def set_up_fetch_indicator_data(self):
+        queries = [
+            "delete from reports where cik = 1487843",
+            """
+            delete from mgnums
+            where adsh in (select adsh from reports.reports where cik = 1487843)""",
+            """
+            insert into reports
+            select * from reports.reports
+            where cik = 1487843
+            """,
+            """
+            insert into mgnums
+            select * from reports.mgnums
+            where adsh in (select adsh from reports.reports where cik = 1487843)
+            """]
+
+        self.run_set_up_queries(queries, [{}, {}, {}, {}])
+
     def test_fetch_snp500_ciks(self):
+        self.set_up_fetch_snp500_ciks()
+
         ir = MySQLIndicatorFeeder()
         ciks = ir.fetch_snp500_ciks(2018)
 
         # Berkshire in ciks
         self.assertTrue(1067983 in ciks)
+        ir.close()
 
-
-class TestReader(DBTestBase):
     def test_fetch_facts(self):
+        self.set_up_fetch_facts()
+
         r = MySQLIndicatorFeeder()
 
         facts = r.fetch_facts('0001213900-19-003416')
@@ -122,6 +174,8 @@ class TestReader(DBTestBase):
         self.assertTrue('us-gaap:Assets' in facts)
 
     def test_fetch_indicator_data(self):
+        self.set_up_fetch_indicator_data()
+
         r = MySQLIndicatorFeeder()
         with self.subTest(test='real data'):
             chapters, fy_adsh = r.fetch_indicator_data(
@@ -146,6 +200,8 @@ class TestReader(DBTestBase):
             self.assertEqual(fy_adsh, {})
 
     def test_combination(self):
+        self.set_up_fetch_indicator_data()
+
         r = MySQLIndicatorFeeder()
         _, fy_adsh = r.fetch_indicator_data(
             cik=1487843, fy=2018, deep=4)
