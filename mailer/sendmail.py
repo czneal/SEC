@@ -1,6 +1,8 @@
 import smtplib
 from email.message import EmailMessage
 
+from settings import Settings
+
 
 def send_message(to: str, subject: str, content: str):
     msg = EmailMessage()
@@ -11,7 +13,7 @@ def send_message(to: str, subject: str, content: str):
     msg['To'] = to
 
     # Send the message via our own SMTP server.
-    s = smtplib.SMTP('localhost')
+    s = smtplib.SMTP('localhost', port=Settings.smtp_port())
     s.send_message(msg)
     s.quit()
 

@@ -17,6 +17,21 @@
             }
         },
         {
+            "name": "Python: Current File (Integrated Terminal) with params",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "args": [
+                "2020-05-21"
+            ],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "justMyCode": false,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        },
+        {
             "name": "Python: Remote Attach",
             "type": "python",
             "request": "attach",

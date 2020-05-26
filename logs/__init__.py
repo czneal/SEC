@@ -193,7 +193,7 @@ class MyQueueHandler(logging.Handler):
 
 def configure_handler(handler_name: str,
                       queue: Optional[multi.Queue] = None) -> logging.Handler:
-    assert handler_name in {'mysql', 'file', 'queue', 'silent'}
+    assert handler_name in {'mysql', 'file', 'queue', 'silent', 'console'}
 
     handler: logging.Handler
     if handler_name == 'mysql':
@@ -209,6 +209,8 @@ def configure_handler(handler_name: str,
         handler = MyQueueHandler(queue)
     elif handler_name == 'silent':
         handler = logging.NullHandler()
+    elif handler_name == 'console':
+        handler = logging.StreamHandler(stream=sys.stderr)
 
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -233,6 +235,7 @@ def configure(
         'file' - logs into local file with global.settings.log_filename
         'queue' - put log records into queue, queue argument should be set
         'silent' - logs nothing
+        'console' - logs to sys.stderr
     use_state
         True - use StateLogger for log record processing,
         before using logging should call StateLogger.set_state()
@@ -257,9 +260,11 @@ def configure(
     globals()['CONFIGURED'] = True
 
 
-def get_logger(name: str = 'root') -> StateLogger:
+def get_logger(
+        name: str = 'root',
+        default_handler_name: str = 'silent') -> StateLogger:
     if not CONFIGURED:
-        configure('silent')
+        configure(default_handler_name)
 
     return cast(StateLogger, logging.getLogger(name))
 

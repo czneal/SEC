@@ -1,4 +1,5 @@
 import atexit
+import logs
 import datetime as dt
 
 from typing import Dict, List, Any, Tuple, cast
@@ -23,6 +24,10 @@ class MySQLReader():
                 self.cur.execute(query)
             return cast(List[Dict[str, Any]], self.cur.fetchall())
         except Exception:
+            logs.get_logger(
+                name=__name__, default_handler_name='console').error(
+                'error while execute sql statement',
+                exc_info=True)
             return []
 
     def close(self) -> None:

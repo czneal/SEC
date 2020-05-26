@@ -15,6 +15,14 @@ class CustomJsonEncoder(json.JSONEncoder, metaclass=ABCMeta):
     def default(self, obj):
         from xbrlxml.shares import Share
 
+        if isinstance(obj, dt.datetime):
+            return (str(obj.year).zfill(4) + '-' +
+                    str(obj.month).zfill(2) + '-' +
+                    str(obj.day).zfill(2) + ' ' +
+                    str(obj.hour).zfill(2) + ':' +
+                    str(obj.minute).zfill(2) + ':' +
+                    str(obj.second).zfill(2) + ':' +
+                    str(obj.microsecond).zfill(4))
         if isinstance(obj, dt.date):
             return (str(obj.year).zfill(4) + '-' +
                     str(obj.month).zfill(2) + '-' +

@@ -95,3 +95,7 @@ class Settings(object):
     @staticmethod
     def password() -> str:
         return cast(str, Settings.__open()["password"])
+
+    @staticmethod
+    def smtp_port() -> int:
+        return cast(int, Settings.__open()['smpt_port'])
