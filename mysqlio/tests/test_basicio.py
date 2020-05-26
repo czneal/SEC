@@ -33,8 +33,7 @@ class TestConnection(DBTestBase):
 
 
 class TestMySQLTable(DBTestBase):
-    @classmethod
-    def setUpClass(cls):
+    def setUp(self):
         drop1 = """drop table if exists `simple_table`;"""
         drop2 = """drop table if exists `multikey_table`;"""
         query1 = """
@@ -62,8 +61,7 @@ class TestMySQLTable(DBTestBase):
             cur.execute(query2)
             con.commit()
 
-    @classmethod
-    def tearDownClass(cls):
+    def tearDown(self):
         drop1 = """drop table if exists `simple_table`;"""
         drop2 = """drop table if exists `multikey_table`;"""
         with do.OpenConnection() as con:

@@ -82,7 +82,7 @@ def open_connection_native(
         user=Settings.user(),
         password=Settings.password(),
         host=hosts[host],
-        database=__DATABASE,
+        database=globals()['__DATABASE'],
         port=Settings.port(),
         ssl_ca=Settings.ssl_dir() +
         "ca.pem",
