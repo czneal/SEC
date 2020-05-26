@@ -98,4 +98,4 @@ class Settings(object):
 
     @staticmethod
     def smtp_port() -> int:
-        return cast(int, Settings.__open()['smpt_port'])
+        return cast(int, Settings.__open()['smtp_port'])
