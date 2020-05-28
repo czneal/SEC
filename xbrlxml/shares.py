@@ -1,13 +1,10 @@
 import re
 import datetime as dt
 import string
-from typing import Dict, List, cast, Any, Tuple, TypeVar, Set
+from typing import Dict, List, cast, Any, Tuple, TypeVar
 
-import logs
-
-from utils import str2date, ProgressBar
-from mysqlio.readers import MySQLShares, MySQLReports
-from mysqlio.xbrlfileio import ShareTickerRelation
+from mysqlio.readers import MySQLShares
+from utils import str2date
 
 
 class Share():
@@ -22,11 +19,11 @@ class Share():
         self.member: str = member
 
     def __str__(self) -> str:
-        return (f'(sclass: {self.sclass}, ' +
-                f'count: {self.count}, ' +
-                f'ticker: {self.ticker}, ' +
-                f'date: {self.date}, ' +
-                f'member: {self.member})')
+        return (f'{{"sclass": "{self.sclass}", ' +
+                f'"count": "{self.count}", ' +
+                f'"ticker": "{self.ticker}", ' +
+                f'"date": "{self.date}", ' +
+                f'"member": "{self.member}"}}')
 
     def __repr__(self) -> str:
         return self.__str__()
@@ -36,10 +33,10 @@ _CT = TypeVar('_CT')
 
 
 def check_shares(shares: Dict[str, List[_CT]]) -> bool:
-    for k, v in shares.items():
+    for _, v in shares.items():
         if len(v) > 1:
             return False
-    return (len(shares) > 0)
+    return len(shares) > 0
 
 
 def find_share_class(ttype: str) -> str:
@@ -47,8 +44,8 @@ def find_share_class(ttype: str) -> str:
     f = share_class.findall(ttype)
     if f:
         return cast(str, f[0].upper())
-    else:
-        return ''
+
+    return ''
 
 
 def find_com_pref(strs: List[str]) -> str:
@@ -165,9 +162,9 @@ def predict_ticker(share: Share, cik: int,
     possible = shares_reader.fetch_possible_ticker(
         cik, share.member)
     if len(possible) == 1:
-        return(possible[0][1])
-    else:
-        return('')
+        return possible[0][1]
+
+    return ''
 
 
 def join_sec_stocks_tickers(
@@ -198,14 +195,18 @@ def join_sec_stocks_tickers(
     return full_join
 
 
-if __name__ == '__main__':
-    cik = 1058290
-    adsh = '0001058290-20-000008'
+def main():
+    # cik = 1058290
+    # adsh = '0001058290-20-000008'
     r = MySQLShares()
 
     sec_shares = process_sec_shares(r.fetch_sec_shares('0001058290-20-000008'))
     tickers = process_tickers(r.fetch_tickers(1058290))
 
-    a = join_sec_stocks_tickers(sec_shares, tickers, 1058290, r)
+    join_sec_stocks_tickers(sec_shares, tickers, 1058290, r)
 
     print(sec_shares)
+
+
+if __name__ == '__main__':
+    pass

@@ -23,10 +23,10 @@ def load_fake_model(model_name: str):
         model = unittest.mock.MagicMock()
         model.predict.side_effect = predict_multi
         return model
-    else:
-        model = unittest.mock.MagicMock()
-        model.predict.side_effect = predict_single_ones
-        return model
+
+    model = unittest.mock.MagicMock()
+    model.predict.side_effect = predict_single_ones
+    return model
 
 
 class TestIndiPool(unittest.TestCase):

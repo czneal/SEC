@@ -41,8 +41,12 @@ class Settings(object):
         return Settings.__open()["root_dir"]
 
     @staticmethod
-    def host():
-        return Settings.__open()["host"]
+    def host() -> str:
+        return cast(str, Settings.__open()["host"])
+
+    @staticmethod
+    def port() -> int:
+        return cast(int, Settings.__open()["port"])
 
     @staticmethod
     def select_limit():
@@ -73,9 +77,25 @@ class Settings(object):
         return cast(int, Settings.__open()["n_proc"])
 
     @staticmethod
+    def n_proc_nasdaq() -> int:
+        return cast(int, Settings.__open()['n_proc_nasdaq'])
+
+    @staticmethod
     def server_address() -> str:
         return cast(str, Settings.__open()["server_address"])
 
     @staticmethod
     def form4_dir() -> str:
         return os.path.join(Settings.root_dir(), '3-4-5')
+
+    @staticmethod
+    def user() -> str:
+        return cast(str, Settings.__open()["user"])
+
+    @staticmethod
+    def password() -> str:
+        return cast(str, Settings.__open()["password"])
+
+    @staticmethod
+    def smtp_port() -> int:
+        return cast(int, Settings.__open()['smtp_port'])

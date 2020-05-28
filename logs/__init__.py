@@ -15,6 +15,7 @@ import sys
 import copy
 import traceback
 import re
+import os
 
 from queue import Empty
 from typing import Dict, Any, cast, Callable, Union, Optional, Tuple, List
@@ -186,25 +187,30 @@ class MyQueueHandler(logging.Handler):
                 record.exc_info)
             record.exc_info = None
 
-        self.queue.put_nowait(record)
+        # self.queue.put_nowait(record)
+        self.queue.put(record)
 
 
 def configure_handler(handler_name: str,
                       queue: Optional[multi.Queue] = None) -> logging.Handler:
-    assert handler_name in {'mysql', 'file', 'queue', 'silent'}
+    assert handler_name in {'mysql', 'file', 'queue', 'silent', 'console'}
 
     handler: logging.Handler
     if handler_name == 'mysql':
         handler = MySQLHandler()
     elif handler_name == 'file':
+        filename = utils.add_app_dir(
+            Settings.log_filename())
+
         handler = LocalHandler(
-            filename=utils.add_app_dir(
-                Settings.log_filename()))
+            filename=filename)
     elif handler_name == 'queue':
         assert queue is not None
         handler = MyQueueHandler(queue)
     elif handler_name == 'silent':
         handler = logging.NullHandler()
+    elif handler_name == 'console':
+        handler = logging.StreamHandler(stream=sys.stderr)
 
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -229,6 +235,7 @@ def configure(
         'file' - logs into local file with global.settings.log_filename
         'queue' - put log records into queue, queue argument should be set
         'silent' - logs nothing
+        'console' - logs to sys.stderr
     use_state
         True - use StateLogger for log record processing,
         before using logging should call StateLogger.set_state()
@@ -236,6 +243,11 @@ def configure(
     queue
         multiprocessing.Queue object to queue log records
     """
+
+    if CONFIGURED:
+        logger = get_logger(name=__name__)
+        logger.warning(msg='configured twice')
+        return
 
     if use_state:
         logging.setLoggerClass(klass=StateLogger)
@@ -248,9 +260,11 @@ def configure(
     globals()['CONFIGURED'] = True
 
 
-def get_logger(name: str = 'root') -> StateLogger:
+def get_logger(
+        name: str = 'root',
+        default_handler_name: str = 'silent') -> StateLogger:
     if not CONFIGURED:
-        configure('silent')
+        configure(default_handler_name)
 
     return cast(StateLogger, logging.getLogger(name))
 

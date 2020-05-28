@@ -4,7 +4,7 @@ from typing import List, Tuple, Union, Dict
 import indi.indcache
 import indi.types as T
 from indi.indpool import IndicatorsPool
-from indi.indicators import Indicator, IndicatorRestated
+from indi.indicators import IndicatorRestated
 from indi.indprocs import IndicatorProcedural
 
 

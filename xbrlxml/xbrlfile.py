@@ -1,25 +1,25 @@
 # -*- coding: utf-8 -*-
 
-import pandas as pd  # type: ignore
 import datetime as dt
 from collections import namedtuple
 from typing import Dict, Optional, Set
 
-import utils
+import pandas as pd  # type: ignore
+
 import logs
-import xbrlxml.xbrlfileparser as xbrlfp
+import utils
 import xbrlxml.truevalues as tv
-from xbrlxml.xsdfile import XSDFile, XSDChapter
-from xbrlxml.xbrlchapter import ReferenceParser, CalcChapter, Chapter
+import xbrlxml.xbrlfileparser as xbrlfp
+from xbrlxml.xbrlchapter import Chapter, ReferenceParser
 from xbrlxml.xbrlexceptions import XbrlException
 from xbrlxml.xbrlrss import FileRecord
 from xbrlxml.xbrlzip import XBRLZipPacket
-
+from xbrlxml.xsdfile import XSDChapter, XSDFile
 
 XbrlFiles = namedtuple('XbrlFiles', ['xbrl', 'xsd', 'pres', 'defi', 'calc'])
 
 
-class XbrlFile(object):
+class XbrlFile():
     def __init__(self):
         self.calc: Dict[str, Chapter] = {}
         self.defi: Dict[str, Chapter] = {}
@@ -90,8 +90,8 @@ class XbrlFile(object):
         self.cik = parser.parse_cik(self.root)
         if self.cik == 0:
             msg = "couldn't find CIK in report"
-            logger.error(msg=msg)
-            raise XbrlException(msg=msg)
+            logs.get_logger(__name__).error(msg=msg)
+            raise XbrlException(msg)
 
     def __read_scheme_files(self, files: XBRLZipPacket):
         """Read scheme files
@@ -108,7 +108,7 @@ class XbrlFile(object):
         except BaseException:
             msg = "couldn't read xbrl report without presentation scheme"
             logger.error(msg=msg)
-            raise XbrlException(msg=msg)
+            raise XbrlException(msg)
         try:
             self.xsd = XSDFile().read(files.xsd)
         except BaseException:
@@ -121,13 +121,12 @@ class XbrlFile(object):
             self.defi = rparser.parse(files.defi)
         except BaseException:
             logger.warning('missing definition scheme')
-            pass
+
         try:
             rparser.setreftype('calculation')
             self.calc = rparser.parse(files.calc)
         except BaseException:
             logger.warning('missing calculation scheme')
-            pass
 
     def __find_period(self, record: FileRecord):
         """Find period date

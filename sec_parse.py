@@ -5,6 +5,7 @@ import logs
 import mysqlio.basicio as do
 import mysqlio.xbrlfileio as xio
 import xbrlxml.dataminer as dm
+import glue
 from abstractions import Worker, Writer
 from mpc import MpcManager
 from settings import Settings
@@ -43,7 +44,7 @@ class Parser(Worker):
             return None
 
         try:
-            company = dm.prepare_company(self.miner, record)
+            company = dm.prepare_company(record)
             report = dm.prepare_report(self.miner, record)
             nums = dm.prepare_nums(self.miner)
             shares = dm.prepare_shares(self.miner)
@@ -124,7 +125,20 @@ def parse(method: str, after: dt.date, adsh: str = '') -> None:
     logger.revoke_state()
 
 
+def reparse():
+    with do.OpenConnection() as con:
+        cur = con.cursor()
+        cur.execute('truncate table xbrl_logs')
+        cur.execute('truncate table reports')
+        cur.execute('truncate table mgnums')
+        con.commit()
+
+    parse_mpc(method='all', after=dt.date(2013, 1, 1))
+    glue.attach_sec_shares_ticker()
+
+
 if __name__ == '__main__':
     # logs.configure('mysql', level=logs.logging.INFO)
     # parse('explicit', dt.date(2013, 1, 1), adsh='0000063754-15-000013')
-    parse_mpc('new', dt.date(2013, 1, 1))
+
+    reparse()

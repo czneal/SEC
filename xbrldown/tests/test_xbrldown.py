@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import unittest
-import unittest.mock as mock
 import os
 import shutil
 from parameterized import parameterized  # type: ignore
@@ -80,7 +79,7 @@ class TestProcs(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         if os.path.exists(cls.test_dir):
-            for i in range(10):
+            for _ in range(10):
                 try:
                     shutil.rmtree(make_absolute('res/tmp'))
                     break

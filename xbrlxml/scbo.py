@@ -5,21 +5,20 @@ impolement parser for forms 3, 4, 5 of SEC
 import json
 import datetime as dt
 import lxml.etree  # type: ignore
-from typing import (List, Dict, Optional, Callable,
-                    Tuple, Iterable, Any, cast, Union, IO)
-from collections import namedtuple
+from typing import (List, Dict, Optional,
+                    Iterable, cast, Union, IO)
 
 
 class UnitJsonEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, dt.date):
-            return (str(obj.year).zfill(4) + '-' +
-                    str(obj.month).zfill(2) + '-' +
-                    str(obj.day).zfill(2))
-        if isinstance(obj, Unit):
-            return obj.__dict__
-        else:
-            return json.JSONEncoder.default(super(), obj)
+    def default(self, o):
+        if isinstance(o, dt.date):
+            return (str(o.year).zfill(4) + '-' +
+                    str(o.month).zfill(2) + '-' +
+                    str(o.day).zfill(2))
+        if isinstance(o, Unit):
+            return o.__dict__
+
+        return json.JSONEncoder.default(super(), o)
 
 
 class Unit():
@@ -159,10 +158,11 @@ class Document(Unit):
         self.remarks = []
 
 
-class Parser(object):
+class Parser():
     def __init__(self):
         pass
 
+    @staticmethod
     def find(elem: lxml.etree._Element,
              tag_seq: Iterable[str]) -> lxml.etree._Element:
 
@@ -173,6 +173,7 @@ class Parser(object):
 
         return elem
 
+    @staticmethod
     def parse_str_strict(elem: lxml.etree._Element, tag: str) -> str:
         s = Parser.parse_str(elem, tag)
         if s is None:
@@ -180,6 +181,7 @@ class Parser(object):
 
         return s
 
+    @staticmethod
     def parse_str(elem: lxml.etree._Element, tag: str) -> Optional[str]:
         try:
             e = elem.find(tag).text.strip()
@@ -192,6 +194,7 @@ class Parser(object):
         except Exception:
             return None
 
+    @staticmethod
     def parse_footnote_ids(elem: lxml.etree._Element, tag: str) -> List[str]:
         ids: List[str] = []
         e = elem.find(tag)
@@ -203,22 +206,26 @@ class Parser(object):
 
         return ids
 
+    @staticmethod
     def parse_int_strict(elem: lxml.etree._Element, tag: str) -> int:
         v = Parser.parse_int(elem, tag)
         if v is None:
             raise KeyError(f'{tag} not found')
-        return v
 
+        return cast(int, v)
+
+    @staticmethod
     def parse_int(elem: lxml.etree._Element, tag: str) -> Optional[int]:
         try:
             v = Parser.parse_str(elem, tag)
             if v is not None:
                 return int(v)
-            else:
-                return None
+
+            return None
         except Exception:
             return None
 
+    @staticmethod
     def parse_bool(elem: lxml.etree._Element, tag: str) -> Optional[bool]:
         e = Parser.parse_str(elem, tag)
         if e is None:
@@ -236,6 +243,7 @@ class Parser(object):
 
         return None
 
+    @staticmethod
     def parse_bool_strict(elem: lxml.etree._Element, tag: str) -> bool:
         try:
             v = Parser.parse_bool(elem, tag)
@@ -246,40 +254,45 @@ class Parser(object):
 
         raise KeyError(f'{tag} not found')
 
+    @staticmethod
     def parse_float_strict(elem: lxml.etree._Element, tag: str) -> float:
         v = Parser.parse_float(elem, tag)
         if v is None:
             raise KeyError(f'{tag} not found')
         return v
 
+    @staticmethod
     def parse_float(elem: lxml.etree._Element, tag: str) -> Optional[float]:
         try:
             v = Parser.parse_str(elem, tag)
             if v is not None:
                 return float(v)
-            else:
-                return None
+
+            return None
         except Exception:
             return None
 
+    @staticmethod
     def parse_date_strict(elem: lxml.etree._Element, tag: str) -> dt.date:
         v = Parser.parse_date(elem, tag)
         if v is None:
             raise KeyError(f'{tag} not found')
-        else:
-            return v
 
+        return v
+
+    @staticmethod
     def parse_date(elem: lxml.etree._Element, tag: str) -> Optional[dt.date]:
         try:
             s = Parser.parse_str(elem, tag)
             if s is not None:
                 e = s.split('-')
                 return dt.date(int(e[0]), int(e[1]), int(e[2]))
-            else:
-                return None
+
+            return None
         except Exception:
             return None
 
+    @staticmethod
     def parse_footnotes(root: lxml.etree._Element) -> Dict[str, str]:
         elem = root.find('footnotes')
         notes: Dict[str, str] = {}
@@ -292,6 +305,7 @@ class Parser(object):
 
         return notes
 
+    @staticmethod
     def parse_issuer(issuer: lxml.etree._Element) -> Issuer:
         iss = Issuer()
 
@@ -302,6 +316,7 @@ class Parser(object):
 
         return iss
 
+    @staticmethod
     def parse_owner(owner: lxml.etree._Element) -> ReportingOwner:
         o = ReportingOwner()
         o.reportingOwnerId = Parser.parse_owner_id(
@@ -317,6 +332,7 @@ class Parser(object):
 
         return o
 
+    @staticmethod
     def parse_owner_id(owner_id: lxml.etree._Element) -> ReportingOwnerId:
         r = ReportingOwnerId()
         r.rptOwnerCik = Parser.parse_int_strict(owner_id, 'rptOwnerCik')
@@ -325,6 +341,7 @@ class Parser(object):
 
         return r
 
+    @staticmethod
     def parse_owner_relationship(
             rel: lxml.etree._Element) -> ReportingOwnerRelationship:
         r = ReportingOwnerRelationship()
@@ -344,9 +361,11 @@ class Parser(object):
 
         return r
 
+    @staticmethod
     def parse_address(address: lxml.etree._Element) -> str:
         return "unimplemented"
 
+    @staticmethod
     def parse_document(root: lxml.etree._Element) -> Document:
         d = Document()
 
@@ -390,6 +409,7 @@ class Parser(object):
 
         return d
 
+    @staticmethod
     def parse_transaction_coding(trans: lxml.etree._Element) \
             -> Optional[TransactionCoding]:
         elem = trans.find('transactionCoding')
@@ -405,14 +425,17 @@ class Parser(object):
 
         return tc
 
+    @staticmethod
     def parse_ownership_nature(trans: lxml.etree._Element) -> OwnershipNature:
         elem = Parser.find(trans, ['ownershipNature'])
         return Parser.parse_str_strict(elem, 'directOrIndirectOwnership')
 
+    @staticmethod
     def parse_tarnsaction_timeliness(trans: lxml.etree._Element) \
             -> Optional[TransactionTimeliness]:
         return Parser.parse_str(trans, 'transactionTimeliness')
 
+    @staticmethod
     def parse_transaction_amounts(
             trans: lxml.etree._Element) -> TransactionAmounts:
         elem = trans.find('transactionAmounts')
@@ -441,6 +464,7 @@ class Parser(object):
 
         return a
 
+    @staticmethod
     def parse_post_transaction_amounts(
             trans: lxml.etree._Element) -> PostTransactionAmounts:
         elem = trans.find('postTransactionAmounts')
@@ -455,6 +479,7 @@ class Parser(object):
 
         return a
 
+    @staticmethod
     def parse_nonderivative_transaction(
             trans: lxml.etree._Element) -> NonDerivativeTransaction:
         t = NonDerivativeTransaction()
@@ -471,6 +496,7 @@ class Parser(object):
 
         return t
 
+    @staticmethod
     def parse_underlying_security(
             trans: lxml.etree._Element) -> UnderlyingSecurity:
         elem = Parser.find(trans, ['underlyingSecurity'])
@@ -483,6 +509,7 @@ class Parser(object):
             elem, 'underlyingSecurityValue')
         return us
 
+    @staticmethod
     def parse_derivative_transaction(
             trans: lxml.etree._Element) -> DerivativeTransaction:
         t = DerivativeTransaction()
@@ -504,6 +531,7 @@ class Parser(object):
 
         return t
 
+    @staticmethod
     def parse_nonderivative_holding(hold: lxml.etree._Element) \
             -> NonDerivativeHolding:
         h = NonDerivativeHolding()
@@ -514,6 +542,7 @@ class Parser(object):
 
         return h
 
+    @staticmethod
     def parse_derivative_holding(hold: lxml.etree._Element) \
             -> DerivativeHolding:
         h = DerivativeHolding()
@@ -535,9 +564,13 @@ def open_document(filename_or_fileobject: Union[str, IO]) -> Document:
     return Parser.parse_document(root)
 
 
-if __name__ == '__main__':
+def main():
     from utils import add_app_dir
 
     d = open_document(add_app_dir("res/Forms 3-4-5 Schemes/doc4.xml"))
 
     print(d.derivativeTable[0])
+
+
+if __name__ == '__main__':
+    main()

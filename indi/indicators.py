@@ -1,21 +1,10 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Mar 19 12:29:38 2019
-
-@author: Asus
-"""
-
-import json
-import contextlib
-from abc import ABCMeta, abstractmethod
-from typing import Dict, List, Tuple, Optional, cast
+from typing import Dict, Optional
 
 from indi.modclass import Classifier
 from indi.feeder import Feeder
 from indi.types import Nums
 from indi.indprocs import Indicator
 from indi.indprocs import create as create_proc
-from utils import class_for_name
 from algos.calc import calc_indicator, calc_indicator_whole
 from algos.scheme import Chapters
 
@@ -41,7 +30,7 @@ class IndicatorRestated(Indicator):
         classes = self.classifier.predict(pairs)
         facts: Dict[str, float] = {}
         nums_fy = nums.get(fy, {})
-        for ((p, c), label) in filter(
+        for ((_, c), _) in filter(
             lambda x: x[1] == self.class_id, zip(
                 pairs, classes)):
             if c in nums_fy:
@@ -49,8 +38,8 @@ class IndicatorRestated(Indicator):
 
         if start_node is None:
             return calc_indicator_whole(start_chapter, facts)
-        else:
-            return calc_indicator(start_node, facts, used_tags=set())
+
+        return calc_indicator(start_node, facts, used_tags=set())
 
     def description(self) -> str:
         return 'indicator:{0}\nclass id: {1}\n{2}'.format(
@@ -76,12 +65,12 @@ def create(ind_name: str,
                                  classifier=classifiers[model_name],
                                  class_id=class_id,
                                  feeder=feeders[feeder_name])
-    elif type_ == 'static':
+    if type_ == 'static':
         return create_proc(name=ind_name)
-    elif type_ == 'dynamic':
+    if type_ == 'dynamic':
         return create_proc(name=ind_name)
-    else:
-        raise ValueError(f'bad indicator type: {type_}')
+
+    raise ValueError(f'bad indicator type: {type_}')
 
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
 import json
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import algos.scheme
 import algos.xbrljson
@@ -10,7 +10,7 @@ from xbrlxml.xbrlexceptions import XbrlException
 from xbrlxml.xbrlfile import XbrlFile
 
 
-class ChapterChooser(object):
+class ChapterChooser():
     """Choose only main seets from xbrl schemas
     """
 
@@ -66,7 +66,7 @@ class ChapterChooser(object):
         return self.mschapters
 
 
-class ContextChooser(object):
+class ContextChooser():
     """Choose context for specific roleuri
     """
 
@@ -79,8 +79,6 @@ class ContextChooser(object):
             msg = 'unable find context if chapter has not presentation view'
             logs.get_logger(__name__).error(msg=msg)
             raise XbrlException(msg)
-
-        defi = self.xbrlfile.defi.get(roleuri, pres)
 
         chdim = set(pres.dims())
         chcontexts = set([c.contextid
@@ -109,7 +107,7 @@ class ContextChooser(object):
         parent: Optional[Tuple[str, float]] = None
         top = (f.iloc[0]['context'], f.iloc[0]['cnt'])
 
-        for index, row in f.iterrows():
+        for _, row in f.iterrows():
             if nondim is None and not contexts[row['context']].isdimentional():
                 nondim = (row['context'], row['cnt'])
                 if nondim[1] / top[1] < thres:
@@ -133,7 +131,7 @@ class ContextChooser(object):
         return str(top[0])
 
 
-class ChapterExtender(object):
+class ChapterExtender():
     """Extend chapter calculation scheme
     """
 
@@ -158,8 +156,8 @@ class ChapterExtender(object):
                    (dfacts['context'] == context)]
         if f.shape[0] < len(tags):
             return False
-        else:
-            return True
+
+        return True
 
     def find_extentions(self, roleuri: str) -> List[str]:
         self.roleuri = roleuri

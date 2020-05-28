@@ -4,18 +4,18 @@ Created on Mon Jun  3 12:39:50 2019
 
 @author: Asus
 """
-import unittest
-import lxml
-import json
 import datetime as dt
 import os
+import unittest
+from typing import Set
+
+import lxml
 
 from utils import str2date
-from xbrlxml.xbrlfileparser import Fact, Context, Unit, FootNote
-from xbrlxml.xbrlfileparser import (XbrlParser, XbrlCleanUp,
-                                    to_float, to_decimals, default_decimals,
-                                    xbrltrans)
-from typing import Set, List
+from xbrlxml.xbrlfileparser import (Context, Fact, Unit, XbrlCleanUp,
+                                    XbrlParser, default_decimals, to_decimals,
+                                    to_float, xbrltrans)
+
 
 """
 Не парсит TextBlock z:/sec/2015/02/0001308606-0001308606-15-000029.zip
@@ -417,11 +417,13 @@ class TestXbrlParser(unittest.TestCase):
             self.assertDictEqual(facts[1].__dict__, f2)
 
             ids: Set[str] = set()
+            err: Set[str] = set()
             for f in facts:
                 if f.factid in ids:
-                    self.assertTrue(False, msg='duplicate fact id')
-                else:
-                    ids.add(f.factid)
+                    err.add(f.factid)
+                ids.add(f.factid)
+
+            self.assertTrue(len(err) == 0, msg=f'duplicate fact ids {err}')
 
     def test_parse_units(self):
         parser = XbrlParser()
@@ -499,7 +501,6 @@ class TestXbrlCleanUp(unittest.TestCase):
             self.assertEqual(len(new_facts), 3124)
             self.assertEqual(len(fn), 6)
             self.assertEqual(len(new_fn), 6)
-            pass
 
     def test_clean(self):
         parser = XbrlParser()
@@ -516,7 +517,7 @@ class TestXbrlCleanUp(unittest.TestCase):
             new_facts = xbrltrans.transform_facts(facts)
             new_fn = xbrltrans.transform_fn(new_facts, fn)
 
-            f, u, c, ffn = xbrl_clean.cleanup(
+            f, u, c, _ = xbrl_clean.cleanup(
                 new_facts, units, contexts, new_fn)
 
             self.assertEqual(len(facts), 3135)

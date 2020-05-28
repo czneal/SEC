@@ -9,6 +9,7 @@ import os
 import zipfile
 import pandas as pd
 import lxml
+import json
 
 from typing import Optional, Dict, cast
 
@@ -26,7 +27,7 @@ class DefaultTaxonomy():
                 Dict[str, CalcChapter], algos.xbrljson.loads(f.read()))
 
     def calcscheme(self, sheet: str, year: int) -> CalcChapter:
-        assert sheet in {'bs', 'cf', 'is'}
+        assert sheet in {'bs', 'cf', 'is', 'se'}
 
         return self.chapters[sheet]
 
@@ -58,10 +59,8 @@ class Taxonomy(object):
                             os.path.dirname(xsd_filename) + '/' +
                             row['cal_filename'])
                         chapters = parser.parse(cal_file)
-                        for roleuri, ch in chapters.items():
-                            row['structure'] = json.dumps(
-                                ch,
-                                cls=algos.xbrljson.ForDBJsonEncoder)
+                        for _, ch in chapters.items():
+                            row['structure'] = algos.xbrljson.dumps(ch)
                             data.append(row)
             self.taxonomy = pd.DataFrame(data)
         except Exception:
@@ -84,7 +83,7 @@ class Taxonomy(object):
         return True
 
 
-class SchemeXSD(object):
+class SchemeXSD():
     def __init__(self):
         self.cal_filenames = []
         self.doc = []
@@ -123,8 +122,8 @@ class SchemeXSD(object):
                     flags=re.I),
                 flags=re.I) for d in doc.text.strip().split('\n') if ms.match(d)]
 
-        sfp = re.compile('.*Statement.*Financial.*Position.*', flags=re.I)
-        scf = re.compile('.*Statement.*Cash.*Flow.*', flags=re.I)
+        sfp = re.compile(r'.*Statement.*Financial.*Position.*', flags=re.I)
+        scf = re.compile(r'.*Statement.*Cash.*Flow.*', flags=re.I)
         soi = re.compile(r'.*Statement\s+of\s+Income*.', flags=re.I)
         soc = re.compile(r'.*Statement.*Comprehensive\s+Income.*', flags=re.I)
         sfpre = {

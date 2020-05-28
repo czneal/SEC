@@ -12,7 +12,7 @@ import datetime as dt
 import json
 
 from bs4 import BeautifulSoup  # typing: ignore
-from typing import Tuple, Dict, Optional, Union, cast
+from typing import Tuple, Dict, Union, cast
 
 import logs
 
@@ -179,8 +179,7 @@ def stock_data_info_summary(info: dict, summary: dict) -> StockData:
 
     primary_date = date_from_timestamp(select_data(
         info, ['data', 'primaryData', 'lastTradeTimestamp']))
-    secondary_date = date_from_timestamp(select_data(
-        info, ['data', 'secondaryData', 'lastTradeTimestamp']))
+
     market_status = select_data(
         info, ['data', 'marketStatus'])
     retval['market_status'] = market_status
@@ -259,7 +258,7 @@ def last_price(ticker: str) -> Tuple[float, float, float]:
 
         high_low = bs.find(text=re.compile('.*today.+high.+low.*', re.I))
         p = high_low.find_next('div', text=re.compile(
-            '.*\d+.?\d*\s+/.*\d+.?\d*.*')).text
+            r'.*\d+.?\d*\s+/.*\d+.?\d*.*')).text
         pp = re.findall(r'(\d+\.?\d*)', p)
         high = float(pp[0])
         low = float(pp[1])
@@ -308,7 +307,7 @@ def attach() -> pd.DataFrame:
     pb.start(new[new['checked'] == 0].shape[0])
 
     print('search SEC for new tickers')
-    for ticker, row in new[new['checked'] == 0].iterrows():
+    for ticker, _ in new[new['checked'] == 0].iterrows():
         cik = get_cik_by_ticker(ticker)
         if cik:
             new.loc[ticker, ['cik', 'checked']] = (cik, 0)
@@ -344,5 +343,8 @@ def stocks_convert(row: pd.Series) -> pd.Series:
 
 
 if __name__ == '__main__':
-    nasdaq = attach()
+    logs.configure('mysql')
+    logs.logging.getLogger(name='urllib3').setLevel(logs.logging.DEBUG)
+
+    data = stock_data('X')
     print()

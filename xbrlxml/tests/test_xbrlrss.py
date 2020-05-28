@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import unittest
 import datetime
-import lxml
 import os
+import unittest
+
+import lxml
 
 import xbrlxml.xbrlrss
 

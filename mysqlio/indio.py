@@ -1,16 +1,12 @@
-from typing import Dict, Any, List, Tuple, cast
-from mysqlio.basicio import InternalError
+from typing import Any, Dict, List, Tuple, cast
 
 import indi.indinfo as I
-import indi.indcache as C
-
-from indi.types import Nums, Facts
 from algos.scheme import Chapters
 from algos.xbrljson import loads
-from utils import retry
+from indi.types import Facts, Nums
 from mysqlio.basicio import MySQLTable
-from mysqlio.writers import MySQLWriter
 from mysqlio.readers import MySQLReader
+from mysqlio.writers import MySQLWriter
 
 
 class IndicatorsWriter(MySQLWriter):
@@ -36,14 +32,14 @@ class IndicatorsWriter(MySQLWriter):
         self.write_to_table(self.classifier_pairs, pairs)
 
     def truncate(self) -> None:
-        truncate_tables = """
-        truncate table ind_proc_info;
-        truncate table ind_rest_info;
-        truncate table ind_classified_pairs;
-        truncate table indicators;
-        """
-        for result in self.cur.execute(truncate_tables, multi=True):
-            pass
+        truncate_tables = [
+            'truncate table ind_proc_info',
+            'truncate table ind_rest_info',
+            'truncate table ind_classified_pairs',
+            'truncate table indicators']
+
+        for statement in truncate_tables:
+            self.cur.execute(statement)
 
         self.flush()
 
@@ -161,5 +157,4 @@ where adsh = %(adsh)s
 """
 
 if __name__ == '__main__':
-    iw = IndicatorsWriter()
-    iw.truncate()
+    pass

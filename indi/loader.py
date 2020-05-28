@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import os
-from typing import Dict, Tuple, Optional, Any, List
+from typing import Dict, List
 
 import indi.modclass
 from indi.modclass import Classifier

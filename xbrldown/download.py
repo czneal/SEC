@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 import os
-from typing import Dict, Tuple, Optional
-from bs4 import BeautifulSoup
-import lxml.etree
 import xml.etree.ElementTree as ET
-
 from exceptions import XbrlException
+from typing import Dict, Optional, Tuple
+
+import lxml.etree
+from bs4 import BeautifulSoup
+
+from urltools import fetch_urlfile, fetch_with_delay
+from utils import add_root_dir, posix_join, year_month_dir
 from xbrlxml.xbrlzip import XBRLZipPacket
-from urltools import fetch_with_delay, fetch_urlfile
-from utils import clear_dir, add_root_dir, year_month_dir, posix_join
-from settings import Settings
 
 
 def download_files_from_sec(

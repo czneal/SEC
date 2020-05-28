@@ -4,7 +4,7 @@ import datetime
 import re
 import json
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, List, Tuple, Union, Optional, cast
+from typing import Any, Dict, List, Tuple, Optional
 
 import pandas as pd
 
@@ -29,7 +29,7 @@ class SharesFilter():
     def filter_shares_context(context: Context) -> bool:
         if len(context.dim) == 1:
             return True
-        if (len(context.dim) == 2):
+        if len(context.dim) == 2:
                 # and SharesFilter.share_types.match(
                     # cast(str, context.member[1]))):
             return True
@@ -56,6 +56,8 @@ class DataMiner(metaclass=ABCMeta):
         self.sheet_context: Dict[str, str] = {}  # {roleuri: context}
         self.numeric_facts: Optional[pd.DataFrame] = None
         self.shares_facts: Optional[pd.DataFrame] = None
+
+        self.new_facts: Optional[pd.DataFrame] = None
 
     def _prerequisites(self, func: str) -> None:
         logger = logs.get_logger(__name__)
@@ -214,10 +216,10 @@ class DataMiner(metaclass=ABCMeta):
             if self.sheets.mschapters and self.xbrlfile.any_gaap_fact():
                 logger.error(msg="couldnt find any facts to write")
                 raise XbrlException("couldnt find any facts to write")
-            else:
-                logger.warning(msg="couldn't find any us-gaap fact")
-                self.numeric_facts = None
-                return
+
+            logger.warning(msg="couldn't find any us-gaap fact")
+            self.numeric_facts = None
+            return
 
         self.numeric_facts = pd.concat(frames, ignore_index=True, sort=False)
         self.numeric_facts = self.numeric_facts[
@@ -302,7 +304,7 @@ class DataMiner(metaclass=ABCMeta):
         shares = shares[(shares['edate'] == context.edate) &
                         (shares['sdate'] == context.sdate)]
 
-        for index, row in shares.iterrows():
+        for _, row in shares.iterrows():
             context = self.xbrlfile.contexts[row['context']]
             if SharesFilter.filter_shares_context(context):
                 data.append([self.adsh,
@@ -356,7 +358,7 @@ class DataMiner(metaclass=ABCMeta):
         shares = shares[shares['uom'] == 'shares']
         shares = shares[shares['edate'] == self.xbrlfile.period]
 
-        for index, row in shares.iterrows():
+        for _, row in shares.iterrows():
             context = self.xbrlfile.contexts[row['context']]
             if SharesFilter.filter_shares_context(context):
                 member = context.member[-1]
@@ -424,8 +426,6 @@ class DataMiner(metaclass=ABCMeta):
         self.adsh = record.adsh
         self.zip_filename = zip_filename
 
-        logger = logs.get_logger(__name__)
-
     @abstractmethod
     def do_job(self):
         pass
@@ -469,14 +469,6 @@ class SharesDataMiner(DataMiner):
         self._gather_shares_facts()
 
 
-class ChapterNamesMiner(DataMiner):
-    def do_job(self):
-        self.xbrlfile.read_units_facts_fn()
-
-        self._choose_shares_sheets()
-        self._gather_shares_facts()
-
-
 def prepare_report(miner: DataMiner, record: FileRecord) -> Dict[str, Any]:
     file_link = remove_root_dir(miner.zip_filename)
     report = {'adsh': record.adsh,
@@ -504,7 +496,7 @@ def prepare_shares(miner: DataMiner) -> Optional[pd.DataFrame]:
     return miner.shares_facts
 
 
-def prepare_company(miner: DataMiner, record: FileRecord) -> Dict[str, Any]:
+def prepare_company(record: FileRecord) -> Dict[str, Any]:
     company = {'company_name': record.company_name,
                'sic': record.sic,
                'cik': record.cik,

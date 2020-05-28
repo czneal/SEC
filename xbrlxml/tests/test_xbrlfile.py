@@ -3,14 +3,11 @@
 import unittest
 import unittest.mock
 import datetime as dt
-import pandas as pd
 
 from xbrlxml.xbrlfile import XbrlFile
 from xbrlxml.xbrlfileparser import Context
 from xbrlxml.xbrlfile import XbrlFiles
 from xbrlxml.xbrlfile import XbrlException
-from xbrlxml.xbrlchapter import Chapter
-from xbrlxml.xsdfile import XSDChapter
 from xbrlxml.xbrlrss import FileRecord
 
 

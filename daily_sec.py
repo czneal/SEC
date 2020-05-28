@@ -10,9 +10,12 @@ import os
 import sec_parse
 import glue
 import logs
+import mysqlio.basicio
 
 
 def main() -> None:
+#    mysqlio.basicio.activate_test_mode()
+
     logs.configure('mysql', level=logs.logging.INFO)
 
     d = datetime.datetime.now()

@@ -6,8 +6,6 @@ Created on Thu May 16 17:30:10 2019
 """
 
 import unittest
-import json
-import datetime as dt
 
 from bs4 import BeautifulSoup
 

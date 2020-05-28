@@ -72,7 +72,6 @@ def find_form_link(rpt_url: str) -> str:
     for node in soup.find_all('a'):
         link = node.get('href')
 
-        lower = link.lower()
         if node.text.lower().endswith('.xml'):
             files.append(link)
 
@@ -209,7 +208,7 @@ def download_mpc(ciks: List[int]):
                   n_procs=16)
 
 
-if __name__ == '__main__':
+def main():
     reader = FormReader()
     ciks = reader.fetch_nasdaq_ciks()
     # ciks = [3116]
@@ -218,3 +217,7 @@ if __name__ == '__main__':
     # download(ciks[:20], days_ago=365 * 7)
 
     # compress()
+
+
+if __name__ == '__main__':
+    main()

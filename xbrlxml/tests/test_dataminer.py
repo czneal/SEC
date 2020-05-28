@@ -2,14 +2,12 @@ import unittest
 import unittest.mock
 import os
 import json
-import datetime
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Set
 
 import xbrlxml.dataminer
 from xbrlxml.xbrlchapter import CalcChapter
-from xbrlxml.xbrlrss import record_from_str
-from utils import add_app_dir, add_root_dir, remove_root_dir
+from utils import remove_root_dir
 from mysqlio.basicio import MySQLTable, open_connection
 from tests.helper import read_report
 
@@ -70,14 +68,14 @@ class TestConsistence(unittest.TestCase):
     @unittest.skipIf(MYDEBUG, 'debug')
     def test_calc_from_dim_fail(self):
         adsh = '0000037996-16-000092'
-        dm, record, r = read_report(adsh)
+        _, _, r = read_report(adsh)
 
         self.assertTrue(r)
 
     @unittest.skipIf(MYDEBUG, 'debug')
     def test_NetIncomeLoss_fail(self):
         adsh = '0001564590-18-002832'
-        dm, record, r = read_report(adsh)
+        dm, _, r = read_report(adsh)
         self.assertTrue(r)
 
         df = dm.numeric_facts
@@ -129,7 +127,7 @@ class TestConsistence(unittest.TestCase):
         res_dir = make_absolute('res/backward')
 
         adshs: Set[str] = set()
-        for root, dirs, filenames in os.walk(res_dir):
+        for _, _, filenames in os.walk(res_dir):
             for filename in filenames:
                 adshs.add(filename[:20])
 
@@ -141,7 +139,7 @@ class TestConsistence(unittest.TestCase):
                 with open(os.path.join(res_dir, adsh + '.facts')) as f:
                     facts: Dict[str, float] = json.load(f)
 
-                dm, record, r = read_report(adsh)
+                dm, _, r = read_report(adsh)
                 self.assertTrue(r)
 
                 msg = self.check_facts(dm, facts)
@@ -150,7 +148,7 @@ class TestConsistence(unittest.TestCase):
     @unittest.skipIf(MYDEBUG, 'debug')
     def test_find_proper_company_name(self):
         adsh = '0000065100-13-000016'
-        dm, record, result = read_report(adsh)
+        _, record, result = read_report(adsh)
         self.assertTrue(result, msg=f'fail to load report {adsh}')
 
         self.assertEqual(record.cik, 1051829)
@@ -164,7 +162,7 @@ class TestConsistence(unittest.TestCase):
                 logger = unittest.mock.MagicMock()
                 get_logger.return_value = logger
                 adsh = '0001387131-19-002347'
-                dm, record, result = read_report(adsh)
+                dm, _, result = read_report(adsh)
                 self.assertTrue(result, msg=f'fail to load report {adsh}')
 
                 logger.warning.assert_has_calls(
@@ -175,7 +173,7 @@ class TestConsistence(unittest.TestCase):
                 logger = unittest.mock.MagicMock()
                 get_logger.return_value = logger
                 adsh = '0001104659-19-011995'
-                dm, record, result = read_report(adsh)
+                dm, _, result = read_report(adsh)
                 self.assertTrue(result, msg=f'fail to load report {adsh}')
 
                 logger.warning.assert_has_calls(
@@ -183,7 +181,7 @@ class TestConsistence(unittest.TestCase):
 
         with self.subTest('success'):
             adsh = '0001652044-19-000004'
-            dm, record, result = read_report(adsh)
+            dm, _, result = read_report(adsh)
 
             self.assertTrue(result, msg=f'fail to load report {adsh}')
             self.assertEqual(dm.shares_facts.shape, (3, 6))
@@ -195,7 +193,7 @@ class TestConsistence(unittest.TestCase):
                 logger = unittest.mock.MagicMock()
                 get_logger.return_value = logger
                 adsh = '0001477932-20-000261'
-                dm, record, result = read_report(adsh)
+                _, _, result = read_report(adsh)
                 self.assertTrue(result, msg=f'fail to load report {adsh}')
 
                 logger.warning.assert_called()
@@ -212,7 +210,7 @@ class TestConsistence(unittest.TestCase):
                 logger = unittest.mock.MagicMock()
                 get_logger.return_value = logger
                 adsh = '0001493152-20-000510'
-                dm, record, result = read_report(adsh)
+                _, _, result = read_report(adsh)
                 self.assertTrue(result, msg=f'fail to load report {adsh}')
 
                 logger.warning.assert_called()
@@ -229,7 +227,7 @@ class TestConsistence(unittest.TestCase):
                 logger = unittest.mock.MagicMock()
                 get_logger.return_value = logger
                 adsh = '0001005276-19-000018'
-                dm, record, result = read_report(adsh)
+                _, _, result = read_report(adsh)
                 self.assertTrue(result, msg=f'fail to load report {adsh}')
 
                 logger.warning.assert_any_call(
@@ -274,7 +272,7 @@ class TestPrepare(unittest.TestCase):
     def test_prepare_nums(self):
         adsh = '0000065100-13-000016'
         with self.subTest(adsh=adsh):
-            dm, record, result = read_report(adsh)
+            dm, _, result = read_report(adsh)
             self.assertTrue(result, msg=f'fail to load report {dm.adsh}')
 
             nums = xbrlxml.dataminer.prepare_nums(dm)
@@ -291,7 +289,7 @@ class TestPrepare(unittest.TestCase):
             dm, record, result = read_report(adsh)
             self.assertTrue(result, msg=f'fail to load report {dm.adsh}')
 
-            company = xbrlxml.dataminer.prepare_company(dm, record)
+            company = xbrlxml.dataminer.prepare_company(record)
             con = open_connection()
             table = MySQLTable('companies', con)
             con.close()
@@ -302,7 +300,7 @@ class TestPrepare(unittest.TestCase):
     def test_prepare_share(self):
         adsh = '0001652044-19-000004'
         with self.subTest(adsh=adsh):
-            dm, record, result = read_report(adsh)
+            dm, _, result = read_report(adsh)
             self.assertTrue(result, msg=f'fail to load report {dm.adsh}')
 
             shares = xbrlxml.dataminer.prepare_shares(dm)

@@ -1,9 +1,9 @@
-from typing import List, Tuple, Optional, cast, Dict, Iterator, Union
+from typing import List, Tuple, Optional, cast, Iterator, Union
 from algos.scheme import Chapters, Node, Chapter, enum_filtered, enum
 from indi.modclass import Classifier
 
 
-class Feeder(object):
+class Feeder():
     def __init__(self, chapter: str, names: List[str], strict: bool):
         self.chapter = chapter
         self.names = names.copy()
@@ -79,7 +79,6 @@ class Feeder(object):
             start = node
 
         pairs: List[Tuple[str, str]] = []
-        names: List[str] = []
         for p, c in self._custom_filter(start):
             pairs.append((p, c))
         return pairs
@@ -106,10 +105,7 @@ class ClassFeeder(Feeder):
         self.cl_id = cl_id
 
     def stop(self, p: str, c: str) -> bool:
-        if self.cl.predict([(p, c)])[0] == 0:
-            return True
-        else:
-            return False
+        return bool(self.cl.predict([(p, c)])[0] == 0)
 
     def _custom_filter(
             self, start: Union[Node, Chapter]) -> Iterator[Tuple[str, str]]:
@@ -129,5 +125,5 @@ def create(chapter: str,
 
     if cl is None:
         return Feeder(chapter, names, strict)
-    else:
-        return ClassFeeder(chapter, names, strict, cl, cl_id)
+
+    return ClassFeeder(chapter, names, strict, cl, cl_id)

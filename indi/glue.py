@@ -3,7 +3,6 @@ from typing import List, Dict, Any
 import indi.indinfo as info
 import indi.types
 
-from indi.indpool import IndicatorsPool
 from indi.loader import load
 from mysqlio.indio import MySQLIndicatorFeeder, IndicatorsWriter
 from utils import ProgressBar
