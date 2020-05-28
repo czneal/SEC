@@ -2,7 +2,7 @@ import atexit
 import logs
 import datetime as dt
 
-from typing import Dict, List, Any, Tuple, cast
+from typing import Dict, List, Any, Tuple, cast, Iterable, Union
 
 import mysqlio.basicio as do
 
@@ -15,7 +15,9 @@ class MySQLReader():
         atexit.register(self.close)
 
     def fetch(self, query: str,
-              params: Dict[str, Any] = {}) -> List[Dict[str, Any]]:
+              params: Union[
+                  Dict[str, Any],
+                  List[Any]] = {}) -> List[Dict[str, Any]]:
         try:
             self.con.commit()
             if params:
@@ -29,6 +31,29 @@ class MySQLReader():
                 'error while execute sql statement',
                 exc_info=True)
             return []
+
+    def fetch_in(
+            self,
+            query: str,
+            params: List[Any],
+            params_in: Iterable[Any]) -> List[Dict[str, Any]]:
+        """fetches data form MySQL table
+        params: list of positional params
+        params_in: iterable of params used as MySQL in clause
+        query should contains __in__ marker to insert (params_in[0], params_in[1], ...)
+        """
+
+        params_in = list(params_in)
+
+        if len(params_in) == 0:
+            return self.fetch(query.replace('__in__', ' '), params)
+
+        assert('__in__' in query)
+
+        template = ', '.join('%s' for _ in range(len(params_in)))
+        query = query.replace('__in__', template)
+
+        return self.fetch(query, params + params_in)
 
     def close(self) -> None:
         try:

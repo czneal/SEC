@@ -1,47 +1,23 @@
 import datetime as dt
 import json
 
+from typing import List, Dict, Any, cast, Set, Iterator, Tuple, Union, Optional
 from abc import ABCMeta, abstractmethod
-from typing import List, Dict, Any, cast
 
-from mysqlio.readers import MySQLReader
 from algos.xbrljson import ForDBJsonEncoder
+from mailer.readers import LogReader, MailerInfoReader
 
 
-class LogReader(MySQLReader):
-    def fetch_errors(self,
-                     day: dt.date,
-                     log_table: str,
-                     levelname: str,
-                     msg: str) -> List[Dict[str, Any]]:
-        assert(log_table in ('logs_parse', 'xbrl_logs'))
+def process_data(data: List[Dict[str, Any]],
+                 json_field: str) -> List[Dict[str, Any]]:
 
-        query = f"""
-        select id, created, state, module, msg, extra
-        from {log_table}
-        where created >= %(end)s
-            and created <= %(start)s
-        """
-        params: Dict[str, Any] = {'start': day + dt.timedelta(days=1),
-                                  'end': day}
-        if levelname != '':
-            params['levelname'] = levelname
-            query += "and levelname = %(levelname)s"
-        if msg != '':
-            params['msg'] = msg
-            query += "and msg like concat('%', %(msg)s, '%')"
-
-        data = self.fetch(query, params)
-
-        return data
-
-
-def process_data(data: List[Dict[str, Any]]) -> None:
-    """modify data argument, convert 'extra' field from str to dict"""
-
+    d: List[Dict[str, Any]] = []
     for row in data:
-        if row['extra'] != '':
-            row['extra'] = json.loads(row['extra'])
+        if row[json_field] != '':
+            new_row = row.copy()
+            new_row[json_field] = json.loads(row[json_field])
+            d.append(new_row)
+    return d
 
 
 def make_parse_error_msg(
@@ -55,7 +31,7 @@ def make_parse_error_msg(
         log_table=log_table,
         levelname=levelname,
         msg=msg)
-    process_data(data)
+    data = process_data(data, json_field='extra')
 
     r.close()
 
@@ -97,6 +73,307 @@ def make_parse_info(day: dt.date) -> str:
     return msg
 
 
+class MailerList():
+    def __init__(self):
+        self.subscribers: Dict[str,
+                               List[Tuple[Subscription, InfoRequest]]] = {}
+
+        self.subscriptions: List[Subscription] = []
+
+        self.formatter = JsonFormatter()
+
+        self.subscriptions.append(
+            Subscription(
+                data_bank=StocksInfo(),
+                formatter=self.formatter)
+        )
+        self.subscriptions.append(
+            Subscription(
+                data_bank=DividentsInfo(),
+                formatter=self.formatter)
+        )
+        self.subscriptions.append(
+            Subscription(
+                data_bank=SharesInfo(),
+                formatter=self.formatter)
+        )
+
+        self.naming = {'stocks': 0,
+                       'dividents': 1,
+                       'shares': 2,
+                       }
+        self.request_class = {0: StocksRequest,
+                              1: DivRequest,
+                              2: SharesRequest,
+                              3: ReportsRequest,
+                              }
+
+    def read_metadata(self):
+        self.subscribers = {}
+
+        r = MailerInfoReader()
+        mlist = r.fetch_mailer_list()
+        r.close()
+
+        mlist = process_data(mlist, json_field='metadata')
+
+        for row in mlist:
+            index = self.naming.get(row['subscription'], -1)
+            if index == -1:
+                continue
+
+            request = self.request_class[index](row['metadata'])
+            self.subscriptions[index].data_bank.append_request(request)
+
+            self.subscribers.setdefault(
+                row['email'],
+                []).append(
+                (self.subscriptions[index], request))
+
+    def read_data(self, day: dt.date):
+        for sub in self.subscriptions:
+            sub.read_data(day)
+
+    def get_messages(self) -> Iterator[Tuple[str, str]]:
+        for subscriber, subscriptions in self.subscribers.items():
+            msg = "\n".join([sub.get_message(request)
+                             for sub, request in subscriptions])
+            yield subscriber, msg
+
+
+class InfoRequest(metaclass=ABCMeta):
+    @abstractmethod
+    def __init__(self, metadata: Any):
+        pass
+
+
+class StocksRequest(InfoRequest):
+    def __init__(self, metadata: Any):
+        self.data: Dict[str, Tuple[float, float]] = metadata.copy()
+
+
+class DivRequest(InfoRequest):
+    def __init__(self, metadata: Any):
+        self.data: List[str] = metadata.copy()
+
+
+class SharesRequest(InfoRequest):
+    def __init__(self, metadata: Any):
+        self.tickers: List[str] = [ticker for ticker in metadata]
+
+
+class ReportsRequest(InfoRequest):
+    def __init__(self, metadata: Any):
+        self.ciks: Dict[int, str] = {int(cik): form for cik, form in metadata}
+
+
+class InfoResponse():
+    def __init__(self):
+        self.data: List[Dict[str, Any]] = []
+
+
+class StocksResponse(InfoResponse):
+    def __init__(self):
+        self.data: List[Dict[str, Union[str, float]]] = []
+
+
+class DivResponse(InfoResponse):
+    def __init__(self):
+        self.data: List[Dict[str, Union[str, dt.date, float, None]]] = []
+
+
+class SubscriptionInfo(metaclass=ABCMeta):
+    @abstractmethod
+    def reset(self):
+        pass
+
+    @abstractmethod
+    def append_request(self, request: InfoRequest):
+        pass
+
+    @abstractmethod
+    def read(self, day: dt.date):
+        pass
+
+    @abstractmethod
+    def get_info(self, request: InfoRequest) -> InfoResponse:
+        pass
+
+
+class StocksInfo(SubscriptionInfo):
+    def __init__(self):
+        self.tickers: Set[str] = set()
+        self.data: Dict[str, float] = {}
+
+    def reset(self):
+        self.tickers = set()
+        self.data = {}
+
+    def append_request(self, request: InfoRequest):
+        request = cast(StocksRequest, request)
+        self.tickers.update([ticker.upper() for ticker in request.data.keys()])
+
+    def read(self, day: dt.date):
+        r = MailerInfoReader()
+        data = r.fetch_stocks_info(day=day, tickers=self.tickers)
+        r.close()
+
+        for row in data:
+            self.data[row['ticker'].upper()] = float(row['close'])
+
+    def get_info(self, request: InfoRequest) -> InfoResponse:
+        request = cast(StocksRequest, request)
+
+        response = StocksResponse()
+        for ticker, [low, high] in request.data.items():
+            ticker = ticker.upper()
+            if ticker not in self.data:
+                continue
+            close = self.data[ticker]
+            if close >= high:
+                response.data.append({'ticker': ticker,
+                                      'close': close,
+                                      'more than': high})
+            if close <= low:
+                response.data.append({'ticker': ticker,
+                                      'close': close,
+                                      'less than': low})
+
+        return response
+
+
+class DividentsInfo(SubscriptionInfo):
+    def __init__(self):
+        self.tickers: Set[str] = set()
+        self.data: Dict[str, Dict[str, dt.date, float, None]] = {}
+
+    def reset(self):
+        self.tickers = set()
+        self.data = {}
+
+    def append_request(self, request: InfoRequest):
+        request = cast(DivRequest, request)
+        self.tickers.update([ticker.upper() for ticker in request.data])
+
+    def read(self, day: dt.date):
+        r = MailerInfoReader()
+        data = r.fetch_dividents_info(day=day, tickers=self.tickers)
+        r.close()
+
+        for row in data:
+            try:
+                amount: Optional[float] = float(row['amount'])
+            except ValueError:
+                amount = None
+
+            self.data[row['ticker'].upper()] = {
+                'payment_date': row['payment_date'],
+                'record_date': row['record_date'],
+                'declaration_date': row['declaration_date'],
+                'ex_eff_date': row['ex_eff_date'],
+                'type': row['type'],
+                'amount': amount}
+
+    def get_info(self, request: InfoRequest) -> DivResponse:
+        request = cast(DivRequest, request)
+
+        response = DivResponse()
+        for ticker in request.data:
+            ticker = ticker.upper()
+            if ticker not in self.data:
+                continue
+
+            d: Dict[str, Union[str, dt.date, float, None]] = {'ticker': ticker}
+            d.update(self.data[ticker])
+            response.data.append(d)
+
+        return response
+
+
+class SharesInfo(SubscriptionInfo):
+    def __init__(self):
+        self.tickers: Set[str] = set()
+        self.data: Dict[str, Tuple[float, float, float]] = {}
+
+    def reset(self):
+        self.tickers = set()
+        self.data = {}
+
+    def append_request(self, request: InfoRequest):
+        request = cast(SharesInfo, request)
+        self.tickers.update([ticker.upper() for ticker in request.tickers])
+
+    def read(self, day: dt.date):
+        r = MailerInfoReader()
+        for ticker in self.tickers:
+            data = r.fetch_shares_info(day=day, ticker=ticker)
+
+            if len(data) != 2:
+                continue
+
+            if data[0]['trade_date'] != day:
+                continue
+
+            shares_now = float(data[0]['shares'])
+            shares_pre = float(data[1]['shares'])
+            diff = shares_now - shares_pre
+
+            self.data[ticker] = (shares_now, shares_pre, diff)
+
+        r.close()
+
+    def get_info(self, request: InfoRequest) -> InfoResponse:
+        request = cast(SharesRequest, request)
+
+        response = InfoResponse()
+
+        for ticker in request.tickers:
+            ticker = ticker.upper()
+            if ticker not in self.data:
+                continue
+            shares_now, shares_pre, diff = self.data[ticker]
+
+            d = {'ticker': ticker,
+                 'shares_now': shares_now,
+                 'shares_pre': shares_pre,
+                 'change': diff, }
+            response.data.append(d)
+
+        return response
+
+
+class InfoFormatter(metaclass=ABCMeta):
+    @abstractmethod
+    def format_message(self, response: InfoResponse) -> str:
+        pass
+
+
+class JsonFormatter(InfoFormatter):
+    def format_message(self, response: InfoResponse) -> str:
+        return json.dumps(response.data, cls=ForDBJsonEncoder, indent=2)
+
+
+class Subscription():
+    def __init__(self,
+                 data_bank: SubscriptionInfo,
+                 formatter: InfoFormatter):
+
+        self.data_bank = data_bank
+        self.formatter = formatter
+
+    def read_data(self, day: dt.date):
+        self.data_bank.read(day)
+
+    def get_message(self, request: InfoRequest) -> str:
+        response = self.data_bank.get_info(request)
+
+        return self.formatter.format_message(response)
+
+
 if __name__ == "__main__":
-    inf = make_parse_info(day=dt.date(2020, 5, 21))
-    print(inf)
+    mail_list = MailerList()
+    mail_list.read_metadata()
+    mail_list.read_data(dt.date(2020, 5, 5))
+
+    for s, m in mail_list.get_messages():
+        print(f"{s}: {m}")
