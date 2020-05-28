@@ -1,1 +1,0 @@
-C:\Users\Media\Anaconda3\envs\py36\pythonw.exe scraper.py
