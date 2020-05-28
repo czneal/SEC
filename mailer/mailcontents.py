@@ -6,6 +6,7 @@ from abc import ABCMeta, abstractmethod
 
 from algos.xbrljson import ForDBJsonEncoder
 from mailer.readers import LogReader, MailerInfoReader
+from xbrlxml.xbrlrss import FileRecord, record_from_str
 
 
 def process_data(data: List[Dict[str, Any]],
@@ -164,7 +165,8 @@ class SharesRequest(InfoRequest):
 
 class ReportsRequest(InfoRequest):
     def __init__(self, metadata: Any):
-        self.ciks: Dict[int, str] = {int(cik): form for cik, form in metadata}
+        self.ciks: Dict[int, List[str]] = {
+            int(cik): forms for cik, forms in metadata}
 
 
 class InfoResponse():
@@ -338,6 +340,47 @@ class SharesInfo(SubscriptionInfo):
                  'shares_pre': shares_pre,
                  'change': diff, }
             response.data.append(d)
+
+        return response
+
+
+class ReportsInfo(SubscriptionInfo):
+    def __init__(self):
+        self.data: Dict[int, List[FileRecord]] = {}
+        self.ciks: Set[int] = set()
+
+    def reset(self):
+        self.data = {}
+        self.ciks = set()
+
+    def append_request(self, request: InfoRequest):
+        request = cast(ReportsRequest, request)
+
+        self.ciks.update(request.ciks.keys())
+
+    def read(self, day=dt.date):
+        r = MailerInfoReader()
+        data = r.fetch_reports_info(self.ciks, day)
+
+        for row in data:
+            record = record_from_str(data['record'])
+            self.data.setdefault(row['cik'], []).append(record)
+
+    def get_info(self, request: InfoRequest) -> InfoResponse:
+        request = cast(ReportsRequest, request)
+        response = InfoResponse()
+
+        for cik, forms in request.ciks.items():
+            if cik not in self.data:
+                continue
+
+            for form in forms:
+                for record in self.data[cik]:
+                    if (record.form_type.startswith('10-K') and form == 'y'
+                        or
+                            record.form_type.startswith('10-Q') and form == 'q'):
+                        d = record.__dict__.copy()
+                        response.data.append(d)
 
         return response
 

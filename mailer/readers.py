@@ -69,3 +69,12 @@ class MailerInfoReader(MySQLReader):
             order by trade_date desc limit 2"""
 
         return self.fetch(query, [ticker, day])
+
+    def fetch_reports_info(self,
+                           day: dt.date,
+                           ciks: Iterable[int]) -> List[Dict[str, Any]]:
+        query = """select * from sec_xbrl_forms \
+                    where filed = %s \
+                        and cik in (__in__)"""
+
+        return self.fetch_in(query, [day], ciks)

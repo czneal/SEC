@@ -204,7 +204,7 @@ class MySQLTable():
             con.database)
         for r in cur.fetchall():
             field_name = r["Field"].lower()
-            if r["Extra"] == "auto_increment":
+            if r["Extra"] in ("auto_increment", "DEFAULT_GENERATED"):
                 continue
             self.fields.add(field_name)
             if r["Null"] == "NO":
