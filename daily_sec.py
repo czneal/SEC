@@ -14,12 +14,12 @@ import mysqlio.basicio
 
 
 def main() -> None:
-#    mysqlio.basicio.activate_test_mode()
+    # mysqlio.basicio.activate_test_mode()
 
     logs.configure('mysql', level=logs.logging.INFO)
 
     d = datetime.datetime.now()
-    if d.day == 1:
+    if d.day == 1 and d.hour == 1:
         d -= datetime.timedelta(days=1)
 
     glue.update_sec_forms(years=[d.year], months=[d.month])
