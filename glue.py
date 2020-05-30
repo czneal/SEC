@@ -13,6 +13,7 @@ from mysqlio.xbrlfileio import records_to_mysql, ShareTickerRelation
 from mysqlio.readers import MySQLReports
 from xbrldown.download import download_and_save, download_rss
 from xbrlxml.xbrlrss import MySQLEnumerator, XBRLEnumerator
+from sec_parse import XBRLLogsCleaner
 
 
 def update_xbrl_sec_forms(years: List[int], months: List[int]) -> None:
@@ -115,6 +116,8 @@ def download_report_files(method: str, after: dt.date) -> None:
 
 
 def attach_sec_shares_ticker() -> None:
+    log_cleaner = XBRLLogsCleaner()
+
     logger = logs.get_logger(name=__name__)
     logger.set_state({'state': attach_sec_shares_ticker.__name__})
     logger.info(f'try to find tickers for share members')
@@ -141,6 +144,7 @@ def attach_sec_shares_ticker() -> None:
                         cik, shares_reader):
                     if (cik not in not_logging['cik'] and
                             adsh not in not_logging['adsh']):
+                        log_cleaner.clean(adsh=adsh)
                         logger.set_state(state={'state': str(adsh)})
                         logger.warning(
                             msg='sec share-ticker relaition not found',
@@ -174,6 +178,7 @@ def attach_sec_shares_ticker() -> None:
         logger.error('unexpected error', exc_info=True)
 
     logger.revoke_state()
+    log_cleaner.close()
 
 
 if __name__ == '__main__':

@@ -60,7 +60,7 @@ def find_company_names(
     companies: List[Tuple[int, str]] = []
 
     for words in itertools.permutations(key_words):
-        search = ' '.join(words)
+        search = '+'.join(words)
         while True:
             url = (
                 f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&" +
@@ -82,6 +82,7 @@ def find_company_names(
 
             for _, row in table.iterrows():
                 company = str(row['Company']).lower()
+                company = re.sub(r'(sic:.*)', '', company, flags=re.I)
                 if sum([(w in company) for w in add_words]) == len(add_words):
                     companies.append((int(row['CIK']), company))
 
@@ -323,5 +324,11 @@ def get_sec_forms(year: int, quarter: int) -> pd.DataFrame:
 # =============================================================================
 
 
+def find():
+    'Flaherty & Crumrine Dynamic Preferred and Income Fund Inc.'
+    f = find_company_names(['Flaherty'], ['crumrine'])
+    print(f)
+
+
 if __name__ == '__main__':
-    pass
+    find()
