@@ -129,8 +129,8 @@ def loads(strin):
     return json.loads(strin, object_hook=custom_decoder)
 
 
-def dumps(chapters: Dict[str, Chapter]) -> str:
-    return json.dumps(chapters, cls=ForDBJsonEncoder)
+def dumps(chapters: Dict[str, Chapter], indent=None) -> str:
+    return json.dumps(chapters, cls=ForDBJsonEncoder, indent=indent)
 
 
 if __name__ == '__main__':

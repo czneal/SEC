@@ -56,6 +56,10 @@ def write_info(pool: I.IndicatorsPool) -> None:
 class MySQLIndicatorFeeder(MySQLReader):
     def fetch_indicator_data(self, cik: int, fy: int, deep: int) \
             -> Tuple[Dict[int, Chapters], Dict[int, str]]:
+        """returns tuple of dictionaries
+        first: relation year -> Chapters
+        second: relation year -> adsh
+        """
         try:
             fy_adsh: Dict[int, str] = {}
             chapters: Dict[int, Chapters] = {}
@@ -125,6 +129,19 @@ class MySQLIndicatorFeeder(MySQLReader):
     def fetch_snp500_ciks(self, fy: int) -> List[int]:
         data = self.fetch(q_get_snp500_ciks, {'fy': fy})
         return [cast(int, row['cik']) for row in data]
+
+    def fetch_snp500_ciks_adshs(
+            self, newer_than: int) -> List[Tuple[int, str]]:
+        query = """select r.cik, adsh \
+                    from reports r, stocks_index i, nasdaq n \
+                    where fin_year >= %(fy)s \
+                        and r.cik = n.cik \
+                        and i.ticker = n.ticker \
+                        and index_name = 'sp5' \
+                    group by r.cik, r.adsh;"""
+
+        data = self.fetch(query, {'fy': newer_than})
+        return [(row['cik'], row['adsh']) for row in data]
 
 
 q_get_snp500_ciks = """

@@ -5,6 +5,8 @@ import datetime as dt
 from typing import Dict, List, Any, Tuple, cast, Iterable, Union
 
 import mysqlio.basicio as do
+from algos.scheme import Chapters
+from algos.xbrljson import loads
 
 
 class MySQLReader():
@@ -129,6 +131,16 @@ class MySQLReports(MySQLReader):
             return [cast(str, r['adsh']) for r in self.cur.fetchall()]
         except Exception:
             return []
+
+    def fetch_chapters(self, adsh: str) -> Chapters:
+        """returns Chapters object by given adsh
+        """
+        query = """select * from reports where adsh = %(adsh)s"""
+        data = self.fetch(query, {'adsh': adsh})
+        if data:
+            return cast(Chapters, loads(data[0]['structure']))
+
+        return {}
 
 
 q_find_latest_report = """
