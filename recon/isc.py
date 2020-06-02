@@ -396,3 +396,9 @@ class income_st_builder():
             #tree_extracted = tree_extracted+next_chains
             for elem in next_chains:
                 self.extract_recourse(elem[0], pairs, tree_extracted)
+
+    def prepare_data(self, tree):
+        parents = [x[0] for x in tree]
+        childs = [x[1] for x in tree]
+        all_tags = list(set(parents + childs))
+        return(all_tags)
