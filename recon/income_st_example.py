@@ -120,6 +120,9 @@ class ChapterBulder():
     def __init__(self):
         self.reverse_tags: Dict[str, str] = {}
         self.is_builder = ic.income_st_builder(Settings.models_dir())
+        if self.is_builder.error_message:
+            raise AttributeError(self.is_builder.error_message)
+
         self.all_tags: List[str] = []
 
     def read_tags(self, adsh: str) -> None:
@@ -159,7 +162,8 @@ class ChapterBulder():
         try:
             trees_out, nodes_out = self.is_builder.al_build_tree(self.all_tags)
             trees_out_weights = self.is_builder.al_add_weights(trees_out)
-        except Exception:
+        except Exception as e:
+            print(e)
             return chapter
 
         for tree in trees_out_weights:
@@ -247,7 +251,7 @@ def calculate():
     pb = ProgressBar()
     pb.start(len(ciks_adshs))
 
-    for cik, adsh in ciks_adshs:
+    for cik, adsh in ciks_adshs[:10]:
         row = worker.feed((cik, adsh))
         writer.write(row)
         writer.flush()
