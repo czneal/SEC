@@ -4,6 +4,7 @@ import pandas as pd
 from typing import Dict, List, Set, cast, Optional, Any
 
 import recon.isc as ic
+import logs
 
 from settings import Settings
 from xbrlxml.xbrlchapter import CalcChapter, Node
@@ -124,10 +125,12 @@ class ChapterBulder():
             raise AttributeError(self.is_builder.error_message)
 
         self.all_tags: List[str] = []
+        self.adsh = ''
 
     def read_tags(self, adsh: str) -> None:
-        self.reverse_tags = {}
+        self.reverse_tags = {"NetIncomeLoss": "us-gaap:NetIncomeLoss"}
         self.all_tags = []
+        self.adsh = adsh
 
         r = MySQLReports()
         chapters = r.fetch_chapters(adsh)
@@ -188,7 +191,11 @@ class ChapterBulder():
                 c_node.parent = p_node
                 p_node.children[c_name] = c_node
 
-        print(nodes_out)
+        if nodes_out:
+            logger = logs.get_logger(__name__)
+            logger.set_state(state={'state': self.adsh})
+            logger.warning('unused nodes', extra={'nodes': nodes_out})
+            logger.revoke_state()
 
         return chapter
 
@@ -241,6 +248,8 @@ def load_chapter() -> CalcChapter:
 
 
 def calculate():
+    logs.configure('file', level=logs.logging.WARNING)
+
     r = MySQLIndicatorFeeder()
     ciks_adshs = r.fetch_snp500_ciks_adshs(newer_than=2016)
     r.close()
@@ -251,7 +260,7 @@ def calculate():
     pb = ProgressBar()
     pb.start(len(ciks_adshs))
 
-    for cik, adsh in ciks_adshs[:10]:
+    for cik, adsh in ciks_adshs:
         row = worker.feed((cik, adsh))
         writer.write(row)
         writer.flush()
