@@ -43,7 +43,7 @@ class income_st_builder():
         error_message = ''
 
         try:
-            with open(os.path.join(data_path, 'income_st_data.txt'), 'rb') as fp:
+            with open(os.path.join(data_path, 'income_st.data'), 'rb') as fp:
                 data_array = pickle.load(fp)
                 fp.close()
         except Exception as e:
