@@ -16,6 +16,7 @@ from abstractions import Worker
 from algos.scheme import enum
 from algos.calc import calc_chapter, Validator
 from algos.xbrljson import dumps, loads
+from utils import ProgressBar
 
 
 class NewStrcturesWriter(MySQLWriter):
@@ -243,10 +244,18 @@ def calculate():
     worker = NewStrcturesWorker('is')
     writer = NewStrcturesWriter()
 
-    for cik, adsh in ciks_adshs[:2]:
+    pb = ProgressBar()
+    pb.start(len(ciks_adshs))
+
+    for cik, adsh in ciks_adshs:
         row = worker.feed((cik, adsh))
         writer.write(row)
         writer.flush()
+
+        pb.measure()
+        print('\r' + pb.message(), end='')
+
+    print()
 
 
 def main():
