@@ -1,7 +1,8 @@
 import json
 import pandas as pd
 
-from typing import Dict, List, Set, cast, Optional, Any
+from typing import Dict, List, Set, cast, Optional, Any, Tuple
+from itertools import chain
 
 import recon.isc as ic
 import logs
@@ -9,7 +10,7 @@ import logs
 from settings import Settings
 from xbrlxml.xbrlchapter import CalcChapter, Node
 
-from mysqlio.readers import MySQLReports
+from mysqlio.readers import MySQLReports, MySQLReader
 from mysqlio.writers import MySQLWriter
 from mysqlio.basicio import MySQLTable
 from mysqlio.indio import MySQLIndicatorFeeder, Facts
@@ -20,7 +21,7 @@ from algos.xbrljson import dumps, loads
 from utils import ProgressBar
 
 
-class NewStrcturesWriter(MySQLWriter):
+class NewStructuresWriter(MySQLWriter):
     def __init__(self):
         super().__init__()
 
@@ -30,7 +31,7 @@ class NewStrcturesWriter(MySQLWriter):
         self.write_to_table(self.mg_structures, obj)
 
 
-class NewStrcturesWorker(Worker):
+class NewStructuresWorker(Worker):
     def __init__(self, sheet: str):
         assert(sheet in {'is', 'bs', 'cf'})
 
@@ -71,50 +72,72 @@ class NewStrcturesWorker(Worker):
         }
 
 
-def calc_tree(df: pd.DataFrame) -> pd.DataFrame:
-    offsets = sorted(df['offset'].unique())
+class NewStructCalcWorker(Worker):
+    def __init__(self, sheet: str):
+        assert(sheet in ('is', 'cf', 'bs'))
 
-    df.set_index('index', inplace=True)
-    df.sort_index(inplace=True)
+        self.r = MySQLIndicatorFeeder()
+        self.sheet = sheet
 
-    for off in offsets[:-1]:
-        f = df[df['offset'] == off]
-        index = list(f.index)
-        for i in range(len(index)):
-            if i == len(index) - 1:
-                sl = df.loc[index[i]:]
-            else:
-                sl = df.loc[index[i]: index[i + 1] - 1]
-            if sl.shape[0] <= 1:
-                continue
+    def feed(self, obj: Any) -> Tuple[str,
+                                      Facts,
+                                      List[Dict[str, Any]],
+                                      List[Dict[str, Any]]]:
+        """returns tuple of adsh, calculates facts,
+        list of differences and list of calculation erros
+        """
 
-            summ = (sl['weight'] * sl[f'level_{off+1}']).sum()
-            df.loc[index[i], f'level_{off + 1}'] = summ
+        try:
+            adsh = str(obj)
+        except Exception:
+            raise AttributeError('obj must be str')
 
-    return df
+        data = self.r.fetch(
+            "select * from mg_structures where adsh = %s and sheet = %s",
+            [adsh, self.sheet])
+        if not data:
+            return adsh, {}, [], []
+
+        chapter = loads(data[0]['structure'])[self.sheet]
+
+        facts = self.r.fetch_facts(adsh)
+        new_facts = calc_middle_facts(chapter, facts)
+        differences = validate_facts(facts, new_facts)
+        calc_errors = validate_chapter(chapter, facts)
+
+        return adsh, new_facts, differences, calc_errors
+
+    def flush(self):
+        self.r.close()
 
 
-def get_tree(chapter: CalcChapter, facts: Facts) -> pd.DataFrame:
-    columns = ['parent', 'name', 'weight', 'offset']
+class NewStructCalcWriter(MySQLWriter):
+    def __init__(self):
+        super().__init__()
 
-    df = pd.DataFrame(enum(chapter, outpattern='pcwo'),
-                      columns=columns).reset_index()
+        self.errors = MySQLTable('mg_structures_errors', self.con)
+        self.mg_facts = MySQLTable('mg_facts', self.con)
 
-    f = pd.DataFrame(data=facts.items(), columns=['name', 'value'])
+    def write(self, obj: Any):
+        adsh = obj[0]
+        new_facts = obj[1]
+        differences = obj[2]
+        calc_errors = obj[3]
 
-    df = df.merge(f, how='left', left_on='name', right_on='name')
+        facts = [{'adsh': adsh,
+                  'name': k,
+                  'value': v} for k, v in new_facts.items()]
+        self.write_to_table(self.mg_facts, facts)
 
-    return df
-
-
-def make_tree_structure(tree: pd.DataFrame) -> pd.DataFrame:
-    for offset in tree['offset'].unique():
-        tree[f'level_{offset}'] = tree[tree['offset'] == offset]['value']
-
-    tree['name'] = tree.apply(axis=1, func=lambda row: "'" + '--'.join(
-        ['' for e in range(int(row['offset']) + 1)]) + row['name'])
-
-    return tree
+        data: List[Dict[str, Any]] = []
+        for row in chain(differences, calc_errors):
+            data.append({'adsh': adsh,
+                         'msg': row['msg'],
+                         'name': row['name'],
+                         'value': row['value'],
+                         'value_new': row['value_new']
+                         })
+        self.write_to_table(self.errors, data)
 
 
 class ChapterBulder():
@@ -205,13 +228,10 @@ def validate_facts(facts: Facts, new_facts: Facts) -> List[Dict[str, Any]]:
 
     for f, v in new_facts.items():
         if v != facts.get(f, None):
-            messages.append({'msg': 'facts doesnt match',
-                             'tag': f,
-                             'value': facts[f],
-                             'new_value': v})
-
-    with open('outputs/is_calc_err.json', 'w') as f:
-        f.write(json.dumps(messages, indent=2))
+            messages.append({'msg': 'ne',
+                             'name': f,
+                             'value': facts.get(f, None),
+                             'value_new': v})
 
     return messages
 
@@ -224,8 +244,13 @@ def validate_chapter(chapter: CalcChapter,
 
     calc_chapter(chapter, facts, err=valid)
 
-    with open('outputs/is_valid_err.json', 'w') as f:
-        f.write(json.dumps(valid.errors, indent=2))
+    for name, value, value_sum in zip(valid.errors['name'],
+                                      valid.errors['value'],
+                                      valid.errors['value_sum']):
+        messages.append({'msg': 'notsum',
+                         'name': name,
+                         'value': value,
+                         'value_new': value_sum})
 
     return messages
 
@@ -242,11 +267,6 @@ def calc_middle_facts(chapter: CalcChapter, facts: Facts) -> Facts:
     return leaf_facts
 
 
-def load_chapter() -> CalcChapter:
-    with open('outputs/is_chapter.json') as f:
-        return cast(CalcChapter, loads(f.read())['is'])
-
-
 def calculate():
     logs.configure('file', level=logs.logging.WARNING)
 
@@ -254,8 +274,8 @@ def calculate():
     ciks_adshs = r.fetch_snp500_ciks_adshs(newer_than=2016)
     r.close()
 
-    worker = NewStrcturesWorker('is')
-    writer = NewStrcturesWriter()
+    worker = NewStructuresWorker('is')
+    writer = NewStructuresWriter()
 
     pb = ProgressBar()
     pb.start(len(ciks_adshs))
@@ -271,26 +291,123 @@ def calculate():
     print()
 
 
-def main():
-    adsh = '0000072971-20-000217'
-
-    # chapter = buld_chapter(adsh=adsh)
-    chapter = load_chapter()
+def validate():
+    logs.configure('file', level=logs.logging.WARNING)
 
     r = MySQLIndicatorFeeder()
-    facts = r.fetch_facts(adsh=adsh)
+    ciks_adshs = r.fetch_snp500_ciks_adshs(newer_than=2016)
     r.close()
 
-    new_facts = calc_middle_facts(chapter, facts)
-    messages = validate_facts(facts, new_facts)
-    m = validate_chapter(chapter, new_facts)
+    worker = NewStructCalcWorker('is')
+    writer = NewStructCalcWriter()
 
-    df = get_tree(chapter, new_facts)
+    pb = ProgressBar()
+    pb.start(len(ciks_adshs))
+
+    for cik, adsh in ciks_adshs:
+        row = worker.feed(adsh)
+        writer.write(row)
+        writer.flush()
+
+        pb.measure()
+        print('\r' + pb.message(), end='')
+
+    print()
+
+
+def load_chapter(adsh: str, new: bool) -> CalcChapter:
+    r = MySQLReader()
+    if new:
+        query = 'select * from mg_structures where adsh = %s'
+    else:
+        query = 'select * from reports where adsh = %s'
+
+    data = r.fetch(query, [adsh])
+    if not data:
+        return CalcChapter('', 'Income Statement')
+
+    return cast(CalcChapter, loads(data[0]['structure'])['is'])
+
+
+def load_facts(adsh: str, new: bool) -> Facts:
+    r = MySQLIndicatorFeeder()
+
+    if new:
+        query = 'select * from mg_facts where adsh = %s'
+        data = r.fetch(query, [adsh])
+        return {str(row['name']): float(row['value']) for row in data}
+
+    else:
+        return r.fetch_facts(adsh)
+
+
+def calc_tree(df: pd.DataFrame) -> pd.DataFrame:
+    offsets = sorted(df['offset'].unique())
+
+    df.set_index('index', inplace=True)
+    df.sort_index(inplace=True)
+
+    for off in offsets[:-1]:
+        f = df[df['offset'] == off]
+        index = list(f.index)
+        for i in range(len(index)):
+            if i == len(index) - 1:
+                sl = df.loc[index[i]:]
+            else:
+                sl = df.loc[index[i]: index[i + 1] - 1]
+            if sl.shape[0] <= 1:
+                continue
+
+            summ = (sl['weight'] * sl[f'level_{off+1}']).sum()
+            df.loc[index[i], f'level_{off + 1}'] = summ
+
+    return df
+
+
+def get_tree(chapter: CalcChapter, facts: Facts) -> pd.DataFrame:
+    columns = ['parent', 'name', 'weight', 'offset']
+
+    df = pd.DataFrame(enum(chapter, outpattern='pcwo'),
+                      columns=columns).reset_index()
+
+    f = pd.DataFrame(data=facts.items(), columns=['name', 'value'])
+
+    df = df.merge(f, how='left', left_on='name', right_on='name')
+
+    return df
+
+
+def make_tree_structure(tree: pd.DataFrame) -> pd.DataFrame:
+    for offset in tree['offset'].unique():
+        tree[f'level_{offset}'] = tree[tree['offset'] == offset]['value']
+
+    tree['name'] = tree.apply(axis=1, func=lambda row: "'" + '--'.join(
+        ['' for e in range(int(row['offset']) + 1)]) + row['name'])
+
+    return tree
+
+
+def main():
+    adsh = '0001564590-20-005874'
+
+    chapter = load_chapter(adsh, new=True)
+    facts = load_facts(adsh, new=True)
+
+    df = get_tree(chapter, facts)
     df = make_tree_structure(df)
     df = calc_tree(df)
 
-    df.to_csv('outputs/is_table.csv', index=False)
+    df.to_csv('outputs/is_table_new.csv', index=False)
+
+    chapter = load_chapter(adsh, new=False)
+    facts = load_facts(adsh, new=False)
+
+    df = get_tree(chapter, facts)
+    df = make_tree_structure(df)
+    df = calc_tree(df)
+
+    df.to_csv('outputs/is_table_old.csv', index=False)
 
 
 if __name__ == '__main__':
-    calculate()
+    main()
