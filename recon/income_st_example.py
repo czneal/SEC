@@ -291,6 +291,15 @@ def calculate():
     print()
 
 
+def calculate_adsh(adsh: str):
+    logs.configure('file', level=logs.logging.WARNING)
+    worker = NewStructuresWorker('is')
+
+    row = worker.feed((0, adsh))
+
+    print(row)
+
+
 def validate():
     logs.configure('file', level=logs.logging.WARNING)
 
@@ -410,4 +419,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    calculate_adsh('0000766421-20-000013')
