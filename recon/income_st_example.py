@@ -21,6 +21,11 @@ from algos.xbrljson import dumps, loads
 from utils import ProgressBar
 
 
+class MySQLTreeFeeder(MySQLIndicatorFeeder):
+    def fetch_new_facts(self, adsh: str) -> Dict[str, float]:
+        pass
+
+
 class NewStructuresWriter(MySQLWriter):
     def __init__(self):
         super().__init__()
@@ -344,10 +349,14 @@ def load_facts(adsh: str, new: bool) -> Facts:
     if new:
         query = 'select * from mg_facts where adsh = %s'
         data = r.fetch(query, [adsh])
+        r.close()
+
         return {str(row['name']): float(row['value']) for row in data}
 
     else:
-        return r.fetch_facts(adsh)
+        facts = r.fetch_facts(adsh)
+        r.close()
+        return facts
 
 
 def calc_tree(df: pd.DataFrame) -> pd.DataFrame:
@@ -394,6 +403,56 @@ def make_tree_structure(tree: pd.DataFrame) -> pd.DataFrame:
         ['' for e in range(int(row['offset']) + 1)]) + row['name'])
 
     return tree
+
+
+def table_to_compare():
+    r = MySQLIndicatorFeeder()
+    ciks_adshs = r.fetch_snp500_ciks_adshs(newer_than=2016)
+
+    data = []
+    for cik, adsh in ciks_adshs:
+        facts = load_facts(adsh=adsh, new=False)
+        new_facts = load_facts(adsh=adsh, new=True)
+
+        d = r.fetch('select * from reports where adsh = %s', [adsh])
+        if d:
+            s = loads(d[0]['structure'])
+            if 'is' in s:
+                chapter = cast(CalcChapter, s['is'])
+            else:
+                chapter = CalcChapter()
+
+            for p, c, w in enum(chapter, outpattern='pcw'):
+                if '/' in p:
+                    continue
+                data.append((cik, adsh, 0, c, p, w, facts.get(c, None)))
+
+        d = r.fetch('select * from mg_structures where adsh = %s', [adsh])
+        if d:
+            s = loads(d[0]['structure'])
+            if 'is' in s:
+                chapter = cast(CalcChapter, s['is'])
+            else:
+                chapter = CalcChapter()
+
+            for p, c, w in enum(chapter, outpattern='pcw'):
+                if '/' in p:
+                    continue
+                data.append((cik, adsh, 1, c, p, w, new_facts.get(c, None)))
+
+    r.close()
+
+    df = pd.DataFrame(
+        data,
+        columns=[
+            'cik',
+            'adsh',
+            'type',
+            'child',
+            'parent',
+            'weight',
+            'value'])
+    df.to_csv('outputs/is_old_new.csv', sep='\t', index=False)
 
 
 def main():
