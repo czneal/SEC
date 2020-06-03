@@ -224,6 +224,9 @@ class ChapterBulder():
             logger.set_state(state={'state': self.adsh})
             logger.warning('unused nodes', extra={'nodes': nodes_out})
             logger.revoke_state()
+        if not trees_out_weights:
+            with open('outputs/' + self.adsh + '-tags.json', 'w') as f:
+                f.write(json.dumps(self.all_tags, indent=2))
 
         return chapter
 
@@ -273,11 +276,15 @@ def calc_middle_facts(chapter: CalcChapter, facts: Facts) -> Facts:
 
 
 def calculate():
-    logs.configure('file', level=logs.logging.WARNING)
-
     r = MySQLIndicatorFeeder()
     ciks_adshs = r.fetch_snp500_ciks_adshs(newer_than=2016)
     r.close()
+
+    calculate_adshs(ciks_adshs)
+
+
+def calculate_adshs(ciks_adshs: List[Tuple[int, str]]):
+    logs.configure('file', level=logs.logging.WARNING)
 
     worker = NewStructuresWorker('is')
     writer = NewStructuresWriter()
@@ -477,5 +484,16 @@ def main():
     df.to_csv('outputs/is_table_old.csv', index=False)
 
 
+def repeat():
+    r = MySQLIndicatorFeeder()
+    data = r.fetch("""select * from mg_structures \
+                      where structure like '%"nodes": {}%'""", {})
+    r.close()
+
+    ciks_adshs = [(row['cik'], row['adsh']) for row in data]
+
+    calculate_adshs(ciks_adshs)
+
+
 if __name__ == '__main__':
-    calculate_adsh('0000766421-20-000013')
+    repeat()
