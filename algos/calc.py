@@ -68,6 +68,9 @@ def calc_fact(node: Node,
               facts: Dict[str, float],
               err: Optional[Validator] = None,
               repair: bool = False) -> Optional[float]:
+    """calculate node value
+if repair is True returns sum of \
+children values if facts[node.name] == None"""
 
     value = facts.get(node.name, None)
     s: List[float] = []

@@ -54,6 +54,13 @@ class MySQLWriter(Writer):
             table.write)(
             data, self.cur)
 
+    def execute(self,
+                query: str,
+                params: typing.Union[
+                    typing.Sequence[typing.Any],
+                    typing.Dict[str, typing.Any]] = ()) -> None:
+        retry_mysql_write(self.cur.execute)(query, params)
+
     def execute_in(self, query: str,
                    in_seq: typing.Iterable[typing.Any]) -> None:
         """

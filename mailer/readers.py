@@ -53,8 +53,7 @@ class MailerInfoReader(MySQLReader):
                              tickers: Iterable[str]) -> List[Dict[str, Any]]:
 
         query = """select * from stocks_dividents \
-            where payment_date >= %s \
-                and stamp >= %s \
+            where date(stamp) = %s \
                 and ticker in (__in__)
         """
 
@@ -74,7 +73,7 @@ class MailerInfoReader(MySQLReader):
                            day: dt.date,
                            ciks: Iterable[int]) -> List[Dict[str, Any]]:
         query = """select * from sec_xbrl_forms \
-                    where stamp = %s \
+                    where date(stamp) = %s \
                         and cik in (__in__)"""
 
         return self.fetch_in(query, [day], ciks)

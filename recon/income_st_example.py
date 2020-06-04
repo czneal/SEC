@@ -25,6 +25,18 @@ class MySQLTreeFeeder(MySQLIndicatorFeeder):
     def fetch_new_facts(self, adsh: str) -> Dict[str, float]:
         pass
 
+    def fetch_structure(self, adsh: str, new: bool) -> Dict[str, CalcChapter]:
+        if new:
+            query = "select * from mg_structures where adsh = %s"
+        else:
+            query = "select * from reports where adsh = %s"
+
+        data = self.fetch(query, [adsh])
+        if data:
+            return cast(Dict[str, CalcChapter], loads(data[0]['structure']))
+
+        return {}
+
 
 class NewStructuresWriter(MySQLWriter):
     def __init__(self):
@@ -81,7 +93,7 @@ class NewStructCalcWorker(Worker):
     def __init__(self, sheet: str):
         assert(sheet in ('is', 'cf', 'bs'))
 
-        self.r = MySQLIndicatorFeeder()
+        self.r = MySQLTreeFeeder()
         self.sheet = sheet
 
     def feed(self, obj: Any) -> Tuple[str,
@@ -97,18 +109,19 @@ class NewStructCalcWorker(Worker):
         except Exception:
             raise AttributeError('obj must be str')
 
-        data = self.r.fetch(
-            "select * from mg_structures where adsh = %s and sheet = %s",
-            [adsh, self.sheet])
-        if not data:
-            return adsh, {}, [], []
+        old = self.r.fetch_structure(adsh, new=False)
+        new = self.r.fetch_structure(adsh, new=True)
 
-        chapter = loads(data[0]['structure'])[self.sheet]
+        if self.sheet in old and self.sheet in new:
+            old_chapter = old[self.sheet]
+            new_chapter = new[self.sheet]
+        else:
+            return '', {}, [], []
 
         facts = self.r.fetch_facts(adsh)
-        new_facts = calc_middle_facts(chapter, facts)
+        new_facts = calc_middle_facts(old_chapter, new_chapter, facts)
         differences = validate_facts(facts, new_facts)
-        calc_errors = validate_chapter(chapter, facts)
+        calc_errors = validate_chapter(new_chapter, new_facts)
 
         return adsh, new_facts, differences, calc_errors
 
@@ -128,6 +141,13 @@ class NewStructCalcWriter(MySQLWriter):
         new_facts = obj[1]
         differences = obj[2]
         calc_errors = obj[3]
+
+        self.execute(
+            f'delete from {self.mg_facts.name} where adsh = %s',
+            [adsh])
+        self.execute(
+            f'delete from {self.errors.name} where adsh = %s',
+            [adsh])
 
         facts = [{'adsh': adsh,
                   'name': k,
@@ -263,14 +283,22 @@ def validate_chapter(chapter: CalcChapter,
     return messages
 
 
-def calc_middle_facts(chapter: CalcChapter, facts: Facts) -> Facts:
+def calc_middle_facts(
+        old_chapter: CalcChapter,
+        new_chapter: CalcChapter,
+        facts: Facts) -> Facts:
+
     leaf_facts: Dict[str, float] = {}
 
-    for [c] in enum(chapter, outpattern='c', leaf=True):
+    for [c] in enum(old_chapter, outpattern='c', leaf=True):
         if c in facts:
             leaf_facts[c] = facts[c]
 
-    calc_chapter(chapter, leaf_facts, repair=True)
+    for [c] in enum(new_chapter, outpattern='c', leaf=True):
+        if c in facts:
+            leaf_facts[c] = facts[c]
+
+    calc_chapter(new_chapter, leaf_facts, repair=True)
 
     return leaf_facts
 
@@ -303,21 +331,16 @@ def calculate_adshs(ciks_adshs: List[Tuple[int, str]]):
     print()
 
 
-def calculate_adsh(adsh: str):
-    logs.configure('file', level=logs.logging.WARNING)
-    worker = NewStructuresWorker('is')
-
-    row = worker.feed((0, adsh))
-
-    print(row)
-
-
 def validate():
-    logs.configure('file', level=logs.logging.WARNING)
-
     r = MySQLIndicatorFeeder()
     ciks_adshs = r.fetch_snp500_ciks_adshs(newer_than=2016)
     r.close()
+
+    validate_adshs(ciks_adshs)
+
+
+def validate_adshs(ciks_adshs: List[Tuple[int, str]]):
+    logs.configure('file', level=logs.logging.WARNING)
 
     worker = NewStructCalcWorker('is')
     writer = NewStructCalcWriter()
@@ -463,7 +486,7 @@ def table_to_compare():
 
 
 def main():
-    adsh = '0001564590-20-005874'
+    adsh = '0000002488-17-000043'
 
     chapter = load_chapter(adsh, new=True)
     facts = load_facts(adsh, new=True)
@@ -496,4 +519,6 @@ def repeat():
 
 
 if __name__ == '__main__':
-    repeat()
+    # validate_adshs([(2488, '0000002488-17-000043')])
+    # main()
+    validate()
