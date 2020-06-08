@@ -57,7 +57,7 @@ class MailerInfoReader(MySQLReader):
                 and ticker in (__in__)
         """
 
-        return self.fetch_in(query, [day, day], tickers)
+        return self.fetch_in(query, [day], tickers)
 
     def fetch_shares_info(self,
                           day: dt.date,

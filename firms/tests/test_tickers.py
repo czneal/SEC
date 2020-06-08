@@ -23,7 +23,7 @@ class TestStockData(unittest.TestCase):
 
             self.assertEqual(data["trade_date"], None)
             logger.warning.assert_has_calls([unittest.mock.call(
-                msg='nasdaq site denied request for tikcer AAPL')])
+                msg='nasdaq site denied request for ticker AAPL')])
 
     def test_stock_data_info_summary(self):
         test_data = {'pre hours': ["""{"data":{"symbol":"AAPL","companyName":"Apple Inc. Common Stock","stockType":"Common Stock","exchange":"NASDAQ-GS","isNasdaqListed":true,"isNasdaq100":true,"isHeld":false,"primaryData":{"lastSalePrice":"$267.85","netChange":"0.75","percentageChange":"0.28%","deltaIndicator":"up","lastTradeTimestamp":"DATA AS OF Nov 19, 2019 9:27 AM ET - PRE-MARKET","isRealTime":true},"secondaryData":{"lastSalePrice":"$267.10","netChange":"1.34","percentageChange":"0.5%","deltaIndicator":"up","lastTradeTimestamp":"CLOSED AT 4:00 PM ET ON Nov 18, 2019","isRealTime":false},"keyStats":{"Volume":{"label":"Volume","value":"111,677"},"PreviousClose":{"label":"Previous Close","value":"$267.10"},"OpenPrice":{"label":"Open","value":"$265.74"},"MarketCap":{"label":"Market Cap","value":"1,186,796,081,500"}},"marketStatus":"Pre Market","assetClass":"STOCKS"},"message":null,"status":{"rCode":200,"bCodeMessage":null,"developerMessage":null}}""",

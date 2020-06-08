@@ -25,3 +25,12 @@ class DBTestBase(unittest.TestCase):
                 cur.execute(query, param)
 
             con.commit()
+
+    def run_mysql_file(self, filename: str):
+        with open(filename) as f:
+            queries = [q for q in f.readlines()
+                       if (q.lower().startswith('insert') or
+                           q.lower().startswith('delete'))]
+
+        params: List[Dict[str, Any]] = [{} for q in queries]
+        self.run_set_up_queries(queries, params)

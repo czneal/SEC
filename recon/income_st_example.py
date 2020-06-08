@@ -486,7 +486,7 @@ def table_to_compare():
 
 
 def main():
-    adsh = '0000002488-17-000043'
+    adsh = '0000927653-19-000009'
 
     chapter = load_chapter(adsh, new=True)
     facts = load_facts(adsh, new=True)
@@ -520,5 +520,5 @@ def repeat():
 
 if __name__ == '__main__':
     # validate_adshs([(2488, '0000002488-17-000043')])
-    # main()
-    validate()
+    main()
+    # validate()

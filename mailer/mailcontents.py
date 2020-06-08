@@ -98,15 +98,27 @@ class MailerList():
                 data_bank=SharesInfo(),
                 formatter=self.formatter)
         )
+        self.subscriptions.append(
+            Subscription(
+                data_bank=ReportsInfo(),
+                formatter=self.formatter)
+        )
+        self.subscriptions.append(
+            Subscription(
+                data_bank=LogInfo(),
+                formatter=self.formatter)
+        )
 
         self.naming = {'stocks': 0,
                        'dividents': 1,
                        'shares': 2,
-                       }
+                       'reports': 3,
+                       'logs': 4}
         self.request_class = {0: StocksRequest,
                               1: DivRequest,
                               2: SharesRequest,
                               3: ReportsRequest,
+                              4: LogRequest,
                               }
 
     def read_metadata(self):
@@ -137,8 +149,14 @@ class MailerList():
 
     def get_messages(self) -> Iterator[Tuple[str, str]]:
         for subscriber, subscriptions in self.subscribers.items():
-            msg = "\n".join([sub.get_message(request)
-                             for sub, request in subscriptions])
+            messages: List[str] = []
+            for sub, request in subscriptions:
+                m = sub.get_message(request)
+                if m:
+                    messages.append(m)
+
+            msg = "\n".join(messages)
+
             yield subscriber, msg
 
 
@@ -160,27 +178,39 @@ class DivRequest(InfoRequest):
 
 class SharesRequest(InfoRequest):
     def __init__(self, metadata: Any):
-        self.tickers: List[str] = [ticker for ticker in metadata]
+        self.tickers: Set[str] = set([ticker for ticker in metadata])
 
 
 class ReportsRequest(InfoRequest):
     def __init__(self, metadata: Any):
         self.ciks: Dict[int, List[str]] = {
-            int(cik): forms for cik, forms in metadata}
+            int(cik): forms for cik, forms in metadata.items()}
+
+
+class LogRequest(InfoRequest):
+    supported_types = frozenset(['fatal', 'stocks', 'xbrl'])
+
+    def __init__(self, metadata: Any):
+        assert(set(metadata).issubset(self.supported_types))
+
+        self.types: Set[str] = set(metadata)
 
 
 class InfoResponse():
-    def __init__(self):
+    def __init__(self, description: str):
+        self.description = description
         self.data: List[Dict[str, Any]] = []
 
 
 class StocksResponse(InfoResponse):
     def __init__(self):
+        self.description = 'Stocks Info'
         self.data: List[Dict[str, Union[str, float]]] = []
 
 
 class DivResponse(InfoResponse):
     def __init__(self):
+        self.description = "Dividends Info"
         self.data: List[Dict[str, Union[str, dt.date, float, None]]] = []
 
 
@@ -216,6 +246,8 @@ class StocksInfo(SubscriptionInfo):
         self.tickers.update([ticker.upper() for ticker in request.data.keys()])
 
     def read(self, day: dt.date):
+        self.data = {}
+
         r = MailerInfoReader()
         data = r.fetch_stocks_info(day=day, tickers=self.tickers)
         r.close()
@@ -258,6 +290,8 @@ class DividentsInfo(SubscriptionInfo):
         self.tickers.update([ticker.upper() for ticker in request.data])
 
     def read(self, day: dt.date):
+        self.data = {}
+
         r = MailerInfoReader()
         data = r.fetch_dividents_info(day=day, tickers=self.tickers)
         r.close()
@@ -265,7 +299,7 @@ class DividentsInfo(SubscriptionInfo):
         for row in data:
             try:
                 amount: Optional[float] = float(row['amount'])
-            except ValueError:
+            except (ValueError, TypeError):
                 amount = None
 
             self.data[row['ticker'].upper()] = {
@@ -306,6 +340,8 @@ class SharesInfo(SubscriptionInfo):
         self.tickers.update([ticker.upper() for ticker in request.tickers])
 
     def read(self, day: dt.date):
+        self.data = {}
+
         r = MailerInfoReader()
         for ticker in self.tickers:
             data = r.fetch_shares_info(day=day, ticker=ticker)
@@ -327,7 +363,7 @@ class SharesInfo(SubscriptionInfo):
     def get_info(self, request: InfoRequest) -> InfoResponse:
         request = cast(SharesRequest, request)
 
-        response = InfoResponse()
+        response = InfoResponse(description='Shares Changes Info')
 
         for ticker in request.tickers:
             ticker = ticker.upper()
@@ -359,16 +395,19 @@ class ReportsInfo(SubscriptionInfo):
         self.ciks.update(request.ciks.keys())
 
     def read(self, day=dt.date):
+        self.data = {}
+
         r = MailerInfoReader()
-        data = r.fetch_reports_info(self.ciks, day)
+        data = r.fetch_reports_info(day, ciks=self.ciks)
+        r.close()
 
         for row in data:
-            record = record_from_str(data['record'])
+            record = record_from_str(row['record'])
             self.data.setdefault(row['cik'], []).append(record)
 
     def get_info(self, request: InfoRequest) -> InfoResponse:
         request = cast(ReportsRequest, request)
-        response = InfoResponse()
+        response = InfoResponse('Reports Info')
 
         for cik, forms in request.ciks.items():
             if cik not in self.data:
@@ -385,6 +424,89 @@ class ReportsInfo(SubscriptionInfo):
         return response
 
 
+class LogInfo(SubscriptionInfo):
+    def __init__(self):
+        self.data: Dict[str, List[Dict[str, Any]]] = {}
+        self.types: Set[str] = set()
+
+    def reset(self):
+        self.data = {}
+        self.types = set()
+
+    def append_request(self, request: InfoRequest):
+        request = cast(LogRequest, request)
+
+        self.types.update(request.types)
+
+    def load_extra(self, data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        for row in data:
+            if row['extra'] != '':
+                row['extra'] = json.loads(row['extra'])
+
+        return data
+
+    def read(self, day=dt.date):
+        self.data = {}
+
+        r = LogReader()
+        for t in self.types:
+            if t == 'fatal':
+                self.data.setdefault(t, []).extend(
+                    self.load_extra(
+                        r.fetch_errors(
+                            day=day,
+                            log_table='logs_parse',
+                            levelname='error',
+                            msg='')))
+            if t == 'stocks':
+                self.data.setdefault(t, []).extend(
+                    self.load_extra(
+                        r.fetch_errors(
+                            day=day,
+                            log_table='logs_parse',
+                            levelname='warning',
+                            msg='denied'
+                        )
+                    )
+                )
+                self.data[t].extend(
+                    self.load_extra(
+                        r.fetch_errors(
+                            day=day,
+                            log_table='logs_parse',
+                            levelname='warning',
+                            msg='ticker AAPL shares doesn'
+                        )
+                    )
+                )
+            if t == 'xbrl':
+                self.data.setdefault(t, []).extend(
+                    self.load_extra(
+                        r.fetch_errors(
+                            day=day,
+                            log_table='xbrl_logs',
+                            levelname='error',
+                            msg=''
+                        )
+                    )
+                )
+        r.close()
+
+    def get_info(self, request: InfoRequest) -> InfoResponse:
+        request = cast(LogRequest, request)
+        response = InfoResponse('Log Info')
+
+        for t in request.types:
+            if t not in self.data:
+                continue
+            for r in self.data[t]:
+                d = r.copy()
+                d['type'] = t
+                response.data.append(d)
+
+        return response
+
+
 class InfoFormatter(metaclass=ABCMeta):
     @abstractmethod
     def format_message(self, response: InfoResponse) -> str:
@@ -393,7 +515,12 @@ class InfoFormatter(metaclass=ABCMeta):
 
 class JsonFormatter(InfoFormatter):
     def format_message(self, response: InfoResponse) -> str:
-        return json.dumps(response.data, cls=ForDBJsonEncoder, indent=2)
+        if not response.data:
+            return ''
+
+        return (response.description +
+                '\n' +
+                json.dumps(response.data, cls=ForDBJsonEncoder, indent=2))
 
 
 class Subscription():

@@ -140,7 +140,7 @@ def stock_data(ticker: str) -> StockData:
             if (b'access denied' in b1.lower() or
                     b'access denied' in b2.lower()):
                 logs.get_logger(__name__).warning(
-                    msg=f'nasdaq site denied request for tikcer {ticker}')
+                    msg=f'nasdaq site denied request for ticker {ticker}')
                 return retval
 
             info = json.loads(b1)

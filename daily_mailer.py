@@ -2,8 +2,10 @@ import datetime as dt
 import sys
 import argparse
 
+import logs
+
 from mailer.sendmail import send_message
-from mailer.mailcontents import make_parse_info
+from mailer.glue import send_mails
 
 
 def init_argparser() -> argparse.ArgumentParser:
@@ -32,11 +34,8 @@ def main() -> None:
             print('date must be in format like 2020-01-01')
             return
 
-    info = make_parse_info(day=day)
-
-    send_message(to='vkugushev@gmail.com',
-                 subject='Daily Parse Info',
-                 content=info)
+    logs.configure('file', level=logs.logging.DEBUG)
+    send_mails(day=day)
 
 
 if __name__ == '__main__':
