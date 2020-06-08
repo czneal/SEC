@@ -34,7 +34,7 @@ def main() -> None:
             print('date must be in format like 2020-01-01')
             return
 
-    logs.configure('file', level=logs.logging.DEBUG)
+    logs.configure('mysql', level=logs.logging.INFO)
     send_mails(day=day)
 
 
