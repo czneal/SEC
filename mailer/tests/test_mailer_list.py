@@ -35,6 +35,11 @@ class TestMailerList(DBTestBase):
 
     def test_read_data(self):
         self.run_mysql_file(absfilename('res/mailer_list.sql'))
+        self.run_mysql_file(absfilename('res/logs_parse.sql'))
+        self.run_mysql_file(absfilename('res/xbrl_logs.sql'))
+        self.run_mysql_file(absfilename('res/stocks_shares.sql'))
+        self.run_mysql_file(absfilename('res/stocks_dividents.sql'))
+        self.run_mysql_file(absfilename('res/sec_xbrl_forms.sql'))
 
         mailer = mc.MailerList()
         mailer.read_metadata()
