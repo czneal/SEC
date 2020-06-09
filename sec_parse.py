@@ -1,11 +1,13 @@
 import datetime as dt
-from typing import Any, List, Optional, Set, Tuple, Type
+from typing import Any, List, Optional, Set, Tuple, Type, Dict, Callable
+from functools import partial
 
 import logs
 import mysqlio.basicio as do
 import mysqlio.xbrlfileio as xio
 import xbrlxml.dataminer as dm
-# import glue
+
+from xbrlxml.xbrlfileparser import TextBlocks
 from abstractions import Worker, Writer
 from mpc import MpcManager
 from settings import Settings
@@ -63,12 +65,52 @@ class Parser(Worker):
         pass
 
 
+class TextBlocksParser(Worker):
+    def __init__(self):
+        self.miner = dm.TextBlocksDataMiner()
+        self.logger = logs.get_logger('text_block_parser')
+
+    def feed(self, job: Tuple[FileRecord, str]) -> List[Dict[str, Any]]:
+        (record, filename) = job
+
+        self.logger.set_state(state={'state': record.adsh},
+                              extra={'file_link': remove_root_dir(filename)})
+        # self.xbrl_logs_cleaner.clean(adsh=record.adsh)
+
+        blocks: List[Dict[str, Any]] = []
+        try:
+            if not self.miner.feed(record, filename):
+                raise Exception('report is not read')
+
+            blocks = dm.prepare_text_blocks(
+                adsh=record.adsh,
+                text_blocks=self.miner.xbrlfile.text_blocks)
+        except Exception:
+            self.logger.error(
+                'error while prepare report to write',
+                exc_info=True)
+
+        self.logger.revoke_state()
+        return blocks
+
+    def flush(self):
+        pass
+
+
 def configure_worker() -> Worker:
     return Parser(miner_cls=dm.NumericDataMiner)
 
 
 def configure_writer() -> Writer:
     return xio.ReportToDB()
+
+
+def conf_text_block_worker() -> Worker:
+    return TextBlocksParser()
+
+
+def conf_text_block_writer() -> Writer:
+    return xio.TextBlocksWriter()
 
 
 def parse_mpc(method: str, after: dt.date, n_procs: int = Settings.n_proc()):
@@ -92,12 +134,16 @@ def parse_mpc(method: str, after: dt.date, n_procs: int = Settings.n_proc()):
     logger.revoke_state()
 
 
-def parse(method: str, after: dt.date, adsh: str = '') -> None:
+def parse(method: str,
+          after: dt.date,
+          cnf_worker: Callable[[], Worker],
+          cnf_writer: Callable[[], Writer],
+          adsh: str = '') -> None:
     logger = logs.get_logger(__name__)
     logger.set_state(state={'state': 'sec_parse'})
 
-    worker = configure_worker()
-    writer = configure_writer()
+    worker = cnf_worker()
+    writer = cnf_writer()
 
     try:
         rss = MySQLEnumerator()
@@ -117,6 +163,7 @@ def parse(method: str, after: dt.date, adsh: str = '') -> None:
         print()
 
         worker.flush()
+        writer.flush()
         logger.info(msg=f'finish to parse {len(records)} reports')
 
     except Exception:
@@ -136,10 +183,12 @@ def parse(method: str, after: dt.date, adsh: str = '') -> None:
 #     parse_mpc(method='all', after=dt.date(2013, 1, 1))
 #     glue.attach_sec_shares_ticker()
 
-
 if __name__ == '__main__':
-    # logs.configure('mysql', level=logs.logging.INFO)
-    # parse('explicit', dt.date(2013, 1, 1), adsh='0000063754-15-000013')
+    logs.configure('file', level=logs.logging.INFO)
+    parse(method='all',
+          after=dt.date(2019, 1, 1),
+          cnf_worker=conf_text_block_worker,
+          cnf_writer=conf_text_block_writer)
 
     # reparse()
     pass

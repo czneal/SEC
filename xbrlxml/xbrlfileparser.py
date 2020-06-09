@@ -9,7 +9,7 @@ import re
 import datetime
 import contextlib
 
-from typing import Optional, List, Dict, Union, cast, Tuple, Any, Set
+from typing import Optional, List, Dict, Union, cast, Tuple, Any, Set, Iterable
 
 import utils
 import logs
@@ -436,7 +436,7 @@ class XbrlParser():
         return dei
 
     def parse_textblocks(self, root,
-                         text_blocks: Set[str]) -> TextBlocks:
+                         text_blocks: Iterable[str]) -> TextBlocks:
         """return Dict[(name, context), text]
         """
         "unittested"
@@ -448,7 +448,7 @@ class XbrlParser():
                                                         .replace('\r', '')
                                                         .replace('\n', ''))
 
-        return(data)
+        return data
 
 
 class xbrltrans():

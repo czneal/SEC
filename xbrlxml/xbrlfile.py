@@ -2,7 +2,7 @@
 
 import datetime as dt
 from collections import namedtuple
-from typing import Dict, Optional, Set
+from typing import Dict, Optional, Set, Iterable
 
 import pandas as pd  # type: ignore
 
@@ -198,7 +198,7 @@ class XbrlFile():
                               left_on='unitid',
                               right_on='unitid'))
 
-    def read_text_blocks(self, text_blocks: Set[str]) -> None:
+    def read_text_blocks(self, text_blocks: Iterable[str]) -> None:
         parser = xbrlfp.XbrlParser()
         self.text_blocks = parser.parse_textblocks(self.root, text_blocks)
 

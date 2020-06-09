@@ -39,7 +39,7 @@ WHITE_LIST_TABLES = frozenset(
     ['companies', 'nasdaq',
      'stocks_daily', 'stocks_shares', 'stocks_dividents',
      'stocks_index',
-     'owners', 'insider_trans',
+     'owners', 'insider_trans', 'text_blocks',
      'mgnums', 'logs_parse', 'xbrl_logs',
      'siccodes', 'sec_forms', 'reports',
      'sec_xbrl_forms', 'sec_shares',

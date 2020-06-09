@@ -16,7 +16,7 @@ from utils import remove_root_dir
 from xbrlxml.pickup import ChapterChooser, ChapterExtender, ContextChooser
 from xbrlxml.xbrlexceptions import XbrlException
 from xbrlxml.xbrlfile import XbrlFile
-from xbrlxml.xbrlfileparser import Context
+from xbrlxml.xbrlfileparser import Context, TextBlocks
 from xbrlxml.xbrlzip import XBRLZipPacket
 from xbrlxml.xbrlrss import FileRecord
 from xbrlxml.xbrlchapter import CalcChapter
@@ -389,7 +389,9 @@ class DataMiner(metaclass=ABCMeta):
                 'member'])
 
     def _read_text_blocks(self):
-        raise NotImplementedError('_read_text_blocks is not implemented')
+        self.xbrlfile.read_text_blocks([
+            'ScheduleOfShareBasedCompensationActivityTableTextBlock',
+            'ScheduleOfEffectiveIncomeTaxRateReconciliationTableTextBlock'])
 
     def _find_proper_company_name_cik(self, record: FileRecord) -> None:
         """
@@ -469,6 +471,11 @@ class SharesDataMiner(DataMiner):
         self._gather_shares_facts()
 
 
+class TextBlocksDataMiner(DataMiner):
+    def do_job(self):
+        self._read_text_blocks()
+
+
 def prepare_report(miner: DataMiner, record: FileRecord) -> Dict[str, Any]:
     file_link = remove_root_dir(miner.zip_filename)
     report = {'adsh': record.adsh,
@@ -503,6 +510,19 @@ def prepare_company(record: FileRecord) -> Dict[str, Any]:
                'updated': record.file_date}
 
     return company
+
+
+def prepare_text_blocks(
+        adsh: str, text_blocks: TextBlocks) -> List[Dict[str, Any]]:
+    data: List[Dict[str, Any]] = []
+    for (tag, context), text in text_blocks.items():
+        data.append(
+            {'adsh': adsh,
+             'tag': tag,
+             'text_block': text
+             })
+
+    return data
 
 
 def _dump_structure(miner: DataMiner) -> str:

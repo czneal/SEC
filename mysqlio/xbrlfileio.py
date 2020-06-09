@@ -83,6 +83,17 @@ class ShareTickerRelation(MySQLWriter):
             cur=self.cur)
 
 
+class TextBlocksWriter(MySQLWriter):
+    def __init__(self):
+        MySQLWriter.__init__(self)
+
+        self.text_blocks = do.MySQLTable('text_blocks', self.con)
+
+    def write(self, row_list: List[Dict[str, str]]) -> None:
+        self.write_to_table(self.text_blocks, row_list)
+        self.flush()
+
+
 def records_to_mysql(records: List[Tuple[FileRecord, str]]) -> None:
     row_list: List[Dict[str, Any]] = []
     for (record, zip_filename) in records:
