@@ -209,12 +209,12 @@ class TestSubscriptionInfo(DBTestBase):
 
         info = mc.LogInfo()
         requests = [mc.LogRequest(['fatal', 'xbrl']),
-                    mc.LogRequest(['fatal', 'stocks'])]
+                    mc.LogRequest(['fatal', 'stocks', 'shares'])]
 
         for r in requests:
             info.append_request(r)
 
-        self.assertEqual(len(info.types), 3)
+        self.assertEqual(len(info.types), 4)
 
         day = dt.date(2020, 6, 1)
         with self.subTest(day=str(day)):
@@ -251,6 +251,21 @@ class TestSubscriptionInfo(DBTestBase):
 
             resp = info.get_info(requests[1])
             self.assertEqual(len(resp.data), 0)
+
+        day = dt.date(2020, 5, 30)
+        with self.subTest(day=str(day)):
+            info.read(day=day)
+
+            self.assertEqual(len(info.data['fatal']), 0)
+            self.assertEqual(len(info.data['stocks']), 0)
+            self.assertEqual(len(info.data['xbrl']), 0)
+            self.assertEqual(len(info.data['shares']), 3)
+
+            resp = info.get_info(requests[0])
+            self.assertEqual(len(resp.data), 0)
+
+            resp = info.get_info(requests[1])
+            self.assertEqual(len(resp.data), 3)
 
 
 if __name__ == '__main__':

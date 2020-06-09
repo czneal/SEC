@@ -24,7 +24,8 @@ class TestMailerList(DBTestBase):
 
         for sub, req in mailer.subscribers['vkugushev@gmail.com']:
             if isinstance(req, mc.LogRequest):
-                self.assertEqual(req.types, set(['fatal', 'xbrl', 'stocks']))
+                self.assertEqual(req.types, set(
+                    ['fatal', 'xbrl', 'stocks', 'shares']))
             if isinstance(req, mc.StocksRequest):
                 self.assertEqual(req.data, {
                     "bac": [30, 32],
@@ -47,7 +48,7 @@ class TestMailerList(DBTestBase):
         day = dt.date(2020, 6, 1)
         with self.subTest(day=str(day)):
             mailer.read_data(day=day)
-            self.assertEqual(len(mailer.subscriptions[4].data_bank.data), 3)
+            self.assertEqual(len(mailer.subscriptions[4].data_bank.data), 4)
             self.assertTrue(
                 len(mailer.subscriptions[4].data_bank.data['fatal']) != 0)
             self.assertEqual(len(mailer.subscriptions[0].data_bank.data), 0)
@@ -58,7 +59,7 @@ class TestMailerList(DBTestBase):
         day = dt.date(2020, 6, 3)
         with self.subTest(day=str(day)):
             mailer.read_data(day=day)
-            self.assertEqual(len(mailer.subscriptions[4].data_bank.data), 3)
+            self.assertEqual(len(mailer.subscriptions[4].data_bank.data), 4)
             self.assertEqual(
                 len(mailer.subscriptions[4].data_bank.data['fatal']), 0)
             self.assertEqual(len(mailer.subscriptions[0].data_bank.data), 0)

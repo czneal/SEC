@@ -183,6 +183,35 @@ class TestLogReader(DBTestBase):
 
             self.assertEqual(len(data), 0)
 
+    def test_fetch_share_ticker_warning(self):
+        self.run_mysql_file(absfilename('res/xbrl_logs.sql'))
+
+        day = dt.date(2020, 5, 30)
+        with self.subTest(day=str(day) + ' share-ticker relation'):
+            r = mr.LogReader()
+            data = r.fetch_errors(
+                day=day,
+                log_table='xbrl_logs',
+                levelname='warning',
+                msg='share-ticker')
+            r.close()
+
+            self.assertEqual(len(data), 3)
+            self.assertEqual(data[0]['msg'],
+                             'sec share-ticker relaition not found')
+
+        day = dt.date(2020, 6, 1)
+        with self.subTest(day=str(day) + ' share-ticker relation'):
+            r = mr.LogReader()
+            data = r.fetch_errors(
+                day=day,
+                log_table='xbrl_logs',
+                levelname='warning',
+                msg='share-ticker')
+            r.close()
+
+            self.assertEqual(len(data), 0)
+
 
 if __name__ == '__main__':
     unittest.main()

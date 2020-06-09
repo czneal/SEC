@@ -14,19 +14,17 @@ class LogReader(MySQLReader):
         assert(log_table in ('logs_parse', 'xbrl_logs'))
 
         query = f"""
-        select id, created, state, module, msg, extra
-        from {log_table}
-        where created >= %(end)s
-            and created <= %(start)s
+        select id, created, state, module, msg, extra \
+        from {log_table} \
+        where date(created) = %(day)s
         """
-        params: Dict[str, Any] = {'start': day + dt.timedelta(days=1),
-                                  'end': day}
+        params: Dict[str, Any] = {'day': day}
         if levelname != '':
             params['levelname'] = levelname
-            query += "and levelname = %(levelname)s"
+            query += " and levelname = %(levelname)s"
         if msg != '':
             params['msg'] = msg
-            query += "and msg like concat('%', %(msg)s, '%')"
+            query += " and msg like concat('%', %(msg)s, '%')"
 
         data = self.fetch(query, params)
 

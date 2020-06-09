@@ -188,7 +188,7 @@ class ReportsRequest(InfoRequest):
 
 
 class LogRequest(InfoRequest):
-    supported_types = frozenset(['fatal', 'stocks', 'xbrl'])
+    supported_types = frozenset(['fatal', 'stocks', 'xbrl', 'shares'])
 
     def __init__(self, metadata: Any):
         assert(set(metadata).issubset(self.supported_types))
@@ -487,6 +487,17 @@ class LogInfo(SubscriptionInfo):
                             log_table='xbrl_logs',
                             levelname='error',
                             msg=''
+                        )
+                    )
+                )
+            if t == 'shares':
+                self.data.setdefault(t, []).extend(
+                    self.load_extra(
+                        r.fetch_errors(
+                            day=day,
+                            log_table='xbrl_logs',
+                            levelname='warning',
+                            msg='share-ticker'
                         )
                     )
                 )
