@@ -115,6 +115,7 @@ def create_download_dirs(year: int, month: int) -> None:
     root_dir = add_root_dir('')
     year_dir = add_root_dir(str(year))
     month_dir = year_month_dir(year, month)
+    html_month_dir = os.path.join(month_dir, 'html')
 
     if not os.path.exists(root_dir):
         os.mkdir(root_dir)
@@ -122,6 +123,8 @@ def create_download_dirs(year: int, month: int) -> None:
         os.mkdir(year_dir)
     if not os.path.exists(month_dir):
         os.mkdir(month_dir)
+    if not os.path.exists(html_month_dir):
+        os.mkdir(html_month_dir)
 
 
 def download_rss(year: int, month: int) -> None:

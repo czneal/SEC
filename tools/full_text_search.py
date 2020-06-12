@@ -28,6 +28,8 @@ def extract_words(text: str) -> List[str]:
     if not text:
         return []
 
+    special = ['']
+
     text = text.lower()
     text = text.replace('\u201a', ' ').replace('\u201c', ' ').replace(
         '\u2014', '-').replace('\u2019', "'").replace('\u00ae', ' ')
