@@ -44,7 +44,8 @@ WHITE_LIST_TABLES = frozenset(
      'siccodes', 'sec_forms', 'reports',
      'sec_xbrl_forms', 'sec_shares',
      'indicators', 'ind_proc_info', 'ind_rest_info', 'ind_classified_pairs',
-     'mg_structures', 'mg_facts', 'mg_structures_errors'])
+     'mg_structures', 'mg_facts', 'mg_structures_errors',
+     'html_reports'])
 
 WHITE_LIST_TABLES_TEST = frozenset([
     'simple_table', 'test_create_table', 'multikey_table'
