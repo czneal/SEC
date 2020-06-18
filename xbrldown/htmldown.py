@@ -131,12 +131,12 @@ def download_mpc(
 def main():
     r = MySQLReader()
     data = r.fetch(
-        "select * from sec_forms where form like '10-k' and cik = 72971")
+        "select * from sec_forms where form like '10-k' and filed>='2016-01-01'")
     r.close()
 
     jobs = [(row['adsh'], row['filed'], row['doc_link']) for row in data]
 
-    download_mpc(jobs, 4, log_handler='file', log_level=logs.logging.INFO)
+    download_mpc(jobs, 10, log_handler='file', log_level=logs.logging.INFO)
 
 
 if __name__ == '__main__':

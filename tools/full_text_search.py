@@ -70,7 +70,6 @@ def extract_words(text: str) -> List[str]:
 
 
 def main(html_dir: str):
-    logs.configure('file', level=logs.logging.DEBUG)
     logger = logs.get_logger()
 
     writer = HtmlTextWriter()
@@ -81,7 +80,7 @@ def main(html_dir: str):
 
         logger.info(f'start reading texts {len(filenames)}')
 
-        for filename in filenames[:40]:
+        for filename in filenames:
             try:
                 logger.debug(f'open {filename}')
                 txt = text_from_zip(os.path.join(root, filename))
@@ -114,4 +113,6 @@ def main(html_dir: str):
 
 
 if __name__ == '__main__':
-    main('z:/sec/2016/02/html')
+    logs.configure('file', level=logs.logging.DEBUG)
+    main('d:/sec/2016/02/html')
+    main('d:/sec/2016/03/html')
