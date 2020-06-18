@@ -62,12 +62,13 @@ class TestMySQLTable(DBTestBase):
             con.commit()
 
     def tearDown(self):
-        drop1 = """drop table if exists `simple_table`;"""
-        drop2 = """drop table if exists `multikey_table`;"""
+        queries = ["""drop table if exists `simple_table`;""",
+                   """drop table if exists `multikey_table`;""",
+                   """drop table if exists `test_create_table`;"""]
         with do.OpenConnection() as con:
             cur = con.cursor()
-            cur.execute(drop1)
-            cur.execute(drop2)
+            for query in queries:
+                cur.execute(query)
             con.commit()
 
     def test_simple_insert(self):

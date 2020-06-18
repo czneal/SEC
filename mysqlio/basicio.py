@@ -48,7 +48,7 @@ WHITE_LIST_TABLES = frozenset(
      'html_reports'])
 
 WHITE_LIST_TABLES_TEST = frozenset([
-    'simple_table', 'test_create_table', 'multikey_table'
+    'simple_table', 'test_create_table', 'multikey_table', 'test_table'
 ])
 
 
@@ -206,12 +206,13 @@ class MySQLTable():
             con.database)
         for r in cur.fetchall():
             field_name = r["Field"].lower()
-            if r["Extra"] in ("auto_increment", "DEFAULT_GENERATED"):
+            if ("auto_increment" in r["Extra"] or
+                    "DEFAULT_GENERATED" in r["Extra"]):
                 continue
             self.fields.add(field_name)
             if r["Null"] == "NO":
                 self.fields_not_null.add(field_name)
-            if r["Key"] == "UNI":
+            if r["Key"] in ("UNI", "PRI"):
                 self.primary_keys.add(field_name)
 
             groups = types.findall(r['Type'])
@@ -458,7 +459,7 @@ def insert_command(table_name: str,
                    fields: Set[str],
                    fields_not_null: Set[str],
                    primary_keys: Set[str]) -> str:
-    insert = """insert into {0}\n({1})\nvalues({2})\non duplicate key update\n{3}"""
+    insert = """insert into {0}\n({1})\nvalues({2}) as vals\non duplicate key update\n{3}"""
     columns = ', '.join('' + f + '' for f in fields)
     values = ', '.join(['%(' + f + ')s' for f in fields])
     on_dupl = ',\n'.join(
@@ -466,7 +467,7 @@ def insert_command(table_name: str,
          for field in fields.difference(primary_keys)])
     if on_dupl == '':
         on_dupl = ',\n'.join(
-            [f'{field}=values({field})'
+            [f'{field}=vals.{field}'
              for field in fields_not_null])
 
     insert = insert.format(table_name, columns, values, on_dupl)
@@ -483,11 +484,11 @@ def update_command(table_name: str,
         raise MySQLTypeError(
             f"if_field '{if_field}'' should be in fields_not_null set")
 
-    update = """insert into {0}\n({1})\nvalues({2})\non duplicate key update\n{3}"""
+    update = """insert into {0}\n({1})\nvalues({2}) as vals\non duplicate key update\n{3}"""
     columns = ', '.join('' + f + '' for f in fields)
     values = ', '.join(['%(' + f + ')s' for f in fields])
     on_dupl = ',\n'.join(
-        [f'{field} = if(values({if_field}) >= {if_field}, values({field}), {field})'
+        [f'{field} = if(vals.{if_field} >= {table_name}.{if_field}, vals.{field}, {table_name}.{field})'
          for field in fields.difference(primary_keys)])
 
     update = update.format(table_name, columns, values, on_dupl)
