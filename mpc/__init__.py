@@ -271,7 +271,11 @@ def test_configure_worker() -> Worker:
     return TestWorker()
 
 
-if __name__ == '__main__':
+def main():
     manager = MpcManager('file', logs.logging.DEBUG)
     jobs = ['job-' + str(i) for i in range(20)]
     manager.start(jobs, test_configure_writer, test_configure_worker)
+
+
+if __name__ == '__main__':
+    pass
