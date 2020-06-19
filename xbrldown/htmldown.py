@@ -20,13 +20,20 @@ def get_html_report_link(submis_link: str) -> str:
     bs = BeautifulSoup(body, 'lxml')
 
     html_report_link = ""
+    pdf_report_link = ""
 
     for r in bs.findAll('tr'):
         if r.find('td', text=re.compile(r'10-K(/A)?')):
             href = r.find('a')
-            html_report_link = href.attrs['href']
+            link = href.attrs['href']
+            if link.lower().endswith('pdf'):
+                pdf_report_link = link
+            else:
+                html_report_link = link
 
     if html_report_link == "":
+        if pdf_report_link:
+            return "https://sec.gov" + pdf_report_link
         return ""
 
     if html_report_link.lower().startswith('/ix?doc'):
@@ -77,6 +84,9 @@ def archive_html_file(
 
 
 class HtmlWorker(Worker):
+    def __init__(self, overwrite: bool = False):
+        self.overwrite = overwrite
+
     def feed(self, job: Any) -> bool:
         """job must by tuple: (adsh, filed: datetime.date, submis_link)"""
         try:
@@ -102,7 +112,7 @@ class HtmlWorker(Worker):
         archive_html_file(
             filename=zip_filename,
             report_link=report_link,
-            overwrite=True)
+            overwrite=self.overwrite)
 
         return True
 
