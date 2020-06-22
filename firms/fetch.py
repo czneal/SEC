@@ -331,4 +331,6 @@ def find():
 
 
 if __name__ == '__main__':
-    find()
+    df = get_nasdaq()
+
+    df.head()

@@ -130,10 +130,11 @@ def search(query: str,
 
 
 if __name__ == '__main__':
-    query = input('input your search query: ')
-    snippets = search(query=query,
-                      search_frame_size=5,
-                      snippet_frame_size=25,
-                      max_results=5)
+    while True:
+        query = input('input your search query: ')
+        snippets = search(query=query,
+                          search_frame_size=5,
+                          snippet_frame_size=25,
+                          max_results=5)
 
-    print(snippets)
+        print(snippets)
